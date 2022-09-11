@@ -20,6 +20,12 @@
 #include "llvm/MC/MCTargetOptions.h"
 #include <vector>
 
+//Koo Akul
+#include <map>
+#include <tuple>
+#include <string>
+#include <list>
+
 namespace llvm {
 
 class MCContext;
@@ -546,6 +552,44 @@ public:
 
   /// Get the code pointer size in bytes.
   unsigned getCodePointerSize() const { return CodePointerSize; }
+
+  // Akul : Porting essential stuctures that hold metadata before printing
+  // Koo: Essential bookkeeping information for reordering in the future
+  // (installation time) (a) MachineBasicBlocks (map)
+  //    * MFID_MBBID: <size, offset, # of fixups within MBB, alignments, type,
+  //    sectionName, contains inline assemble>
+  //    - The type field represents when the block is the end of MF or Object
+  //    where MBB = 0, MF = 1, and Obj = 2
+  //    - The sectionOrdinal field is for C++ only; it tells current BBL belongs
+  //    to which section!
+  //      MBBSize, MBBoffset, numFixups, alignSize, MBBtype, sectionName,
+  //      assembleType
+  mutable std::map<std::string,
+                   std::tuple<unsigned, unsigned, unsigned, unsigned, unsigned,
+                              std::string, unsigned>>
+      MachineBasicBlocks;
+  //    * MFID: fallThrough-ability
+  mutable std::map<std::string, bool> canMBBFallThrough;
+  //    * MachineFunctionID: size
+  mutable std::map<unsigned, unsigned> MachineFunctionSizes;
+  //    - The order of the ID in a binary should be maintained layout because it
+  //    might be non-sequential.
+  mutable std::list<std::string> MBBLayoutOrder;
+
+  // (b) Fixups (list)
+  //    * <offset, size, isRela, parentID, SymbolRefFixupName, isNewSection,
+  //    secName, numJTEntries, JTEntrySz>
+  //    - The last two elements are jump table information for FixupsText only,
+  //      which allows for updating the jump table entries (relative values)
+  //      with pic/pie-enabled.
+  mutable std::list<
+      std::tuple<unsigned, unsigned, bool, std::string, std::string, bool,
+                 std::string, unsigned, unsigned>>
+      FixupsText, FixupsRodata, FixupsData, FixupsDataRel, FixupsInitArray;
+  //    - FixupsEhframe, FixupsExceptTable; (Not needed any more as a randomizer
+  //    directly handles them later on)
+  //    - Keep track of the latest ID when parent ID is unavailable
+  mutable std::string latestParentID;
 
   /// Get the callee-saved register stack slot
   /// size in bytes.
