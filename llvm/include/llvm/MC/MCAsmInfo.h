@@ -18,13 +18,17 @@
 #include "llvm/ADT/StringRef.h"
 #include "llvm/MC/MCDirectives.h"
 #include "llvm/MC/MCTargetOptions.h"
+#include "llvm/Support/Debug.h"
 #include <vector>
+#define DEBUG_TYPE "binbench"
 
 //Koo Akul
 #include <map>
 #include <tuple>
 #include <string>
 #include <list>
+
+
 
 namespace llvm {
 
@@ -554,6 +558,8 @@ public:
   unsigned getCodePointerSize() const { return CodePointerSize; }
 
   // Akul : Porting essential stuctures that hold metadata before printing
+  // Here we skip changes made for supporting inline assembly.
+  // To what extent do we want to support inline assembly? 
   // Koo: Essential bookkeeping information for reordering in the future
   // (installation time) (a) MachineBasicBlocks (map)
   //    * MFID_MBBID: <size, offset, # of fixups within MBB, alignments, type,
@@ -591,6 +597,37 @@ public:
   //    - Keep track of the latest ID when parent ID is unavailable
   mutable std::string latestParentID;
 
+  void updateOffset(std::string id,unsigned offset) const  {
+    std::get<1>(MachineBasicBlocks[id]) = offset;
+  }
+
+  bool updateByteCounter(std::string id, unsigned emittedBytes, unsigned numFixups, \
+                         bool isAlign, bool isInline, bool isSpecialMode = false) const {
+    // std::string id = std::to_string(fnid) + "_" + std::to_string(bbid);
+    // Create the tuple for the MBB
+    // LLVM_DEBUG(dbgs() << id << "\n");
+    bool res = false;
+    if (MachineBasicBlocks.count(id) == 0) {
+      MachineBasicBlocks[id] = std::make_tuple(0, 0, 0, 0, 0, "", 0);
+      res = true;
+    }
+
+    // Otherwise update MBB tuples
+    std::get<0>(MachineBasicBlocks[id]) += emittedBytes; // Acutal size in MBB
+    std::get<2>(MachineBasicBlocks[id]) += numFixups;    // Number of Fixups in MBB
+    if (isAlign)
+      std::get<3>(MachineBasicBlocks[id]) += emittedBytes;  // Count NOPs in MBB
+
+    // If inlined, add the bytes in the next MBB instead of current one
+    if (isInline)
+      std::get<0>(MachineBasicBlocks[latestParentID]) -= emittedBytes;
+    //printf("update ByteCounter here: id is %s, size is %d\n", id.c_str(),emittedBytes);
+
+    //ztt add
+    if(isSpecialMode)
+      std::get<4>(MachineBasicBlocks[id]) |= 1 << 6;
+    return res;
+  }
   /// Get the callee-saved register stack slot
   /// size in bytes.
   unsigned getCalleeSaveStackSlotSize() const {

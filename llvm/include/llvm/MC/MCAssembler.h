@@ -31,6 +31,8 @@
 #include <utility>
 #include <vector>
 
+#define DEBUG_TYPE "binbench"
+
 namespace llvm {
 
 class MCBoundaryAlignFragment;
@@ -127,6 +129,10 @@ private:
   std::vector<IndirectSymbolData> IndirectSymbols;
 
   std::vector<DataRegionData> DataRegions;
+
+  // Akul
+  // Koo: the variable holds the name of the temporary file during compilation
+  std::string reorderTmpFile;
 
   /// The list of linker options to propagate into the object file.
   std::vector<std::vector<std::string>> LinkerOptions;
@@ -271,6 +277,15 @@ public:
 
   /// Flag a function symbol as the target of a .thumb_func directive.
   void setIsThumbFunc(const MCSymbol *Func) { ThumbFuncs.insert(Func); }
+
+  // Koo
+  // Akul
+  // TODO: Include Protobuf ShuffleInfo
+  // void setObjTmpName(std::string tmpFileName) { reorderTmpFile = tmpFileName; }
+  // std::string getObjTmpName() const { return reorderTmpFile; }
+  // void WriteRandInfo(const MCAsmLayout &Layout) const;
+  // void writeReorderInfo(std::string fileName, ShuffleInfo::ReorderInfo* ri) const;
+
 
   /// ELF e_header flags
   unsigned getELFHeaderEFlags() const { return ELFHeaderEFlags; }

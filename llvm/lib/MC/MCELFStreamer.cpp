@@ -37,7 +37,13 @@
 #include <cassert>
 #include <cstdint>
 
+// Koo Akul
+#include <tuple>
+#include <string>
+
 using namespace llvm;
+
+#define DEBUG_TYPE "binbench"
 
 MCELFStreamer::MCELFStreamer(MCContext &Context,
                              std::unique_ptr<MCAsmBackend> TAB,
@@ -49,6 +55,24 @@ MCELFStreamer::MCELFStreamer(MCContext &Context,
 bool MCELFStreamer::isBundleLocked() const {
   return getCurrentSectionOnly()->isBundleLocked();
 }
+
+// Koo 
+// Akul we will emit this section in the end,
+// for not this commented code lets us know what functions
+// are left to be ported
+// void MCELFStreamer::emitRand() {
+//   MCSection *Rand = getAssembler().getContext().getELFSection(
+//       ".rand", ELF::SHT_PROGBITS, ELF::SHF_STRINGS, 1, "");
+//   pushSection();
+//   switchSection(Rand);
+//   popSection();
+// }
+
+// // Koo
+// void MCELFStreamer::setObjTmpName(std::string tmpFileName) {
+//   getAssembler().setObjTmpName(tmpFileName);
+// }
+
 
 void MCELFStreamer::mergeFragment(MCDataFragment *DF,
                                   MCDataFragment *EF) {
@@ -550,6 +574,9 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   raw_svector_ostream VecOS(Code);
   Assembler.getEmitter().encodeInstruction(Inst, VecOS, Fixups, STI);
 
+  // Koo: Obtain the parent of this instruction (MFID_MBBID)
+  std::string ID = Inst.getParent();
+
   for (auto &Fixup : Fixups)
     fixSymbolsInTLSFixups(Fixup.getValue());
 
@@ -625,6 +652,27 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
 
   DF->setHasInstructions(STI);
   DF->getContents().append(Code.begin(), Code.end());
+
+  // Koo: Here combines the emitted data as MCDataFragment
+  //      addMachineBasicBlockTag() keeps track of the IDs that identifies (MF+MBB) pair
+  //      MCRelaxableFragment will be generating in MCObjectStreamer::EmitInstToFragment()
+  unsigned EmittedBytes = Code.size();
+  const MCAsmInfo *MAI = Assembler.getContext().getAsmInfo();
+  unsigned numFixups = Fixups.size();
+
+  // Sometimes there exists the instruction with missing parentID (!!!!)
+  // Another corner case: However, we need to update the emitted bytes anyways
+  // For example, "cld; rep; stosq\n" emits 0xFC, (0xF3, 0x48), and 0xAB respectively with no parentID
+  if (ID.length() == 0)
+    ID = MAI->latestParentID;
+  DF->setLastParentTag(ID);
+  DF->addMachineBasicBlockTag(ID);
+
+  unsigned size, offset, fixups, alignments, type, tmpAssembleType;
+  std::string sectionName;
+  std::tie(size, offset, fixups, alignments, type, sectionName, tmpAssembleType) = MAI->MachineBasicBlocks[ID];
+
+  MAI->latestParentID = ID;
 
   if (Assembler.isBundlingEnabled() && Assembler.getRelaxAll()) {
     if (!isBundleLocked()) {
