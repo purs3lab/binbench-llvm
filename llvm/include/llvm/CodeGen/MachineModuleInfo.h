@@ -45,6 +45,8 @@ class Function;
 class LLVMTargetMachine;
 class MachineFunction;
 class Module;
+class MCObjectFileInfo; // Koo Akul
+
 class MCSymbol;
 
 //===----------------------------------------------------------------------===//

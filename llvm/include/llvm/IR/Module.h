@@ -198,6 +198,9 @@ private:
                                   ///< Format: (arch)(sub)-(vendor)-(sys0-(abi)
   NamedMDSymTabType NamedMDSymTab;  ///< NamedMDNode names.
   DataLayout DL;                  ///< DataLayout associated with the module
+
+  std::string tmpObjFile; // Koo
+
   StringMap<unsigned>
       CurrentIntrinsicIds; ///< Keep track of the current unique id count for
                            ///< the specified intrinsic basename.
@@ -243,6 +246,10 @@ public:
   /// This is useful for debugging or logging. It is essentially a convenience
   /// wrapper around getModuleIdentifier().
   StringRef getName() const { return ModuleID; }
+
+  // Koo Akul
+  std::string getTmpObjFile() { return tmpObjFile; }
+  void setTmpObjFile(std::string objFile) { tmpObjFile = objFile; }
 
   /// Get the data layout string for the module's target platform. This is
   /// equivalent to getDataLayout()->getStringRepresentation().
