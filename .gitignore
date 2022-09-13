@@ -28,6 +28,8 @@
 
 # Nested build directory
 /build*
+/nbuild*
+/metainfo_proto/protobuf-3.19.4*
 
 #==============================================================================#
 # Explicit files to ignore (only matches one).
