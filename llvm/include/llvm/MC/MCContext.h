@@ -41,6 +41,7 @@
 
 namespace llvm {
 
+class MCSectionELF;
 class CodeViewContext;
 class MCAsmInfo;
 class MCInst;
@@ -50,7 +51,6 @@ class MCRegisterInfo;
 class MCSection;
 class MCSectionCOFF;
 class MCSectionDXContainer;
-class MCSectionELF;
 class MCSectionGOFF;
 class MCSectionMachO;
 class MCSectionSPIRV;

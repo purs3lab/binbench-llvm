@@ -229,7 +229,7 @@ private:
   /// finishLayout - Finalize a layout, including fragment lowering.
   void finishLayout(MCAsmLayout &Layout);
 
-  std::tuple<MCValue, uint64_t, bool>
+  std::tuple<MCValue, uint64_t, bool, bool>
   handleFixup(const MCAsmLayout &Layout, MCFragment &F, const MCFixup &Fixup);
 
 public:
@@ -280,11 +280,11 @@ public:
   /// Flag a function symbol as the target of a .thumb_func directive.
   void setIsThumbFunc(const MCSymbol *Func) { ThumbFuncs.insert(Func); }
 
+
   // Koo
-  // Akul
   void setObjTmpName(std::string tmpFileName) { reorderTmpFile = tmpFileName; }
   std::string getObjTmpName() const { return reorderTmpFile; }
-  void WriteRandInfo(const MCAsmLayout &Layout) const;
+  std::string WriteRandInfo(const MCAsmLayout &Layout) const;
   void writeReorderInfo(std::string fileName, ShuffleInfo::ReorderInfo* ri) const;
 
 

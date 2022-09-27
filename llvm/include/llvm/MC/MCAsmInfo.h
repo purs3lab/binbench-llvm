@@ -560,56 +560,46 @@ public:
   // Akul : Porting essential stuctures that hold metadata before printing
   // Here we skip changes made for supporting inline assembly.
   // To what extent do we want to support inline assembly? 
-  // Koo: Essential bookkeeping information for reordering in the future
-  // (installation time) (a) MachineBasicBlocks (map)
-  //    * MFID_MBBID: <size, offset, # of fixups within MBB, alignments, type,
-  //    sectionName, contains inline assemble>
-  //    - The type field represents when the block is the end of MF or Object
-  //    where MBB = 0, MF = 1, and Obj = 2
-  //    - The sectionOrdinal field is for C++ only; it tells current BBL belongs
-  //    to which section!
-  //      MBBSize, MBBoffset, numFixups, alignSize, MBBtype, sectionName,
-  //      assembleType
-  mutable std::map<std::string,
-                   std::tuple<unsigned, unsigned, unsigned, unsigned, unsigned,
-                              std::string, unsigned>>
-      MachineBasicBlocks;
+  // Koo: Essential bookkeeping information for reordering in the future (installation time)
+  // (a) MachineBasicBlocks (map)
+  //    * MFID_MBBID: <size, offset, # of fixups within MBB, alignments, type, sectionName>
+  //    - The type field represents when the block is the end of MF or Object where MBB = 0, MF = 1, and Obj = 2
+  //    - The sectionOrdinal field is for C++ only; it tells current BBL belongs to which section!
+  mutable std::map<std::string, std::tuple<unsigned, unsigned, unsigned, unsigned, unsigned, std::string>> MachineBasicBlocks;
   //    * MFID: fallThrough-ability
   mutable std::map<std::string, bool> canMBBFallThrough;
   //    * MachineFunctionID: size
   mutable std::map<unsigned, unsigned> MachineFunctionSizes;
-  //    - The order of the ID in a binary should be maintained layout because it
-  //    might be non-sequential.
+  //    - The order of the ID in a binary should be maintained layout because it might be non-sequential.
   mutable std::list<std::string> MBBLayoutOrder;
 
   // (b) Fixups (list)
-  //    * <offset, size, isRela, parentID, SymbolRefFixupName, isNewSection,
-  //    secName, numJTEntries, JTEntrySz>
+  //    * <offset, size, isRela, parentID, SymbolRefFixupName, isNewSection, secName, numJTEntries, JTEntrySz>
   //    - The last two elements are jump table information for FixupsText only,
-  //      which allows for updating the jump table entries (relative values)
-  //      with pic/pie-enabled.
-  mutable std::list<
-      std::tuple<unsigned, unsigned, bool, std::string, std::string, bool,
-                 std::string, unsigned, unsigned>>
-      FixupsText, FixupsRodata, FixupsData, FixupsDataRel, FixupsInitArray;
-  //    - FixupsEhframe, FixupsExceptTable; (Not needed any more as a randomizer
-  //    directly handles them later on)
+  //      which allows for updating the jump table entries (relative values) with pic/pie-enabled.
+  mutable std::list<std::tuple<unsigned, unsigned, bool, std::string, std::string, bool, std::string, unsigned, unsigned>>
+          FixupsText, FixupsRodata, FixupsData, FixupsDataRel, FixupsInitArray;
+  //    - FixupsEhframe, FixupsExceptTable; (Not needed any more as a randomizer directly handles them later on)
   //    - Keep track of the latest ID when parent ID is unavailable
   mutable std::string latestParentID;
 
-  void updateOffset(std::string id,unsigned offset) const  {
-    std::get<1>(MachineBasicBlocks[id]) = offset;
-  }
+  // (c) Others
+  //     The following method helps full-assembly file (*.s) identify functions and basic blocks
+  //     that inherently lacks their boundaries because neither MF nor MBB has been constructed.
+  mutable bool isAssemFile = false;
+  mutable bool hasInlineAssembly = false;
+  mutable std::string prevOpcode;
+  mutable unsigned assemFuncNo = 0xffffffff;
+  mutable unsigned assemBBLNo = 0;
+  mutable unsigned specialCntPriorToFunc = 0;
 
-  bool updateByteCounter(std::string id, unsigned emittedBytes, unsigned numFixups, \
-                         bool isAlign, bool isInline, bool isSpecialMode = false) const {
+    // Update emittedBytes from either DataFragment, RelaxableFragment or AlignFragment
+  void updateByteCounter(std::string id, unsigned emittedBytes, unsigned numFixups, \
+                         bool isAlign, bool isInline) const {
     // std::string id = std::to_string(fnid) + "_" + std::to_string(bbid);
     // Create the tuple for the MBB
-    // LLVM_DEBUG(dbgs() << id << "\n");
-    bool res = false;
     if (MachineBasicBlocks.count(id) == 0) {
-      MachineBasicBlocks[id] = std::make_tuple(0, 0, 0, 0, 0, "", 0);
-      res = true;
+      MachineBasicBlocks[id] = std::make_tuple(0, 0, 0, 0, 0, "");
     }
 
     // Otherwise update MBB tuples
@@ -621,13 +611,9 @@ public:
     // If inlined, add the bytes in the next MBB instead of current one
     if (isInline)
       std::get<0>(MachineBasicBlocks[latestParentID]) -= emittedBytes;
-    //printf("update ByteCounter here: id is %s, size is %d\n", id.c_str(),emittedBytes);
-
-    //ztt add
-    if(isSpecialMode)
-      std::get<4>(MachineBasicBlocks[id]) |= 1 << 6;
-    return res;
   }
+
+
   /// Get the callee-saved register stack slot
   /// size in bytes.
   unsigned getCalleeSaveStackSlotSize() const {

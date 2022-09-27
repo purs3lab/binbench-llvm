@@ -703,9 +703,9 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   DF->addMachineBasicBlockTag(ID);
   MAI->updateByteCounter(ID, EmittedBytes, numFixups, /*isAlign=*/ false, /*isInline=*/ false);
 
-  unsigned size, offset, fixups, alignments, type, tmpAssembleType;
+  unsigned size, offset, fixups, alignments, type;
   std::string sectionName;
-  std::tie(size, offset, fixups, alignments, type, sectionName, tmpAssembleType) = MAI->MachineBasicBlocks[ID];
+  std::tie(size, offset, fixups, alignments, type, sectionName) = MAI->MachineBasicBlocks[ID];
 
   MAI->latestParentID = ID;
 
