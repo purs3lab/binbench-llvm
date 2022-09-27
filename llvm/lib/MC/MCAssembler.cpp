@@ -19,6 +19,7 @@
 #include "llvm/MC/MCCodeEmitter.h"
 #include "llvm/MC/MCCodeView.h"
 #include "llvm/MC/MCContext.h"
+#include "llvm/MC/MCSectionELF.h"
 #include "llvm/MC/MCDwarf.h"
 #include "llvm/MC/MCExpr.h"
 #include "llvm/MC/MCFixup.h"
@@ -59,8 +60,10 @@ using namespace llvm;
 #define DEBUG_TYPE "binbench"
 
 namespace llvm {
+class MCSectionELF;
 class MCSubtargetInfo;
 }
+
 
 
 namespace {
@@ -878,10 +881,10 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
 
   // Deal with MFs and MBBs in a ELF code section (.text) only
   for (MCSection &Sec : Layout.getAssembler()) {
-    // MCSectionELF &ELFSec = reinterpret_cast<MCSectionELF &>(Sec);
-    MCSection &ELFSec = Sec;
+    MCSectionELF &ELFSec = reinterpret_cast<MCSectionELF &>(Sec);
+    // MCSection &ELFSec = Sec;
 
-    std::string tmpSN, sectionName = ELFSec.getName().str();
+    std::string tmpSN, sectionName = ELFSec.getSectionName().str();
     if (sectionName.find(".text") == 0) {
       unsigned totalOffset = 0, totalFixups = 0, totalAlignSize = 0;
       int MFID, MBBID, prevMFID = -1;
@@ -1179,8 +1182,9 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
   unsigned prevLayoutOrder;
 
   for (MCSection &Sec : Layout.getAssembler()) {
-    MCSection &ELFSec = Sec;
-    std::string sectionName = ELFSec.getName().str();
+    MCSectionELF &ELFSec = reinterpret_cast<MCSectionELF &>(Sec);
+    // MCSection &ELFSec = Sec;
+    std::string sectionName = ELFSec.getSectionName().str();
     if (sectionName.find(".text") == 0) {
       LLVM_DEBUG(dbgs() << "Basic Blocks in .text: " <<"\n");
       const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
@@ -1244,8 +1248,9 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
   for (MCSection &Sec : *this) {
     for (MCFragment &Frag : Sec) {
       // Koo
-      MCSection &ELFSec = Sec;
-      std::string secName = ELFSec.getName().str();
+      //MCSection &ELFSec = Sec;
+      MCSectionELF &ELFSec = reinterpret_cast<MCSectionELF &>(Sec);
+      std::string secName = ELFSec.getSectionName().str();
       unsigned layoutOrder = ELFSec.getLayoutOrder();
       for (MCFragment &Frag : Sec) {
         // Koo - Attach the size of the alignment to the previous fragment.
