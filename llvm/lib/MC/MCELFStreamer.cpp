@@ -34,12 +34,14 @@
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/LEB128.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/Debug.h"
 #include <cassert>
 #include <cstdint>
 
 // Koo Akul
 #include <tuple>
 #include <string>
+#include "llvm/MC/MCAsmInfo.h"
 
 using namespace llvm;
 
@@ -574,6 +576,7 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
 
   // Koo: Obtain the parent of this instruction (MFID_MBBID)
   std::string ID = Inst.getParent();
+  // Inst.setParent(getSTI().getParentID())
 
   for (auto &Fixup : Fixups)
     fixSymbolsInTLSFixups(Fixup.getValue());
@@ -645,6 +648,39 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   // Add the fixups and data.
   for (auto &Fixup : Fixups) {
     Fixup.setOffset(Fixup.getOffset() + DF->getContents().size());
+    // Koo
+    Fixup.setFixupParentID(ID);
+    const MCExpr *FixupExpr = Fixup.getValue();
+    std::string SymName;
+
+    // FIXME: This is obviously not a good implementation this way but...
+    if (FixupExpr->getKind() == MCExpr::SymbolRef || FixupExpr->getKind() == MCExpr::Binary) {
+      std::string JTPrefix = ".LJTI";
+      if (FixupExpr->getKind() == MCExpr::SymbolRef) {
+        const MCSymbolRefExpr &SRE1 = cast<MCSymbolRefExpr>(*FixupExpr);
+        const MCSymbol &Sym1 = SRE1.getSymbol();
+        SymName = Sym1.getName().str();
+      }
+
+      // This code is added because of pic/pie option
+      //    Fixup kind is "MCExpr::Binary" rather than "MCExpr::SymbolRef"
+      //    So here we evaluate BE.getLHS() instead
+      if (FixupExpr->getKind() == MCExpr::Binary) {
+        const MCBinaryExpr &BE = cast<MCBinaryExpr>(*FixupExpr);
+        if (isa<MCSymbolRefExpr>(BE.getLHS())) {
+          const MCSymbolRefExpr &SRE2 = cast<MCSymbolRefExpr>(*BE.getLHS());
+          const MCSymbol &Sym2 = SRE2.getSymbol();
+          SymName = Sym2.getName().str();
+        }
+      }
+
+      // Update the symbol reference for JT only for now.
+      if (SymName.find(JTPrefix) != std::string::npos) {
+        Fixup.setIsJumpTableRef(true);
+        Fixup.setSymbolRefFixupName(SymName.substr(JTPrefix.length(), SymName.length()));
+      }
+    }
+
     DF->getFixups().push_back(Fixup);
   }
 
@@ -665,6 +701,7 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
     ID = MAI->latestParentID;
   DF->setLastParentTag(ID);
   DF->addMachineBasicBlockTag(ID);
+  MAI->updateByteCounter(ID, EmittedBytes, numFixups, /*isAlign=*/ false, /*isInline=*/ false);
 
   unsigned size, offset, fixups, alignments, type, tmpAssembleType;
   std::string sectionName;
