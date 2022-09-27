@@ -57,21 +57,19 @@ bool MCELFStreamer::isBundleLocked() const {
 }
 
 // Koo 
-// Akul we will emit this section in the end,
-// for not this commented code lets us know what functions
-// are left to be ported
-// void MCELFStreamer::emitRand() {
-//   MCSection *Rand = getAssembler().getContext().getELFSection(
-//       ".rand", ELF::SHT_PROGBITS, ELF::SHF_STRINGS, 1, "");
-//   pushSection();
-//   switchSection(Rand);
-//   popSection();
-// }
+// Akul 
+void MCELFStreamer::EmitRand() {
+  MCSection *Rand = getAssembler().getContext().getELFSection(
+      ".rand", ELF::SHT_PROGBITS, ELF::SHF_STRINGS, 1);
+  pushSection();
+  switchSection(Rand);
+  popSection();
+}
 
-// // Koo
-// void MCELFStreamer::setObjTmpName(std::string tmpFileName) {
-//   getAssembler().setObjTmpName(tmpFileName);
-// }
+// Koo
+void MCELFStreamer::setObjTmpName(std::string tmpFileName) {
+  getAssembler().setObjTmpName(tmpFileName);
+}
 
 
 void MCELFStreamer::mergeFragment(MCDataFragment *DF,
