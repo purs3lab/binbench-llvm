@@ -31,6 +31,8 @@
 #include <utility>
 #include <vector>
 
+#include "llvm/Support/shuffleInfo.pb.h" // Koo
+
 #define DEBUG_TYPE "binbench"
 
 namespace llvm {
@@ -280,11 +282,10 @@ public:
 
   // Koo
   // Akul
-  // TODO: Include Protobuf ShuffleInfo
-  // void setObjTmpName(std::string tmpFileName) { reorderTmpFile = tmpFileName; }
-  // std::string getObjTmpName() const { return reorderTmpFile; }
-  // void WriteRandInfo(const MCAsmLayout &Layout) const;
-  // void writeReorderInfo(std::string fileName, ShuffleInfo::ReorderInfo* ri) const;
+  void setObjTmpName(std::string tmpFileName) { reorderTmpFile = tmpFileName; }
+  std::string getObjTmpName() const { return reorderTmpFile; }
+  void WriteRandInfo(const MCAsmLayout &Layout) const;
+  void writeReorderInfo(std::string fileName, ShuffleInfo::ReorderInfo* ri) const;
 
 
   /// ELF e_header flags

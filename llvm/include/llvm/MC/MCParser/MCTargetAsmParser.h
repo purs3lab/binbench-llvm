@@ -355,6 +355,7 @@ public:
   ~MCTargetAsmParser() override;
 
   const MCSubtargetInfo &getSTI() const;
+  const MCInstrInfo &getMII() const;
 
   const FeatureBitset& getAvailableFeatures() const {
     return AvailableFeatures;

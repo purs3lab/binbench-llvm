@@ -126,6 +126,10 @@ protected:
   /// FIXME: Find a way to stick this in the constructor, since it should only
   /// be called during initialization.
   void InitMCProcessorInfo(StringRef CPU, StringRef TuneCPU, StringRef FS);
+  mutable unsigned byteCtr = 0;
+  mutable unsigned fixupCtr = 0;
+  mutable std::string parentID;
+
 
 public:
   /// Set the features to the default for the given CPU and TuneCPU, with ano
@@ -210,6 +214,13 @@ public:
                                         SC.NumReadAdvanceEntries);
   }
 
+  // Koo: Hold actual size of the target MCInst in bytes and its parentID (MFID_MBBID)
+  void setByteCtr(unsigned Bytes) const { byteCtr = Bytes; }
+  unsigned getByteCtr() const { return byteCtr; }
+  void setFixupCounter(unsigned numFixups) const { fixupCtr = numFixups; }
+  unsigned getFixupCtr() const { return fixupCtr; }
+  void setParentID(std::string parent) const { parentID = parent; }
+  std::string getParentID() const { return parentID; }
   /// Get scheduling itinerary of a CPU.
   InstrItineraryData getInstrItineraryForCPU(StringRef CPU) const;
 

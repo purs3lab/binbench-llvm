@@ -51,8 +51,8 @@ public:
   void emitLabel(MCSymbol *Symbol, SMLoc Loc = SMLoc()) override;
 
   // Koo Akul
-  // void emitRand() override;
-  // void setObjTmpName(std::string tmpFileName) override;
+  void EmitRand() override;
+  void setObjTmpName(std::string tmpFileName) override;
 
   void emitLabelAtPos(MCSymbol *Symbol, SMLoc Loc, MCFragment *F,
                       uint64_t Offset) override;

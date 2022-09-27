@@ -67,6 +67,7 @@ private:
 public:
   /// Decides whether a '.section' directive should be printed before the
   /// section name
+  StringRef getSectionName() { return this->Name; }
   bool shouldOmitSectionDirective(StringRef Name, const MCAsmInfo &MAI) const;
 
   unsigned getType() const { return Type; }

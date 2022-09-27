@@ -125,6 +125,8 @@ class MachineModuleInfo {
   const Function *LastRequest = nullptr; ///< Used for shortcut/cache.
   MachineFunction *LastResult = nullptr; ///< Used for shortcut/cache.
 
+  const MCObjectFileInfo *MOFI; // Koo
+
   MachineModuleInfo &operator=(MachineModuleInfo &&MMII) = delete;
 
 public:
@@ -150,6 +152,8 @@ public:
   }
 
   const Module *getModule() const { return TheModule; }
+
+  const MCObjectFileInfo *getMCObjectFileInfo() const { return MOFI; } // Koo
 
   /// Returns the MachineFunction constructed for the IR function \p F.
   /// Creates a new MachineFunction if none exists yet.

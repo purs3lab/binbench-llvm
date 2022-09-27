@@ -125,7 +125,8 @@
 
 using namespace llvm;
 
-#define DEBUG_TYPE "asm-printer"
+// Akul
+#define DEBUG_TYPE "binbench"
 
 const char DWARFGroupName[] = "dwarf";
 const char DWARFGroupDescription[] = "DWARF Emission";
@@ -1543,6 +1544,17 @@ void AsmPrinter::emitFunctionBody() {
         break;
       default:
         emitInstruction(&MI);
+        // Akul 
+        unsigned op = MI.getOpcode();
+        LLVM_DEBUG(dbgs() << "MIOp:" << op
+                          << " MI:" << TM.getMCInstrInfo()->getName(op)
+                          << " MBB:" << MI.getParent()->getNumber()
+                          << " MF:" << MI.getMF()->getName() << "\n");
+        const MachineBasicBlock *MBB = MI.getParent();
+        unsigned MBBID = MBB->getNumber();
+        unsigned MFID = MBB->getParent()->getFunctionNumber();
+        std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+        TM.getMCSubtargetInfo()->setParentID(ID);
         if (CanDoExtraAnalysis) {
           MCInst MCI;
           MCI.setOpcode(MI.getOpcode());
@@ -2109,6 +2121,10 @@ bool AsmPrinter::doFinalization(Module &M) {
   // Emit llvm.ident metadata in an '.ident' directive.
   emitModuleIdents(M);
 
+  // Koo: Emit the .rand section
+  OutStreamer->EmitRand();
+
+
   // Emit bytes for llvm.commandline metadata.
   emitModuleCommandLines(M);
 
@@ -2162,6 +2178,12 @@ bool AsmPrinter::doFinalization(Module &M) {
   // Allow the target to emit any magic that it wants at the end of the file,
   // after everything else has gone out.
   emitEndOfAsmFile(M);
+
+  // Akul
+  // Koo: store temporary object file name to generate metadata
+  //      it ends up with residing in the current module M for MCAssembler class
+  OutStreamer->setObjTmpName(M.getTmpObjFile());
+
 
   MMI = nullptr;
   AddrLabelSymbols = nullptr;

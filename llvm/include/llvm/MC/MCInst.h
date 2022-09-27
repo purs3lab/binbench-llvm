@@ -233,7 +233,7 @@ public:
   }
 
   // Koo: Use the followings when RelaxableFragment ends up not with being relaxed
-  // Akul Fixup and MBB Parent retrival functions
+  // Akul Fixup and MBB Parent retrieval functions
 
   void setByteCtr(unsigned numBytes) const { byteCtr = numBytes; }
   unsigned getByteCtr() const { return byteCtr; }
