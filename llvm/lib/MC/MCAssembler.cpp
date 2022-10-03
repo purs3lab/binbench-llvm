@@ -886,6 +886,7 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
 
     std::string tmpSN, sectionName = ELFSec.getSectionName().str();
     if (sectionName.find(".text") == 0) {
+      DEBUG_WITH_TYPE("binbench", dbgs() << "Found the .text section!" << "\n");
       unsigned totalOffset = 0, totalFixups = 0, totalAlignSize = 0;
       int MFID, MBBID, prevMFID = -1;
       std::string prevID, canFallThrough;
@@ -900,6 +901,7 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
 
         // Update the MBB offset and MF Size for all collected MBBs in the MF
           for (std::string ID : MCF.getAllMBBs()) {
+            DEBUG_WITH_TYPE("binbench", dbgs() << "Found a fragment with MBBs" << "\n");
             if (ID.length() == 0 &&
                 std::get<0>(MAI->MachineBasicBlocks[ID]) > 0) {
               ID = "999_999";
@@ -909,6 +911,7 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
               //        "> -1 with no parentID?";
             }
 
+            DEBUG_WITH_TYPE("binbench", dbgs() << "Got ID" << ID << "\n");
             if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
               bool isStartMF = false; // check if the new MF begins
               std::tie(MFID, MBBID) = separateID(ID);

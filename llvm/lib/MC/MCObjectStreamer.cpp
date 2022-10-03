@@ -493,7 +493,7 @@ void MCObjectStreamer::emitInstToFragment(const MCInst &Inst,
   std::string ID = Inst.getParent();
   MCAssembler &Assembler = getAssembler();
   const MCAsmInfo *MAI = Assembler.getContext().getAsmInfo();
-
+  DEBUG_WITH_TYPE("binbench", dbgs() << "ID Found? :" << ID << "\n");
   if (ID.size() == 0)
     ID = MAI->latestParentID;
   IF->addMachineBasicBlockTag(ID);

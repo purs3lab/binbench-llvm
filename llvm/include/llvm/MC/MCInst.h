@@ -201,6 +201,8 @@ class MCInst {
 public:
   MCInst() = default;
 
+  void setParentID(std::string P) { ParentID = P; }
+
   void setOpcode(unsigned Op) { Opcode = Op; }
   unsigned getOpcode() const { return Opcode; }
 
@@ -241,7 +243,6 @@ public:
   unsigned getFixupCtr() const { return fixupCtr; }
 
   // Koo: Set the parent ID of this MCInst: "MFID_MBBID"
-  void setParent(std::string P) { ParentID = P; }
   const std::string getParent() const { return ParentID; }
 
   void print(raw_ostream &OS, const MCRegisterInfo *RegInfo = nullptr) const;

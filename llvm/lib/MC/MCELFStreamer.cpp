@@ -29,6 +29,7 @@
 #include "llvm/MC/MCStreamer.h"
 #include "llvm/MC/MCSymbol.h"
 #include "llvm/MC/MCSymbolELF.h"
+#include "llvm/MC/MCSubtargetInfo.h"
 #include "llvm/MC/TargetRegistry.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/ErrorHandling.h"
@@ -45,7 +46,13 @@
 
 using namespace llvm;
 
+// Akul
 #define DEBUG_TYPE "binbench"
+
+namespace llvm {
+class MCSectionELF;
+class MCSubtargetInfo;
+}
 
 MCELFStreamer::MCELFStreamer(MCContext &Context,
                              std::unique_ptr<MCAsmBackend> TAB,
@@ -575,8 +582,8 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   Assembler.getEmitter().encodeInstruction(Inst, VecOS, Fixups, STI);
 
   // Koo: Obtain the parent of this instruction (MFID_MBBID)
-  std::string ID = Inst.getParent();
-  // Inst.setParent(getSTI().getParentID())
+  // Inst.setParent(ID);
+  // XXX AKUL
 
   for (auto &Fixup : Fixups)
     fixSymbolsInTLSFixups(Fixup.getValue());
@@ -645,6 +652,8 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
     DF = getOrCreateDataFragment(&STI);
   }
 
+  std::string ID = Assembler.getContext().getSubtargetInfo()->getParentID();
+  DEBUG_WITH_TYPE("binbench", dbgs() << "Parent ID in ELFStreamer " << ID << "\n");
   // Add the fixups and data.
   for (auto &Fixup : Fixups) {
     Fixup.setOffset(Fixup.getOffset() + DF->getContents().size());
@@ -697,6 +706,15 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   // Sometimes there exists the instruction with missing parentID (!!!!)
   // Another corner case: However, we need to update the emitted bytes anyways
   // For example, "cld; rep; stosq\n" emits 0xFC, (0xF3, 0x48), and 0xAB respectively with no parentID
+  // TODO: Akul
+  // Do we get the IDs here?
+  // Nope!
+
+  LLVM_DEBUG(dbgs() << "Prev MFBID " << ID << "\n");
+  LLVM_DEBUG(dbgs() << "MInst: ");
+  Inst.print(dbgs(), getContext().getRegisterInfo());
+  LLVM_DEBUG(dbgs() << "\n");
+  
   if (ID.length() == 0)
     ID = MAI->latestParentID;
   DF->setLastParentTag(ID);
