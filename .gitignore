@@ -30,6 +30,11 @@
 /build*
 /nbuild*
 /metainfo_proto/protobuf-3.19.4*
+/metainfo_proto/protobuf-c*
+/metainfo_proto/*.so
+/metainfo_proto/*.cc
+/metainfo_proto/*.c
+/metainfo_proto/*.h
 
 #==============================================================================#
 # Explicit files to ignore (only matches one).
