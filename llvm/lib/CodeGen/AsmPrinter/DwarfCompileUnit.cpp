@@ -35,11 +35,14 @@
 #include "llvm/Target/TargetLoweringObjectFile.h"
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Target/TargetOptions.h"
+#include "llvm/Support/Debug.h" // Akul
 #include <iterator>
 #include <string>
 #include <utility>
 
 using namespace llvm;
+
+#define DEBUG_TYPE "binbench"
 
 static dwarf::Tag GetCompileUnitType(UnitKind Kind, DwarfDebug *DW) {
 
@@ -1241,6 +1244,12 @@ DIE &DwarfCompileUnit::constructCallSiteEntryDIE(DIE &ScopeDIE,
 void DwarfCompileUnit::constructCallSiteParmEntryDIEs(
     DIE &CallSiteDIE, SmallVector<DbgCallSiteParam, 4> &Params) {
   for (const auto &Param : Params) {
+    // Akul
+    DEBUG_WITH_TYPE("binbench",
+                    dbgs() << " - Function Callsite Param Info, Register: "
+                           << Param.getRegister() << " Value: "
+                           << "\n");
+    Param.getValue().dump();
     unsigned Register = Param.getRegister();
     auto CallSiteDieParam =
         DIE::get(DIEValueAllocator,
