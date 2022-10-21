@@ -29,6 +29,7 @@
 # Nested build directory
 /build*
 /nbuild*
+metainfo_proto/protobuf*
 /metainfo_proto/protobuf-3.19.4*
 /metainfo_proto/protobuf-c*
 /metainfo_proto/*.so

@@ -60,7 +60,8 @@ static dwarf::Tag GetCompileUnitType(UnitKind Kind, DwarfDebug *DW) {
 DwarfCompileUnit::DwarfCompileUnit(unsigned UID, const DICompileUnit *Node,
                                    AsmPrinter *A, DwarfDebug *DW,
                                    DwarfFile *DWU, UnitKind Kind)
-    : DwarfUnit(GetCompileUnitType(Kind, DW), Node, A, DW, DWU), UniqueID(UID) {
+    : DwarfUnit(GetCompileUnitType(Kind, DW), Node, A, DW, DWU), UniqueID(UID),
+TM(A->TM) {
   insertDIE(Node, &getUnitDie());
   MacroLabelBegin = Asm->createTempSymbol("cu_macro_begin");
 }
@@ -1245,6 +1246,7 @@ void DwarfCompileUnit::constructCallSiteParmEntryDIEs(
     DIE &CallSiteDIE, SmallVector<DbgCallSiteParam, 4> &Params) {
   for (const auto &Param : Params) {
     // Akul
+	auto MSI = TM.getMCSubtargetInfo();
     DEBUG_WITH_TYPE("binbench",
                     dbgs() << " - Function Callsite Param Info, Register: "
                            << Param.getRegister() << " Value: "

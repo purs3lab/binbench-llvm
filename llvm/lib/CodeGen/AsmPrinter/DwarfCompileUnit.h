@@ -40,6 +40,7 @@ class GlobalVariable;
 class MCExpr;
 class MCSymbol;
 class MDNode;
+class TargetMachine;
 
 enum class UnitKind { Skeleton, Full };
 
@@ -47,7 +48,7 @@ class DwarfCompileUnit final : public DwarfUnit {
   /// A numeric ID unique among all CUs in the module
   unsigned UniqueID;
   bool HasRangeLists = false;
-
+  TargetMachine &TM;
   /// The start of the unit line section, this is also
   /// reused in appyStmtList.
   MCSymbol *LineTableStartSym;

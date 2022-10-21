@@ -348,7 +348,8 @@ DwarfDebug::DwarfDebug(AsmPrinter *A)
     : DebugHandlerBase(A), DebugLocs(A->OutStreamer->isVerboseAsm()),
       InfoHolder(A, "info_string", DIEValueAllocator),
       SkeletonHolder(A, "skel_string", DIEValueAllocator),
-      IsDarwin(A->TM.getTargetTriple().isOSDarwin()) {
+      IsDarwin(A->TM.getTargetTriple().isOSDarwin()),
+      TM(A->TM) {
   const Triple &TT = Asm->TM.getTargetTriple();
 
   // Make sure we know our "debugger tuning".  The target option takes

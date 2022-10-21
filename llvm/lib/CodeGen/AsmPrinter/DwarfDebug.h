@@ -295,6 +295,8 @@ class DwarfDebug : public DebugHandlerBase {
   /// All DIEValues are allocated through this allocator.
   BumpPtrAllocator DIEValueAllocator;
 
+  TargetMachine &TM;
+
   /// Maps MDNode with its corresponding DwarfCompileUnit.
   MapVector<const MDNode *, DwarfCompileUnit *> CUMap;
 
