@@ -129,6 +129,7 @@ protected:
   void InitMCProcessorInfo(StringRef CPU, StringRef TuneCPU, StringRef FS);
   mutable unsigned byteCtr = 0;
   mutable unsigned fixupCtr = 0;
+  mutable unsigned nArgs = 0;
   mutable std::string parentID;
 
 
@@ -220,10 +221,10 @@ public:
   unsigned getByteCtr() const { return byteCtr; }
   void setFixupCounter(unsigned numFixups) const { fixupCtr = numFixups; }
   unsigned getFixupCtr() const { return fixupCtr; }
-  void setParentID(std::string parent) const {
-    DEBUG_WITH_TYPE("binbench", dbgs() << "Parent ID Set" << parent << "\n");
-    parentID = parent; }
+  void setParentID(std::string parent) const { parentID = parent; }
+  void setNArgs(unsigned nargs) const { nArgs = nargs; }
   std::string getParentID() const { return parentID; }
+  unsigned getNArgs() const { return nArgs; }
   /// Get scheduling itinerary of a CPU.
   InstrItineraryData getInstrItineraryForCPU(StringRef CPU) const;
 

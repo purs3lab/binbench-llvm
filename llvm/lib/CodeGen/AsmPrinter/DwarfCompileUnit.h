@@ -32,6 +32,7 @@
 namespace llvm {
 
 class AsmPrinter;
+class MCSubtargetInfo;
 class DIE;
 class DIELoc;
 class DIEValueList;

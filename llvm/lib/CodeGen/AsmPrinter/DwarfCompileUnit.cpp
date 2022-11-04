@@ -1244,9 +1244,9 @@ DIE &DwarfCompileUnit::constructCallSiteEntryDIE(DIE &ScopeDIE,
 
 void DwarfCompileUnit::constructCallSiteParmEntryDIEs(
     DIE &CallSiteDIE, SmallVector<DbgCallSiteParam, 4> &Params) {
+  unsigned nargs = 0;
   for (const auto &Param : Params) {
     // Akul
-	auto MSI = TM.getMCSubtargetInfo();
     DEBUG_WITH_TYPE("binbench",
                     dbgs() << " - Function Callsite Param Info, Register: "
                            << Param.getRegister() << " Value: "

@@ -651,9 +651,12 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   } else {
     DF = getOrCreateDataFragment(&STI);
   }
-
-  std::string ID = Assembler.getContext().getSubtargetInfo()->getParentID();
+  // FUNC_ARGS_TODO : propogate func arg changes
+  auto MSI = Assembler.getContext().getSubtargetInfo();
+  std::string ID = MSI->getParentID();
+  unsigned nargs = MSI->getNArgs();
   DEBUG_WITH_TYPE("binbench", dbgs() << "Parent ID in ELFStreamer " << ID << "\n");
+  DEBUG_WITH_TYPE("binbench", dbgs() << "NArgs ELFStreamer " << nargs << "\n");
   // Add the fixups and data.
   for (auto &Fixup : Fixups) {
     Fixup.setOffset(Fixup.getOffset() + DF->getContents().size());
@@ -718,14 +721,16 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   if (ID.length() == 0)
     ID = MAI->latestParentID;
   DF->setLastParentTag(ID);
+  DF->setNArgs(nargs);
   DF->addMachineBasicBlockTag(ID);
   MAI->updateByteCounter(ID, EmittedBytes, numFixups, /*isAlign=*/ false, /*isInline=*/ false);
 
-  unsigned size, offset, fixups, alignments, type;
+  unsigned size, offset, fixups, alignments, type, Nargs;
   std::string sectionName;
-  std::tie(size, offset, fixups, alignments, type, sectionName) = MAI->MachineBasicBlocks[ID];
+  std::tie(size, offset, fixups, alignments, type, Nargs, sectionName) = MAI->MachineBasicBlocks[ID];
 
   MAI->latestParentID = ID;
+  MAI->nargs = nargs;
 
   if (Assembler.isBundlingEnabled() && Assembler.getRelaxAll()) {
     if (!isBundleLocked()) {

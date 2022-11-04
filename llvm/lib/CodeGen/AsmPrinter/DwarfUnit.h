@@ -23,11 +23,14 @@
 
 namespace llvm {
 
+class MCSubTargetInfo;
+class MCFragment;
 class ConstantFP;
 class ConstantInt;
 class DwarfCompileUnit;
 class MCDwarfDwoLineTable;
 class MCSymbol;
+class TargetMachine;
 
 //===----------------------------------------------------------------------===//
 /// This dwarf writer support class manages information associated with a
@@ -36,6 +39,7 @@ class DwarfUnit : public DIEUnit {
 protected:
   /// MDNode for the compile unit.
   const DICompileUnit *CUNode;
+  TargetMachine &TM;
 
   // All DIEValues are allocated through this allocator.
   BumpPtrAllocator DIEValueAllocator;

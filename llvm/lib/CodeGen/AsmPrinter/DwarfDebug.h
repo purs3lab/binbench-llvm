@@ -34,6 +34,7 @@
 #include "llvm/IR/DebugLoc.h"
 #include "llvm/IR/Metadata.h"
 #include "llvm/MC/MCDwarf.h"
+#include "llvm/MC/MCSubtargetInfo.h"
 #include "llvm/Support/Allocator.h"
 #include "llvm/Target/TargetOptions.h"
 #include <cassert>
@@ -46,6 +47,7 @@
 namespace llvm {
 
 class AsmPrinter;
+class MCSubtargetInfo;
 class ByteStreamer;
 class DIE;
 class DwarfCompileUnit;

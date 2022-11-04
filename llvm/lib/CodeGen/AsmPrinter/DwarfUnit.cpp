@@ -30,6 +30,7 @@
 #include "llvm/MC/MCStreamer.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Target/TargetLoweringObjectFile.h"
+#include "llvm/Target/TargetMachine.h"
 #include <cassert>
 #include <cstdint>
 #include <string>
@@ -83,7 +84,7 @@ bool DIEDwarfExpression::isFrameRegister(const TargetRegisterInfo &TRI,
 
 DwarfUnit::DwarfUnit(dwarf::Tag UnitTag, const DICompileUnit *Node,
                      AsmPrinter *A, DwarfDebug *DW, DwarfFile *DWU)
-    : DIEUnit(UnitTag), CUNode(Node), Asm(A), DD(DW), DU(DWU) {}
+    : DIEUnit(UnitTag), CUNode(Node), Asm(A), DD(DW), DU(DWU), TM(Asm->TM) {}
 
 DwarfTypeUnit::DwarfTypeUnit(DwarfCompileUnit &CU, AsmPrinter *A,
                              DwarfDebug *DW, DwarfFile *DWU,
@@ -1281,6 +1282,10 @@ void DwarfUnit::applySubprogramAttributes(const DISubprogram *SP, DIE &SPDie,
 
   // Add a return type. If this is a type like a C/C++ void type we don't add a
   // return type.
+  // TODO: add instrumention here instead
+  auto MSI = TM.getMCSubtargetInfo();
+  unsigned nargs = Args.size();
+  MSI->setNArgs(nargs);
   if (Args.size())
     if (auto Ty = Args[0])
       addType(SPDie, Ty);

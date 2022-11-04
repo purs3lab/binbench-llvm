@@ -102,7 +102,6 @@ public:
     MBBIDs.push_back(T);
   }
 
-
   /// Destroys the current fragment.
   ///
   /// This must be used instead of delete as MCFragment is non-virtual.
@@ -260,6 +259,7 @@ public:
 class MCDataFragment : public MCEncodedFragmentWithFixups<32, 4> {
 protected:
   std::string ParentID;
+  unsigned nArgs;
 
 public:
   MCDataFragment(MCSection *Sec = nullptr)
@@ -269,6 +269,9 @@ public:
   // Koo: Check out the last parentID in MCAssembler
   void setLastParentTag(std::string P) { ParentID = P; }
   const std::string getLastParentTag() const { return ParentID; }
+
+  void setNArgs(unsigned nargs) { nArgs = nargs; }
+  unsigned getNArgs(unsigned nargs) { return nArgs; }
 
   static bool classof(const MCFragment *F) {
     return F->getKind() == MCFragment::FT_Data;

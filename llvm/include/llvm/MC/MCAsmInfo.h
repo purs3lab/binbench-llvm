@@ -565,7 +565,7 @@ public:
   //    * MFID_MBBID: <size, offset, # of fixups within MBB, alignments, type, sectionName>
   //    - The type field represents when the block is the end of MF or Object where MBB = 0, MF = 1, and Obj = 2
   //    - The sectionOrdinal field is for C++ only; it tells current BBL belongs to which section!
-  mutable std::map<std::string, std::tuple<unsigned, unsigned, unsigned, unsigned, unsigned, std::string>> MachineBasicBlocks;
+  mutable std::map<std::string, std::tuple<unsigned, unsigned, unsigned, unsigned, unsigned, unsigned, std::string>> MachineBasicBlocks;
   //    * MFID: fallThrough-ability
   mutable std::map<std::string, bool> canMBBFallThrough;
   //    * MachineFunctionID: size
@@ -582,6 +582,7 @@ public:
   //    - FixupsEhframe, FixupsExceptTable; (Not needed any more as a randomizer directly handles them later on)
   //    - Keep track of the latest ID when parent ID is unavailable
   mutable std::string latestParentID;
+  mutable unsigned nargs;
 
   // (c) Others
   //     The following method helps full-assembly file (*.s) identify functions and basic blocks
@@ -599,11 +600,12 @@ public:
     // std::string id = std::to_string(fnid) + "_" + std::to_string(bbid);
     // Create the tuple for the MBB
     if (MachineBasicBlocks.count(id) == 0) {
-      MachineBasicBlocks[id] = std::make_tuple(0, 0, 0, 0, 0, "");
+      MachineBasicBlocks[id] = std::make_tuple(0, 0, 0, 0, 0, 0, "");
     }
 
     // Otherwise update MBB tuples
     std::get<0>(MachineBasicBlocks[id]) += emittedBytes; // Acutal size in MBB
+    std::get<5>(MachineBasicBlocks[id]) = nargs; // Acutal size in MBB
     std::get<2>(MachineBasicBlocks[id]) += numFixups;    // Number of Fixups in MBB
     if (isAlign)
       std::get<3>(MachineBasicBlocks[id]) += emittedBytes;  // Count NOPs in MBB

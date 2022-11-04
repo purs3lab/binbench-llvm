@@ -890,7 +890,7 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
       unsigned totalOffset = 0, totalFixups = 0, totalAlignSize = 0;
       int MFID, MBBID, prevMFID = -1;
       std::string prevID, canFallThrough;
-      unsigned MBBSize, MBBOffset, numFixups, alignSize, MBBType;
+      unsigned MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs;
       std::set<std::string> countedMBBs;
 
       // Per each fragment in a .text section
@@ -915,7 +915,7 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
             if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
               bool isStartMF = false; // check if the new MF begins
               std::tie(MFID, MBBID) = separateID(ID);
-              std::tie(MBBSize, MBBOffset, numFixups, alignSize, MBBType, tmpSN) = MAI->MachineBasicBlocks[ID];
+              std::tie(MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs, tmpSN) = MAI->MachineBasicBlocks[ID];
 
               if (tmpSN.length() > 0) continue;
               MAI->MBBLayoutOrder.push_back(ID);
@@ -934,7 +934,7 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
               totalAlignSize += alignSize;
               countedMBBs.insert(ID);
               MAI->MachineFunctionSizes[MFID] += MBBSize;
-              std::get<5>(MAI->MachineBasicBlocks[ID]) = sectionName;
+              std::get<6>(MAI->MachineBasicBlocks[ID]) = sectionName;
               canFallThrough = MAI->canMBBFallThrough[ID] ? "*":"";
 
               if (MFID > prevMFID) {
@@ -969,7 +969,7 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
           if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
             bool isStartMF = false;
             std::tie(MFID, MBBID) = separateID(ID);
-            std::tie(MBBSize, MBBOffset, numFixups, alignSize, MBBType, tmpSN) = MAI->MachineBasicBlocks[ID];
+            std::tie(MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs, tmpSN) = MAI->MachineBasicBlocks[ID];
 
             if (tmpSN.length() > 0) continue;
             MAI->MBBLayoutOrder.push_back(ID);
@@ -981,7 +981,7 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
             totalAlignSize += alignSize;
             countedMBBs.insert(ID);
             MAI->MachineFunctionSizes[MFID] += MBBSize;
-            std::get<5>(MAI->MachineBasicBlocks[ID]) = sectionName;
+            std::get<6>(MAI->MachineBasicBlocks[ID]) = sectionName;
             canFallThrough = MAI->canMBBFallThrough[ID] ? "*":"";
 
             if (MFID > prevMFID) {
@@ -1122,7 +1122,7 @@ void serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmLayout &Layou
 
   // Set the layout of both Machine Functions and Machine Basic Blocks with protobuf definition
   std::string sectionName;
-  unsigned MBBSize, MBBoffset, numFixups, alignSize, MBBtype;
+  unsigned MBBSize, MBBoffset, numFixups, alignSize, MBBtype, nargs;
   unsigned objSz = 0, numFuncs = 0, numBBs = 0;
   int MFID, MBBID, prevMFID = 0;
 
@@ -1130,7 +1130,7 @@ void serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmLayout &Layou
     ShuffleInfo::ReorderInfo_LayoutInfo* layoutInfo = ri->add_layout();
     std::string ID = *MBBI;
     std::tie(MFID, MBBID) = separateID(ID);
-    std::tie(MBBSize, MBBoffset, numFixups, alignSize, MBBtype, sectionName) = MAI->MachineBasicBlocks[ID];
+    std::tie(MBBSize, MBBoffset, numFixups, alignSize, MBBtype, nargs, sectionName) = MAI->MachineBasicBlocks[ID];
     bool MBBFallThrough = MAI->canMBBFallThrough[ID];
 
     layoutInfo->set_bb_size(MBBSize);
@@ -1139,6 +1139,7 @@ void serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmLayout &Layou
     layoutInfo->set_bb_fallthrough(MBBFallThrough);
     layoutInfo->set_section_name(sectionName);
     layoutInfo->set_offset(MBBoffset);
+    layoutInfo->set_nargs(nargs);
     layoutInfo->set_padding_size(alignSize);
 
     if (MFID > prevMFID) {

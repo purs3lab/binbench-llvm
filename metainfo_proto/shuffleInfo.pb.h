@@ -408,6 +408,7 @@ class ReorderInfo_LayoutInfo PROTOBUF_FINAL :
     kOffsetFieldNumber = 6,
     kPaddingSizeFieldNumber = 7,
     kAssembleTypeFieldNumber = 8,
+    kNargsFieldNumber = 10,
   };
   // optional string section_name = 5;
   bool has_section_name() const;
@@ -520,6 +521,19 @@ class ReorderInfo_LayoutInfo PROTOBUF_FINAL :
   void _internal_set_assemble_type(::PROTOBUF_NAMESPACE_ID::uint32 value);
   public:
 
+  // optional uint32 nargs = 10;
+  bool has_nargs() const;
+  private:
+  bool _internal_has_nargs() const;
+  public:
+  void clear_nargs();
+  ::PROTOBUF_NAMESPACE_ID::uint32 nargs() const;
+  void set_nargs(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_nargs() const;
+  void _internal_set_nargs(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
   // @@protoc_insertion_point(class_scope:ShuffleInfo.ReorderInfo.LayoutInfo)
  private:
   class _Internal;
@@ -537,6 +551,7 @@ class ReorderInfo_LayoutInfo PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::uint32 offset_;
   ::PROTOBUF_NAMESPACE_ID::uint32 padding_size_;
   ::PROTOBUF_NAMESPACE_ID::uint32 assemble_type_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 nargs_;
   friend struct ::TableStruct_shuffleInfo_2eproto;
 };
 // -------------------------------------------------------------------
@@ -1608,6 +1623,34 @@ inline void ReorderInfo_LayoutInfo::_internal_set_offset(::PROTOBUF_NAMESPACE_ID
 inline void ReorderInfo_LayoutInfo::set_offset(::PROTOBUF_NAMESPACE_ID::uint32 value) {
   _internal_set_offset(value);
   // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.LayoutInfo.offset)
+}
+
+// optional uint32 nargs = 10;
+inline bool ReorderInfo_LayoutInfo::_internal_has_nargs() const {
+  bool value = (_has_bits_[0] & 0x00000100u) != 0;
+  return value;
+}
+inline bool ReorderInfo_LayoutInfo::has_nargs() const {
+  return _internal_has_nargs();
+}
+inline void ReorderInfo_LayoutInfo::clear_nargs() {
+  nargs_ = 0u;
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ReorderInfo_LayoutInfo::_internal_nargs() const {
+  return nargs_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ReorderInfo_LayoutInfo::nargs() const {
+  // @@protoc_insertion_point(field_get:ShuffleInfo.ReorderInfo.LayoutInfo.nargs)
+  return _internal_nargs();
+}
+inline void ReorderInfo_LayoutInfo::_internal_set_nargs(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _has_bits_[0] |= 0x00000100u;
+  nargs_ = value;
+}
+inline void ReorderInfo_LayoutInfo::set_nargs(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_nargs(value);
+  // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.LayoutInfo.nargs)
 }
 
 // optional uint32 num_fixups = 3;
