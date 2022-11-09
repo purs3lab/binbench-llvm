@@ -845,7 +845,7 @@ void ELFWriter::writeSectionData(const MCAssembler &Asm, MCSection &Sec,
   MCSectionELF &Section = static_cast<MCSectionELF &>(Sec);
   StringRef SectionName = Section.getName();
 
-  if (SectionName.startswith(".rand")) {
+  if (SectionName.startswith(".gt")) {
        std::string randContents = Asm.WriteRandInfo(Layout);
        W.OS << randContents;
     return;

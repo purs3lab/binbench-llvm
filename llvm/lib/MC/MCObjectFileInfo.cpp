@@ -401,7 +401,7 @@ void MCObjectFileInfo::initELFMCObjectFileInfo(const Triple &T, bool Large) {
 
 
   // Koo
-  RandSection = Ctx->getELFSection(".rand", ELF::SHT_PROGBITS, 0);
+  RandSection = Ctx->getELFSection(".gt", ELF::SHT_PROGBITS, 0);
 
                     
 

@@ -69,7 +69,7 @@ bool MCELFStreamer::isBundleLocked() const {
 // Akul 
 void MCELFStreamer::EmitRand() {
   MCSection *Rand = getAssembler().getContext().getELFSection(
-      ".rand", ELF::SHT_PROGBITS, ELF::SHF_STRINGS, 1);
+      ".gt", ELF::SHT_PROGBITS, ELF::SHF_STRINGS, 1);
   pushSection();
   switchSection(Rand);
   popSection();

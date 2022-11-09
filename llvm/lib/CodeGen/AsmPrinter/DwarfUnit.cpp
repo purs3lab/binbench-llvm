@@ -84,7 +84,7 @@ bool DIEDwarfExpression::isFrameRegister(const TargetRegisterInfo &TRI,
 
 DwarfUnit::DwarfUnit(dwarf::Tag UnitTag, const DICompileUnit *Node,
                      AsmPrinter *A, DwarfDebug *DW, DwarfFile *DWU)
-    : DIEUnit(UnitTag), CUNode(Node), Asm(A), DD(DW), DU(DWU), TM(Asm->TM) {}
+    : DIEUnit(UnitTag), CUNode(Node), Asm(A), DD(DW), DU(DWU), TM(A->TM) {}
 
 DwarfTypeUnit::DwarfTypeUnit(DwarfCompileUnit &CU, AsmPrinter *A,
                              DwarfDebug *DW, DwarfFile *DWU,
