@@ -1119,7 +1119,6 @@ void serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmLayout &Layou
     binaryInfo->set_src_type(0);
 
   updateReorderInfoValues(Layout);
-
   // Set the layout of both Machine Functions and Machine Basic Blocks with protobuf definition
   std::string sectionName;
   unsigned MBBSize, MBBoffset, numFixups, alignSize, MBBtype, nargs;
@@ -1133,6 +1132,7 @@ void serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmLayout &Layou
     std::tie(MBBSize, MBBoffset, numFixups, alignSize, MBBtype, nargs, sectionName) = MAI->MachineBasicBlocks[ID];
     bool MBBFallThrough = MAI->canMBBFallThrough[ID];
 
+  // Akul XXX: Add MBB succs, preds, and function calling convention stuff here
     layoutInfo->set_bb_size(MBBSize);
     layoutInfo->set_type(MBBtype);
     layoutInfo->set_num_fixups(numFixups);
@@ -1466,8 +1466,6 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
       }
     }
   }
-}
-
 // Koo: Serialize reorder_info data with Google's protocol buffer format,
 // calling by
 //      ELFObjectWriter::writeSectionData() from

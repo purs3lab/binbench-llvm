@@ -1550,6 +1550,19 @@ void AsmPrinter::emitFunctionBody() {
                           << " MI:" << TM.getMCInstrInfo()->getName(op)
                           << " MBB:" << MI.getParent()->getNumber()
                           << " MF:" << MI.getMF()->getName() << "\n");
+        LLVM_DEBUG(dbgs() << "Successors: ");
+        auto succs = MI.getParent()->successors();
+        for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+          LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
+        }
+        LLVM_DEBUG(dbgs() << "\n");
+        LLVM_DEBUG(dbgs() << "Predecessors: ");
+        auto preds = MI.getParent()->predecessors();
+        for (auto pred = preds.begin(); pred != preds.end(); pred++) {
+          LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
+        }
+        LLVM_DEBUG(dbgs() << "\n");
+        //auto preds = MI.getParent()->predessors
         const MachineBasicBlock *MBB = MI.getParent();
         unsigned MBBID = MBB->getNumber();
         unsigned MFID = MBB->getParent()->getFunctionNumber();
