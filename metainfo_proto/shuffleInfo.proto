@@ -26,10 +26,10 @@ message ReorderInfo {
                                           // All alignments between fn/bbl are included here
     optional uint32 type = 2;             // Represents the end of [OBJ|FUN|BBL]
     optional uint32 offset = 6;
-    optional uint32 nargs = 10;
-    optional string bb_id = 11;
-    optional repeated string succs = 12;
-    optional repeated string preds = 13;
+    optional uint32 nargs = 9;
+    optional string bb_id = 10;
+    repeated string succs = 11;
+    repeated string preds = 12;
     optional uint32 num_fixups = 3;
     optional bool bb_fallthrough = 4;
     optional string section_name = 5;     // section identifier for c++ mutiple sections

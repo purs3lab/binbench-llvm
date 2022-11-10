@@ -1466,6 +1466,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
       }
     }
   }
+}
 // Koo: Serialize reorder_info data with Google's protocol buffer format,
 // calling by
 //      ELFObjectWriter::writeSectionData() from
