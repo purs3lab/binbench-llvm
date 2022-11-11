@@ -131,6 +131,8 @@ protected:
   mutable unsigned fixupCtr = 0;
   mutable unsigned nArgs = 0;
   mutable std::string parentID;
+  mutable std::vector<std::string> succs;
+  mutable std::vector<std::string> preds;
 
 
 public:
@@ -222,6 +224,15 @@ public:
   void setFixupCounter(unsigned numFixups) const { fixupCtr = numFixups; }
   unsigned getFixupCtr() const { return fixupCtr; }
   void setParentID(std::string parent) const { parentID = parent; }
+
+  void setSuccs(std::string id, std::vector<std::string> Succs) const {
+    succs = Succs; 
+  }
+  void setPreds(std::string id, std::vector<std::string> Preds) const {
+    preds = Preds; 
+  }
+  std::vector<std::string> getSuccs() const {return succs;}
+  std::vector<std::string> getPreds() const {return preds;}
   void setNArgs(unsigned nargs) const { nArgs = nargs; }
   std::string getParentID() const { return parentID; }
   unsigned getNArgs() const { return nArgs; }

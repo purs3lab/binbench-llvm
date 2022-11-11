@@ -655,6 +655,8 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   auto MSI = Assembler.getContext().getSubtargetInfo();
   std::string ID = MSI->getParentID();
   unsigned nargs = MSI->getNArgs();
+  std::vector<std::string> succs = MSI->getSuccs();
+  std::vector<std::string> preds = MSI->getPreds();
   DEBUG_WITH_TYPE("binbench", dbgs() << "Parent ID in ELFStreamer " << ID << "\n");
   DEBUG_WITH_TYPE("binbench", dbgs() << "NArgs ELFStreamer " << nargs << "\n");
   // Add the fixups and data.
@@ -725,9 +727,11 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   DF->addMachineBasicBlockTag(ID);
   MAI->updateByteCounter(ID, EmittedBytes, numFixups, /*isAlign=*/ false, /*isInline=*/ false);
 
+  MAI->setSuccs(ID, succs);
+  MAI->setPreds(ID, preds);
   unsigned size, offset, fixups, alignments, type, Nargs;
   std::string sectionName;
-  std::tie(size, offset, fixups, alignments, type, Nargs, sectionName) = MAI->MachineBasicBlocks[ID];
+  std::tie(size, offset, fixups, alignments, type, Nargs, sectionName, preds, succs) = MAI->MachineBasicBlocks[ID];
 
   MAI->latestParentID = ID;
   MAI->nargs = nargs;

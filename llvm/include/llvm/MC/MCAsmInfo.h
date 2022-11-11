@@ -565,7 +565,12 @@ public:
   //    * MFID_MBBID: <size, offset, # of fixups within MBB, alignments, type, sectionName>
   //    - The type field represents when the block is the end of MF or Object where MBB = 0, MF = 1, and Obj = 2
   //    - The sectionOrdinal field is for C++ only; it tells current BBL belongs to which section!
-  mutable std::map<std::string, std::tuple<unsigned, unsigned, unsigned, unsigned, unsigned, unsigned, std::string>> MachineBasicBlocks;
+  mutable std::map<
+      std::string,
+      std::tuple<unsigned, unsigned, unsigned, unsigned, unsigned, unsigned,
+                 std::string, std::vector<std::string>,
+                 std::vector<std::string>>>
+      MachineBasicBlocks;
   //    * MFID: fallThrough-ability
   mutable std::map<std::string, bool> canMBBFallThrough;
   //    * MachineFunctionID: size
@@ -600,7 +605,9 @@ public:
     // std::string id = std::to_string(fnid) + "_" + std::to_string(bbid);
     // Create the tuple for the MBB
     if (MachineBasicBlocks.count(id) == 0) {
-      MachineBasicBlocks[id] = std::make_tuple(0, 0, 0, 0, 0, 0, "");
+      std::vector<std::string> succs;
+      std::vector<std::string> preds;
+      MachineBasicBlocks[id] = std::make_tuple(0, 0, 0, 0, 0, 0, "", preds, succs);
     }
 
     // Otherwise update MBB tuples
@@ -615,6 +622,13 @@ public:
       std::get<0>(MachineBasicBlocks[latestParentID]) -= emittedBytes;
   }
 
+  void setSuccs(std::string id, std::vector<std::string> succs) const {
+    std::get<8>(MachineBasicBlocks[id]) = succs; 
+  }
+
+  void setPreds(std::string id, std::vector<std::string> preds) const {
+    std::get<7>(MachineBasicBlocks[id]) = preds; 
+  }
 
   /// Get the callee-saved register stack slot
   /// size in bytes.

@@ -892,6 +892,8 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
       std::string prevID, canFallThrough;
       unsigned MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs;
       std::set<std::string> countedMBBs;
+      std::vector<std::string> preds;
+      std::vector<std::string> succs;
 
       // Per each fragment in a .text section
       for (MCFragment &MCF : Sec) {
@@ -915,7 +917,7 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
             if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
               bool isStartMF = false; // check if the new MF begins
               std::tie(MFID, MBBID) = separateID(ID);
-              std::tie(MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs, tmpSN) = MAI->MachineBasicBlocks[ID];
+              std::tie(MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs, tmpSN, preds, succs) = MAI->MachineBasicBlocks[ID];
 
               if (tmpSN.length() > 0) continue;
               MAI->MBBLayoutOrder.push_back(ID);
@@ -969,7 +971,7 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
           if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
             bool isStartMF = false;
             std::tie(MFID, MBBID) = separateID(ID);
-            std::tie(MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs, tmpSN) = MAI->MachineBasicBlocks[ID];
+            std::tie(MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs, tmpSN, preds, succs) = MAI->MachineBasicBlocks[ID];
 
             if (tmpSN.length() > 0) continue;
             MAI->MBBLayoutOrder.push_back(ID);
@@ -1124,12 +1126,14 @@ void serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmLayout &Layou
   unsigned MBBSize, MBBoffset, numFixups, alignSize, MBBtype, nargs;
   unsigned objSz = 0, numFuncs = 0, numBBs = 0;
   int MFID, MBBID, prevMFID = 0;
+  std::vector<std::string> preds;
+  std::vector<std::string> succs;
 
   for (auto MBBI = MAI->MBBLayoutOrder.begin(); MBBI != MAI->MBBLayoutOrder.end(); ++MBBI) {
     ShuffleInfo::ReorderInfo_LayoutInfo* layoutInfo = ri->add_layout();
     std::string ID = *MBBI;
     std::tie(MFID, MBBID) = separateID(ID);
-    std::tie(MBBSize, MBBoffset, numFixups, alignSize, MBBtype, nargs, sectionName) = MAI->MachineBasicBlocks[ID];
+    std::tie(MBBSize, MBBoffset, numFixups, alignSize, MBBtype, nargs, sectionName, preds, succs) = MAI->MachineBasicBlocks[ID];
     bool MBBFallThrough = MAI->canMBBFallThrough[ID];
 
   // Akul XXX: Add MBB succs, preds, and function calling convention stuff here
@@ -1140,6 +1144,13 @@ void serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmLayout &Layou
     layoutInfo->set_section_name(sectionName);
     layoutInfo->set_offset(MBBoffset);
     layoutInfo->set_nargs(nargs);
+    layoutInfo->set_bb_id(ID);
+    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
+      layoutInfo->add_preds((*pred));
+    }
+    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+      layoutInfo->add_succs((*succ));
+    }
     layoutInfo->set_padding_size(alignSize);
 
     if (MFID > prevMFID) {

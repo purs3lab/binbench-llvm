@@ -1545,6 +1545,8 @@ void AsmPrinter::emitFunctionBody() {
       default:
         emitInstruction(&MI);
         // Akul 
+        std::vector<std::string> Preds;
+        std::vector<std::string> Succs;
         unsigned op = MI.getOpcode();
         LLVM_DEBUG(dbgs() << "MIOp:" << op
                           << " MI:" << TM.getMCInstrInfo()->getName(op)
@@ -1554,12 +1556,20 @@ void AsmPrinter::emitFunctionBody() {
         auto succs = MI.getParent()->successors();
         for (auto succ = succs.begin(); succ != succs.end(); succ++) {
           LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
+          unsigned SMBBID = (*succ)->getNumber();
+          unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
+          std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+          Succs.push_back(SID);
         }
         LLVM_DEBUG(dbgs() << "\n");
         LLVM_DEBUG(dbgs() << "Predecessors: ");
         auto preds = MI.getParent()->predecessors();
         for (auto pred = preds.begin(); pred != preds.end(); pred++) {
           LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
+          unsigned PMBBID = (*pred)->getNumber();
+          unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
+          std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+          Preds.push_back(PID);
         }
         LLVM_DEBUG(dbgs() << "\n");
         //auto preds = MI.getParent()->predessors
@@ -1568,6 +1578,8 @@ void AsmPrinter::emitFunctionBody() {
         unsigned MFID = MBB->getParent()->getFunctionNumber();
         std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
         TM.getMCSubtargetInfo()->setParentID(ID);
+        TM.getMCSubtargetInfo()->setSuccs(ID, Succs);
+        TM.getMCSubtargetInfo()->setPreds(ID, Preds);
         if (CanDoExtraAnalysis) {
           MCInst MCI;
           MCI.setOpcode(MI.getOpcode());
