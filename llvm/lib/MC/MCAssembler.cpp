@@ -1102,6 +1102,7 @@ void setFixups(std::list<std::tuple<unsigned, unsigned, bool, std::string, std::
 
 // Koo: Serialize all information for future reordering, which has been stored in MCAsmInfo
 void serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmLayout &Layout) {
+  // TODO Akul: We can add new info here for the functions
   // Set the binary information for reordering
   ShuffleInfo::ReorderInfo_BinaryInfo* binaryInfo = ri->mutable_bin();
   binaryInfo->set_rand_obj_offset(0x0);     // Should be updated at linking time
@@ -1136,7 +1137,8 @@ void serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmLayout &Layou
     std::tie(MBBSize, MBBoffset, numFixups, alignSize, MBBtype, nargs, sectionName, preds, succs) = MAI->MachineBasicBlocks[ID];
     bool MBBFallThrough = MAI->canMBBFallThrough[ID];
 
-  // Akul XXX: Add MBB succs, preds, and function calling convention stuff here
+    // Akul XXX: Add MBB succs, preds, and function calling convention stuff
+    // here
     layoutInfo->set_bb_size(MBBSize);
     layoutInfo->set_type(MBBtype);
     layoutInfo->set_num_fixups(numFixups);
@@ -1166,6 +1168,16 @@ void serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmLayout &Layou
   binaryInfo->set_obj_sz(objSz);
 
   // Set the fixup information (.text, .rodata, .data, .data.rel.ro and .init_array)
+  std::map<std::string, std::tuple<unsigned, std::string>> MFs = MAI->getMFs();
+  for (auto const& x : MFs) {
+    ShuffleInfo::ReorderInfo_FunctionInfo* FunctionInfo = ri->add_func();
+    // TODO: Add check for empty ID
+    FunctionInfo->set_f_id(x.first);
+    FunctionInfo->set_bb_num(get<0>(x.second));
+    FunctionInfo->set_f_name(get<1>(x.second));
+    DEBUG_WITH_TYPE("binbench", dbgs() << "FID: " << x.first << " " << get<1>(x.second) << " " << get<0>(x.second) << "\n");
+  }
+
   ShuffleInfo::ReorderInfo_FixupInfo* fixupInfo = ri->add_fixup();
   setFixups(MAI->FixupsText, fixupInfo, ".text");
   setFixups(MAI->FixupsRodata, fixupInfo, ".rodata");

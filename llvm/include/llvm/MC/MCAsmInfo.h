@@ -571,6 +571,8 @@ public:
                  std::string, std::vector<std::string>,
                  std::vector<std::string>>>
       MachineBasicBlocks;
+  // TODO: Define MachineFunctions
+  mutable std::map<std::string, std::tuple<unsigned, std::string>> MachineFunctions;
   //    * MFID: fallThrough-ability
   mutable std::map<std::string, bool> canMBBFallThrough;
   //    * MachineFunctionID: size
@@ -587,6 +589,7 @@ public:
   //    - FixupsEhframe, FixupsExceptTable; (Not needed any more as a randomizer directly handles them later on)
   //    - Keep track of the latest ID when parent ID is unavailable
   mutable std::string latestParentID;
+  mutable std::string latestFunctionID;
   mutable unsigned nargs;
 
   // (c) Others
@@ -622,12 +625,29 @@ public:
       std::get<0>(MachineBasicBlocks[latestParentID]) -= emittedBytes;
   }
 
+  void updateFuncDetails(std::string id, std::string funcname, unsigned size) const {
+    if (MachineFunctions.count(id) == 0) {
+      MachineFunctions[id] = std::make_tuple(size, funcname); 
+    }
+    std::get<0>(MachineFunctions[id]) = size;
+    std::get<1>(MachineFunctions[id]) = funcname;
+  }
+
+  std::map<std::string, std::tuple<unsigned, std::string>> getMFs() const {return MachineFunctions;}
+
   void setSuccs(std::string id, std::vector<std::string> succs) const {
     std::get<8>(MachineBasicBlocks[id]) = succs; 
   }
 
   void setPreds(std::string id, std::vector<std::string> preds) const {
     std::get<7>(MachineBasicBlocks[id]) = preds; 
+  }
+
+  // void setFunctionName(std::string id, std::string name) {
+  // }
+
+  void setFunctionid(std::string id) {
+    latestFunctionID = id;
   }
 
   /// Get the callee-saved register stack slot

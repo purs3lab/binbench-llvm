@@ -1576,8 +1576,13 @@ void AsmPrinter::emitFunctionBody() {
         const MachineBasicBlock *MBB = MI.getParent();
         unsigned MBBID = MBB->getNumber();
         unsigned MFID = MBB->getParent()->getFunctionNumber();
+        unsigned funcsize = MBB->getParent()->size();
+        std::string FunctionName = MBB->getParent()->getName().str();
         std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
         TM.getMCSubtargetInfo()->setParentID(ID);
+        TM.getMCSubtargetInfo()->setFunctionID(std::to_string(MFID));
+        TM.getMCSubtargetInfo()->setFunctionName(FunctionName);
+        TM.getMCSubtargetInfo()->setFunctionSize(funcsize);
         TM.getMCSubtargetInfo()->setSuccs(ID, Succs);
         TM.getMCSubtargetInfo()->setPreds(ID, Preds);
         if (CanDoExtraAnalysis) {

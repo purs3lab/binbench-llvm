@@ -130,7 +130,10 @@ protected:
   mutable unsigned byteCtr = 0;
   mutable unsigned fixupCtr = 0;
   mutable unsigned nArgs = 0;
+  mutable unsigned FunctionSize = 0;
   mutable std::string parentID;
+  mutable std::string FunctionID;
+  mutable std::string FunctionName;
   mutable std::vector<std::string> succs;
   mutable std::vector<std::string> preds;
 
@@ -234,7 +237,13 @@ public:
   std::vector<std::string> getSuccs() const {return succs;}
   std::vector<std::string> getPreds() const {return preds;}
   void setNArgs(unsigned nargs) const { nArgs = nargs; }
+  void setFunctionName(std::string funcname) const { FunctionName = funcname; }
+  std::string getFunctionName() const {return FunctionName; }
   std::string getParentID() const { return parentID; }
+  void setFunctionID(std::string funcid) const {FunctionID = funcid; }
+  std::string getFunctionID() const {return FunctionID; }
+  void setFunctionSize(unsigned funcsize) const {FunctionSize = funcsize; }
+  unsigned getFunctionSize() const {return FunctionSize;}
   unsigned getNArgs() const { return nArgs; }
   /// Get scheduling itinerary of a CPU.
   InstrItineraryData getInstrItineraryForCPU(StringRef CPU) const;

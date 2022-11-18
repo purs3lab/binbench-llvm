@@ -46,7 +46,7 @@ struct TableStruct_shuffleInfo_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[6]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[7]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -67,6 +67,9 @@ extern ReorderInfo_FixupInfoDefaultTypeInternal _ReorderInfo_FixupInfo_default_i
 class ReorderInfo_FixupInfo_FixupTuple;
 struct ReorderInfo_FixupInfo_FixupTupleDefaultTypeInternal;
 extern ReorderInfo_FixupInfo_FixupTupleDefaultTypeInternal _ReorderInfo_FixupInfo_FixupTuple_default_instance_;
+class ReorderInfo_FunctionInfo;
+struct ReorderInfo_FunctionInfoDefaultTypeInternal;
+extern ReorderInfo_FunctionInfoDefaultTypeInternal _ReorderInfo_FunctionInfo_default_instance_;
 class ReorderInfo_LayoutInfo;
 struct ReorderInfo_LayoutInfoDefaultTypeInternal;
 extern ReorderInfo_LayoutInfoDefaultTypeInternal _ReorderInfo_LayoutInfo_default_instance_;
@@ -79,6 +82,7 @@ template<> ::ShuffleInfo::ReorderInfo* Arena::CreateMaybeMessage<::ShuffleInfo::
 template<> ::ShuffleInfo::ReorderInfo_BinaryInfo* Arena::CreateMaybeMessage<::ShuffleInfo::ReorderInfo_BinaryInfo>(Arena*);
 template<> ::ShuffleInfo::ReorderInfo_FixupInfo* Arena::CreateMaybeMessage<::ShuffleInfo::ReorderInfo_FixupInfo>(Arena*);
 template<> ::ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple* Arena::CreateMaybeMessage<::ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple>(Arena*);
+template<> ::ShuffleInfo::ReorderInfo_FunctionInfo* Arena::CreateMaybeMessage<::ShuffleInfo::ReorderInfo_FunctionInfo>(Arena*);
 template<> ::ShuffleInfo::ReorderInfo_LayoutInfo* Arena::CreateMaybeMessage<::ShuffleInfo::ReorderInfo_LayoutInfo>(Arena*);
 template<> ::ShuffleInfo::ReorderInfo_SourceInfo* Arena::CreateMaybeMessage<::ShuffleInfo::ReorderInfo_SourceInfo>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
@@ -501,30 +505,30 @@ class ReorderInfo_LayoutInfo PROTOBUF_FINAL :
   std::string* _internal_mutable_bb_id();
   public:
 
-  // optional uint32 bb_size = 1;
+  // optional uint64 bb_size = 1;
   bool has_bb_size() const;
   private:
   bool _internal_has_bb_size() const;
   public:
   void clear_bb_size();
-  ::PROTOBUF_NAMESPACE_ID::uint32 bb_size() const;
-  void set_bb_size(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  ::PROTOBUF_NAMESPACE_ID::uint64 bb_size() const;
+  void set_bb_size(::PROTOBUF_NAMESPACE_ID::uint64 value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_bb_size() const;
-  void _internal_set_bb_size(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_bb_size() const;
+  void _internal_set_bb_size(::PROTOBUF_NAMESPACE_ID::uint64 value);
   public:
 
-  // optional uint32 type = 2;
+  // optional uint64 type = 2;
   bool has_type() const;
   private:
   bool _internal_has_type() const;
   public:
   void clear_type();
-  ::PROTOBUF_NAMESPACE_ID::uint32 type() const;
-  void set_type(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  ::PROTOBUF_NAMESPACE_ID::uint64 type() const;
+  void set_type(::PROTOBUF_NAMESPACE_ID::uint64 value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_type() const;
-  void _internal_set_type(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_type() const;
+  void _internal_set_type(::PROTOBUF_NAMESPACE_ID::uint64 value);
   public:
 
   // optional uint32 num_fixups = 3;
@@ -553,17 +557,17 @@ class ReorderInfo_LayoutInfo PROTOBUF_FINAL :
   void _internal_set_bb_fallthrough(bool value);
   public:
 
-  // optional uint32 offset = 6;
+  // optional uint64 offset = 6;
   bool has_offset() const;
   private:
   bool _internal_has_offset() const;
   public:
   void clear_offset();
-  ::PROTOBUF_NAMESPACE_ID::uint32 offset() const;
-  void set_offset(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  ::PROTOBUF_NAMESPACE_ID::uint64 offset() const;
+  void set_offset(::PROTOBUF_NAMESPACE_ID::uint64 value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_offset() const;
-  void _internal_set_offset(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_offset() const;
+  void _internal_set_offset(::PROTOBUF_NAMESPACE_ID::uint64 value);
   public:
 
   // optional uint32 padding_size = 7;
@@ -618,14 +622,207 @@ class ReorderInfo_LayoutInfo PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> preds_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr section_name_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr bb_id_;
-  ::PROTOBUF_NAMESPACE_ID::uint32 bb_size_;
-  ::PROTOBUF_NAMESPACE_ID::uint32 type_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 bb_size_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 type_;
   ::PROTOBUF_NAMESPACE_ID::uint32 num_fixups_;
   bool bb_fallthrough_;
-  ::PROTOBUF_NAMESPACE_ID::uint32 offset_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 offset_;
   ::PROTOBUF_NAMESPACE_ID::uint32 padding_size_;
   ::PROTOBUF_NAMESPACE_ID::uint32 assemble_type_;
   ::PROTOBUF_NAMESPACE_ID::uint32 nargs_;
+  friend struct ::TableStruct_shuffleInfo_2eproto;
+};
+// -------------------------------------------------------------------
+
+class ReorderInfo_FunctionInfo PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:ShuffleInfo.ReorderInfo.FunctionInfo) */ {
+ public:
+  inline ReorderInfo_FunctionInfo() : ReorderInfo_FunctionInfo(nullptr) {}
+  virtual ~ReorderInfo_FunctionInfo();
+  explicit constexpr ReorderInfo_FunctionInfo(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  ReorderInfo_FunctionInfo(const ReorderInfo_FunctionInfo& from);
+  ReorderInfo_FunctionInfo(ReorderInfo_FunctionInfo&& from) noexcept
+    : ReorderInfo_FunctionInfo() {
+    *this = ::std::move(from);
+  }
+
+  inline ReorderInfo_FunctionInfo& operator=(const ReorderInfo_FunctionInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline ReorderInfo_FunctionInfo& operator=(ReorderInfo_FunctionInfo&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const ReorderInfo_FunctionInfo& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const ReorderInfo_FunctionInfo* internal_default_instance() {
+    return reinterpret_cast<const ReorderInfo_FunctionInfo*>(
+               &_ReorderInfo_FunctionInfo_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    2;
+
+  friend void swap(ReorderInfo_FunctionInfo& a, ReorderInfo_FunctionInfo& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(ReorderInfo_FunctionInfo* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(ReorderInfo_FunctionInfo* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ReorderInfo_FunctionInfo* New() const final {
+    return CreateMaybeMessage<ReorderInfo_FunctionInfo>(nullptr);
+  }
+
+  ReorderInfo_FunctionInfo* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<ReorderInfo_FunctionInfo>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ReorderInfo_FunctionInfo& from);
+  void MergeFrom(const ReorderInfo_FunctionInfo& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ReorderInfo_FunctionInfo* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "ShuffleInfo.ReorderInfo.FunctionInfo";
+  }
+  protected:
+  explicit ReorderInfo_FunctionInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    return ::descriptor_table_shuffleInfo_2eproto_metadata_getter(kIndexInFileMessages);
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kFIdFieldNumber = 1,
+    kFNameFieldNumber = 2,
+    kBbNumFieldNumber = 3,
+  };
+  // optional string f_id = 1;
+  bool has_f_id() const;
+  private:
+  bool _internal_has_f_id() const;
+  public:
+  void clear_f_id();
+  const std::string& f_id() const;
+  void set_f_id(const std::string& value);
+  void set_f_id(std::string&& value);
+  void set_f_id(const char* value);
+  void set_f_id(const char* value, size_t size);
+  std::string* mutable_f_id();
+  std::string* release_f_id();
+  void set_allocated_f_id(std::string* f_id);
+  private:
+  const std::string& _internal_f_id() const;
+  void _internal_set_f_id(const std::string& value);
+  std::string* _internal_mutable_f_id();
+  public:
+
+  // optional string f_name = 2;
+  bool has_f_name() const;
+  private:
+  bool _internal_has_f_name() const;
+  public:
+  void clear_f_name();
+  const std::string& f_name() const;
+  void set_f_name(const std::string& value);
+  void set_f_name(std::string&& value);
+  void set_f_name(const char* value);
+  void set_f_name(const char* value, size_t size);
+  std::string* mutable_f_name();
+  std::string* release_f_name();
+  void set_allocated_f_name(std::string* f_name);
+  private:
+  const std::string& _internal_f_name() const;
+  void _internal_set_f_name(const std::string& value);
+  std::string* _internal_mutable_f_name();
+  public:
+
+  // optional uint64 bb_num = 3;
+  bool has_bb_num() const;
+  private:
+  bool _internal_has_bb_num() const;
+  public:
+  void clear_bb_num();
+  ::PROTOBUF_NAMESPACE_ID::uint64 bb_num() const;
+  void set_bb_num(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_bb_num() const;
+  void _internal_set_bb_num(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:ShuffleInfo.ReorderInfo.FunctionInfo)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr f_id_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr f_name_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 bb_num_;
   friend struct ::TableStruct_shuffleInfo_2eproto;
 };
 // -------------------------------------------------------------------
@@ -680,7 +877,7 @@ class ReorderInfo_FixupInfo_FixupTuple PROTOBUF_FINAL :
                &_ReorderInfo_FixupInfo_FixupTuple_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    2;
+    3;
 
   friend void swap(ReorderInfo_FixupInfo_FixupTuple& a, ReorderInfo_FixupInfo_FixupTuple& b) {
     a.Swap(&b);
@@ -929,7 +1126,7 @@ class ReorderInfo_FixupInfo PROTOBUF_FINAL :
                &_ReorderInfo_FixupInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    3;
+    4;
 
   friend void swap(ReorderInfo_FixupInfo& a, ReorderInfo_FixupInfo& b) {
     a.Swap(&b);
@@ -1164,7 +1361,7 @@ class ReorderInfo_SourceInfo PROTOBUF_FINAL :
                &_ReorderInfo_SourceInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    5;
 
   friend void swap(ReorderInfo_SourceInfo& a, ReorderInfo_SourceInfo& b) {
     a.Swap(&b);
@@ -1321,7 +1518,7 @@ class ReorderInfo PROTOBUF_FINAL :
                &_ReorderInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    6;
 
   friend void swap(ReorderInfo& a, ReorderInfo& b) {
     a.Swap(&b);
@@ -1390,6 +1587,7 @@ class ReorderInfo PROTOBUF_FINAL :
 
   typedef ReorderInfo_BinaryInfo BinaryInfo;
   typedef ReorderInfo_LayoutInfo LayoutInfo;
+  typedef ReorderInfo_FunctionInfo FunctionInfo;
   typedef ReorderInfo_FixupInfo FixupInfo;
   typedef ReorderInfo_SourceInfo SourceInfo;
 
@@ -1398,6 +1596,7 @@ class ReorderInfo PROTOBUF_FINAL :
   enum : int {
     kLayoutFieldNumber = 2,
     kFixupFieldNumber = 3,
+    kFuncFieldNumber = 5,
     kBinFieldNumber = 1,
     kSourceFieldNumber = 4,
   };
@@ -1436,6 +1635,24 @@ class ReorderInfo PROTOBUF_FINAL :
   ::ShuffleInfo::ReorderInfo_FixupInfo* add_fixup();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ShuffleInfo::ReorderInfo_FixupInfo >&
       fixup() const;
+
+  // repeated .ShuffleInfo.ReorderInfo.FunctionInfo func = 5;
+  int func_size() const;
+  private:
+  int _internal_func_size() const;
+  public:
+  void clear_func();
+  ::ShuffleInfo::ReorderInfo_FunctionInfo* mutable_func(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ShuffleInfo::ReorderInfo_FunctionInfo >*
+      mutable_func();
+  private:
+  const ::ShuffleInfo::ReorderInfo_FunctionInfo& _internal_func(int index) const;
+  ::ShuffleInfo::ReorderInfo_FunctionInfo* _internal_add_func();
+  public:
+  const ::ShuffleInfo::ReorderInfo_FunctionInfo& func(int index) const;
+  ::ShuffleInfo::ReorderInfo_FunctionInfo* add_func();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ShuffleInfo::ReorderInfo_FunctionInfo >&
+      func() const;
 
   // optional .ShuffleInfo.ReorderInfo.BinaryInfo bin = 1;
   bool has_bin() const;
@@ -1484,6 +1701,7 @@ class ReorderInfo PROTOBUF_FINAL :
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ShuffleInfo::ReorderInfo_LayoutInfo > layout_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ShuffleInfo::ReorderInfo_FixupInfo > fixup_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ShuffleInfo::ReorderInfo_FunctionInfo > func_;
   ::ShuffleInfo::ReorderInfo_BinaryInfo* bin_;
   ::ShuffleInfo::ReorderInfo_SourceInfo* source_;
   friend struct ::TableStruct_shuffleInfo_2eproto;
@@ -1615,7 +1833,7 @@ inline void ReorderInfo_BinaryInfo::set_src_type(::PROTOBUF_NAMESPACE_ID::uint32
 
 // ReorderInfo_LayoutInfo
 
-// optional uint32 bb_size = 1;
+// optional uint64 bb_size = 1;
 inline bool ReorderInfo_LayoutInfo::_internal_has_bb_size() const {
   bool value = (_has_bits_[0] & 0x00000004u) != 0;
   return value;
@@ -1624,26 +1842,26 @@ inline bool ReorderInfo_LayoutInfo::has_bb_size() const {
   return _internal_has_bb_size();
 }
 inline void ReorderInfo_LayoutInfo::clear_bb_size() {
-  bb_size_ = 0u;
+  bb_size_ = PROTOBUF_ULONGLONG(0);
   _has_bits_[0] &= ~0x00000004u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint32 ReorderInfo_LayoutInfo::_internal_bb_size() const {
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ReorderInfo_LayoutInfo::_internal_bb_size() const {
   return bb_size_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint32 ReorderInfo_LayoutInfo::bb_size() const {
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ReorderInfo_LayoutInfo::bb_size() const {
   // @@protoc_insertion_point(field_get:ShuffleInfo.ReorderInfo.LayoutInfo.bb_size)
   return _internal_bb_size();
 }
-inline void ReorderInfo_LayoutInfo::_internal_set_bb_size(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+inline void ReorderInfo_LayoutInfo::_internal_set_bb_size(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   _has_bits_[0] |= 0x00000004u;
   bb_size_ = value;
 }
-inline void ReorderInfo_LayoutInfo::set_bb_size(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+inline void ReorderInfo_LayoutInfo::set_bb_size(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   _internal_set_bb_size(value);
   // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.LayoutInfo.bb_size)
 }
 
-// optional uint32 type = 2;
+// optional uint64 type = 2;
 inline bool ReorderInfo_LayoutInfo::_internal_has_type() const {
   bool value = (_has_bits_[0] & 0x00000008u) != 0;
   return value;
@@ -1652,26 +1870,26 @@ inline bool ReorderInfo_LayoutInfo::has_type() const {
   return _internal_has_type();
 }
 inline void ReorderInfo_LayoutInfo::clear_type() {
-  type_ = 0u;
+  type_ = PROTOBUF_ULONGLONG(0);
   _has_bits_[0] &= ~0x00000008u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint32 ReorderInfo_LayoutInfo::_internal_type() const {
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ReorderInfo_LayoutInfo::_internal_type() const {
   return type_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint32 ReorderInfo_LayoutInfo::type() const {
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ReorderInfo_LayoutInfo::type() const {
   // @@protoc_insertion_point(field_get:ShuffleInfo.ReorderInfo.LayoutInfo.type)
   return _internal_type();
 }
-inline void ReorderInfo_LayoutInfo::_internal_set_type(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+inline void ReorderInfo_LayoutInfo::_internal_set_type(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   _has_bits_[0] |= 0x00000008u;
   type_ = value;
 }
-inline void ReorderInfo_LayoutInfo::set_type(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+inline void ReorderInfo_LayoutInfo::set_type(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   _internal_set_type(value);
   // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.LayoutInfo.type)
 }
 
-// optional uint32 offset = 6;
+// optional uint64 offset = 6;
 inline bool ReorderInfo_LayoutInfo::_internal_has_offset() const {
   bool value = (_has_bits_[0] & 0x00000040u) != 0;
   return value;
@@ -1680,21 +1898,21 @@ inline bool ReorderInfo_LayoutInfo::has_offset() const {
   return _internal_has_offset();
 }
 inline void ReorderInfo_LayoutInfo::clear_offset() {
-  offset_ = 0u;
+  offset_ = PROTOBUF_ULONGLONG(0);
   _has_bits_[0] &= ~0x00000040u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint32 ReorderInfo_LayoutInfo::_internal_offset() const {
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ReorderInfo_LayoutInfo::_internal_offset() const {
   return offset_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint32 ReorderInfo_LayoutInfo::offset() const {
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ReorderInfo_LayoutInfo::offset() const {
   // @@protoc_insertion_point(field_get:ShuffleInfo.ReorderInfo.LayoutInfo.offset)
   return _internal_offset();
 }
-inline void ReorderInfo_LayoutInfo::_internal_set_offset(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+inline void ReorderInfo_LayoutInfo::_internal_set_offset(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   _has_bits_[0] |= 0x00000040u;
   offset_ = value;
 }
-inline void ReorderInfo_LayoutInfo::set_offset(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+inline void ReorderInfo_LayoutInfo::set_offset(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   _internal_set_offset(value);
   // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.LayoutInfo.offset)
 }
@@ -2131,6 +2349,184 @@ inline void ReorderInfo_LayoutInfo::_internal_set_assemble_type(::PROTOBUF_NAMES
 inline void ReorderInfo_LayoutInfo::set_assemble_type(::PROTOBUF_NAMESPACE_ID::uint32 value) {
   _internal_set_assemble_type(value);
   // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.LayoutInfo.assemble_type)
+}
+
+// -------------------------------------------------------------------
+
+// ReorderInfo_FunctionInfo
+
+// optional string f_id = 1;
+inline bool ReorderInfo_FunctionInfo::_internal_has_f_id() const {
+  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool ReorderInfo_FunctionInfo::has_f_id() const {
+  return _internal_has_f_id();
+}
+inline void ReorderInfo_FunctionInfo::clear_f_id() {
+  f_id_.ClearToEmpty();
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline const std::string& ReorderInfo_FunctionInfo::f_id() const {
+  // @@protoc_insertion_point(field_get:ShuffleInfo.ReorderInfo.FunctionInfo.f_id)
+  return _internal_f_id();
+}
+inline void ReorderInfo_FunctionInfo::set_f_id(const std::string& value) {
+  _internal_set_f_id(value);
+  // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.FunctionInfo.f_id)
+}
+inline std::string* ReorderInfo_FunctionInfo::mutable_f_id() {
+  // @@protoc_insertion_point(field_mutable:ShuffleInfo.ReorderInfo.FunctionInfo.f_id)
+  return _internal_mutable_f_id();
+}
+inline const std::string& ReorderInfo_FunctionInfo::_internal_f_id() const {
+  return f_id_.Get();
+}
+inline void ReorderInfo_FunctionInfo::_internal_set_f_id(const std::string& value) {
+  _has_bits_[0] |= 0x00000001u;
+  f_id_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
+}
+inline void ReorderInfo_FunctionInfo::set_f_id(std::string&& value) {
+  _has_bits_[0] |= 0x00000001u;
+  f_id_.Set(
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:ShuffleInfo.ReorderInfo.FunctionInfo.f_id)
+}
+inline void ReorderInfo_FunctionInfo::set_f_id(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000001u;
+  f_id_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
+  // @@protoc_insertion_point(field_set_char:ShuffleInfo.ReorderInfo.FunctionInfo.f_id)
+}
+inline void ReorderInfo_FunctionInfo::set_f_id(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000001u;
+  f_id_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:ShuffleInfo.ReorderInfo.FunctionInfo.f_id)
+}
+inline std::string* ReorderInfo_FunctionInfo::_internal_mutable_f_id() {
+  _has_bits_[0] |= 0x00000001u;
+  return f_id_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
+}
+inline std::string* ReorderInfo_FunctionInfo::release_f_id() {
+  // @@protoc_insertion_point(field_release:ShuffleInfo.ReorderInfo.FunctionInfo.f_id)
+  if (!_internal_has_f_id()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000001u;
+  return f_id_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void ReorderInfo_FunctionInfo::set_allocated_f_id(std::string* f_id) {
+  if (f_id != nullptr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  f_id_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), f_id,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:ShuffleInfo.ReorderInfo.FunctionInfo.f_id)
+}
+
+// optional string f_name = 2;
+inline bool ReorderInfo_FunctionInfo::_internal_has_f_name() const {
+  bool value = (_has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline bool ReorderInfo_FunctionInfo::has_f_name() const {
+  return _internal_has_f_name();
+}
+inline void ReorderInfo_FunctionInfo::clear_f_name() {
+  f_name_.ClearToEmpty();
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline const std::string& ReorderInfo_FunctionInfo::f_name() const {
+  // @@protoc_insertion_point(field_get:ShuffleInfo.ReorderInfo.FunctionInfo.f_name)
+  return _internal_f_name();
+}
+inline void ReorderInfo_FunctionInfo::set_f_name(const std::string& value) {
+  _internal_set_f_name(value);
+  // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.FunctionInfo.f_name)
+}
+inline std::string* ReorderInfo_FunctionInfo::mutable_f_name() {
+  // @@protoc_insertion_point(field_mutable:ShuffleInfo.ReorderInfo.FunctionInfo.f_name)
+  return _internal_mutable_f_name();
+}
+inline const std::string& ReorderInfo_FunctionInfo::_internal_f_name() const {
+  return f_name_.Get();
+}
+inline void ReorderInfo_FunctionInfo::_internal_set_f_name(const std::string& value) {
+  _has_bits_[0] |= 0x00000002u;
+  f_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
+}
+inline void ReorderInfo_FunctionInfo::set_f_name(std::string&& value) {
+  _has_bits_[0] |= 0x00000002u;
+  f_name_.Set(
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:ShuffleInfo.ReorderInfo.FunctionInfo.f_name)
+}
+inline void ReorderInfo_FunctionInfo::set_f_name(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000002u;
+  f_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
+  // @@protoc_insertion_point(field_set_char:ShuffleInfo.ReorderInfo.FunctionInfo.f_name)
+}
+inline void ReorderInfo_FunctionInfo::set_f_name(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000002u;
+  f_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:ShuffleInfo.ReorderInfo.FunctionInfo.f_name)
+}
+inline std::string* ReorderInfo_FunctionInfo::_internal_mutable_f_name() {
+  _has_bits_[0] |= 0x00000002u;
+  return f_name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
+}
+inline std::string* ReorderInfo_FunctionInfo::release_f_name() {
+  // @@protoc_insertion_point(field_release:ShuffleInfo.ReorderInfo.FunctionInfo.f_name)
+  if (!_internal_has_f_name()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000002u;
+  return f_name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void ReorderInfo_FunctionInfo::set_allocated_f_name(std::string* f_name) {
+  if (f_name != nullptr) {
+    _has_bits_[0] |= 0x00000002u;
+  } else {
+    _has_bits_[0] &= ~0x00000002u;
+  }
+  f_name_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), f_name,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:ShuffleInfo.ReorderInfo.FunctionInfo.f_name)
+}
+
+// optional uint64 bb_num = 3;
+inline bool ReorderInfo_FunctionInfo::_internal_has_bb_num() const {
+  bool value = (_has_bits_[0] & 0x00000004u) != 0;
+  return value;
+}
+inline bool ReorderInfo_FunctionInfo::has_bb_num() const {
+  return _internal_has_bb_num();
+}
+inline void ReorderInfo_FunctionInfo::clear_bb_num() {
+  bb_num_ = PROTOBUF_ULONGLONG(0);
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ReorderInfo_FunctionInfo::_internal_bb_num() const {
+  return bb_num_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ReorderInfo_FunctionInfo::bb_num() const {
+  // @@protoc_insertion_point(field_get:ShuffleInfo.ReorderInfo.FunctionInfo.bb_num)
+  return _internal_bb_num();
+}
+inline void ReorderInfo_FunctionInfo::_internal_set_bb_num(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _has_bits_[0] |= 0x00000004u;
+  bb_num_ = value;
+}
+inline void ReorderInfo_FunctionInfo::set_bb_num(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_bb_num(value);
+  // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.FunctionInfo.bb_num)
 }
 
 // -------------------------------------------------------------------
@@ -2715,6 +3111,45 @@ inline void ReorderInfo::set_allocated_bin(::ShuffleInfo::ReorderInfo_BinaryInfo
   // @@protoc_insertion_point(field_set_allocated:ShuffleInfo.ReorderInfo.bin)
 }
 
+// repeated .ShuffleInfo.ReorderInfo.FunctionInfo func = 5;
+inline int ReorderInfo::_internal_func_size() const {
+  return func_.size();
+}
+inline int ReorderInfo::func_size() const {
+  return _internal_func_size();
+}
+inline void ReorderInfo::clear_func() {
+  func_.Clear();
+}
+inline ::ShuffleInfo::ReorderInfo_FunctionInfo* ReorderInfo::mutable_func(int index) {
+  // @@protoc_insertion_point(field_mutable:ShuffleInfo.ReorderInfo.func)
+  return func_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ShuffleInfo::ReorderInfo_FunctionInfo >*
+ReorderInfo::mutable_func() {
+  // @@protoc_insertion_point(field_mutable_list:ShuffleInfo.ReorderInfo.func)
+  return &func_;
+}
+inline const ::ShuffleInfo::ReorderInfo_FunctionInfo& ReorderInfo::_internal_func(int index) const {
+  return func_.Get(index);
+}
+inline const ::ShuffleInfo::ReorderInfo_FunctionInfo& ReorderInfo::func(int index) const {
+  // @@protoc_insertion_point(field_get:ShuffleInfo.ReorderInfo.func)
+  return _internal_func(index);
+}
+inline ::ShuffleInfo::ReorderInfo_FunctionInfo* ReorderInfo::_internal_add_func() {
+  return func_.Add();
+}
+inline ::ShuffleInfo::ReorderInfo_FunctionInfo* ReorderInfo::add_func() {
+  // @@protoc_insertion_point(field_add:ShuffleInfo.ReorderInfo.func)
+  return _internal_add_func();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ShuffleInfo::ReorderInfo_FunctionInfo >&
+ReorderInfo::func() const {
+  // @@protoc_insertion_point(field_list:ShuffleInfo.ReorderInfo.func)
+  return func_;
+}
+
 // repeated .ShuffleInfo.ReorderInfo.LayoutInfo layout = 2;
 inline int ReorderInfo::_internal_layout_size() const {
   return layout_.size();
@@ -2879,6 +3314,8 @@ inline void ReorderInfo::set_allocated_source(::ShuffleInfo::ReorderInfo_SourceI
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

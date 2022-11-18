@@ -655,6 +655,9 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   auto MSI = Assembler.getContext().getSubtargetInfo();
   std::string ID = MSI->getParentID();
   unsigned nargs = MSI->getNArgs();
+  unsigned funcsize = MSI->getFunctionSize();
+  std::string FunctionID = MSI->getFunctionID();
+  std::string FunctionName = MSI->getFunctionName();
   std::vector<std::string> succs = MSI->getSuccs();
   std::vector<std::string> preds = MSI->getPreds();
   DEBUG_WITH_TYPE("binbench", dbgs() << "Parent ID in ELFStreamer " << ID << "\n");
@@ -713,7 +716,6 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   // For example, "cld; rep; stosq\n" emits 0xFC, (0xF3, 0x48), and 0xAB respectively with no parentID
   // TODO: Akul
   // Do we get the IDs here?
-  // Nope!
 
   LLVM_DEBUG(dbgs() << "Prev MFBID " << ID << "\n");
   LLVM_DEBUG(dbgs() << "MInst: ");
@@ -726,6 +728,7 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   DF->setNArgs(nargs);
   DF->addMachineBasicBlockTag(ID);
   MAI->updateByteCounter(ID, EmittedBytes, numFixups, /*isAlign=*/ false, /*isInline=*/ false);
+  MAI->updateFuncDetails(FunctionID, FunctionName, funcsize);
 
   MAI->setSuccs(ID, succs);
   MAI->setPreds(ID, preds);

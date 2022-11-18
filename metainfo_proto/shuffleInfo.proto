@@ -22,10 +22,10 @@ message ReorderInfo {
   // Code layout Info (.text) from LLVM
   // Embeded info ([#func|#fixup]/obj, [#bbk|#fixup]/func, objSz/ea, funcSz/ea)
   message LayoutInfo {
-    optional uint32 bb_size = 1;          // UPDATE AT LINKTIME WITH OBJ ALIGNMENTs
+    optional uint64 bb_size = 1;          // UPDATE AT LINKTIME WITH OBJ ALIGNMENTs
                                           // All alignments between fn/bbl are included here
-    optional uint32 type = 2;             // Represents the end of [OBJ|FUN|BBL]
-    optional uint32 offset = 6;
+    optional uint64 type = 2;             // Represents the end of [OBJ|FUN|BBL]
+    optional uint64 offset = 6;
     optional uint32 nargs = 9;
     optional string bb_id = 10;
     repeated string succs = 11;
@@ -35,6 +35,12 @@ message ReorderInfo {
     optional string section_name = 5;     // section identifier for c++ mutiple sections
     optional uint32 padding_size = 7;
     optional uint32 assemble_type = 8 [default = 0]; // assemble type: 0(normal basic block type), 1(contains inline assemble code)
+  }
+
+  message FunctionInfo {
+    optional string f_id = 1;
+    optional string f_name = 2;
+    optional uint64 bb_num = 3;
   }
 
   // Fixup info in ELF from LLVM
@@ -62,6 +68,7 @@ message ReorderInfo {
   }
 
   optional BinaryInfo bin = 1;
+  repeated FunctionInfo func = 5;
   repeated LayoutInfo layout = 2;
   repeated FixupInfo fixup = 3;
   optional SourceInfo source = 4;
