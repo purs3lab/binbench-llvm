@@ -1173,9 +1173,9 @@ void serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmLayout &Layou
     ShuffleInfo::ReorderInfo_FunctionInfo* FunctionInfo = ri->add_func();
     // TODO: Add check for empty ID
     FunctionInfo->set_f_id(x.first);
-    FunctionInfo->set_bb_num(get<0>(x.second));
-    FunctionInfo->set_f_name(get<1>(x.second));
-    DEBUG_WITH_TYPE("binbench", dbgs() << "FID: " << x.first << " " << get<1>(x.second) << " " << get<0>(x.second) << "\n");
+    FunctionInfo->set_bb_num(std::get<0>(x.second));
+    FunctionInfo->set_f_name(std::get<1>(x.second));
+    // DEBUG_WITH_TYPE("binbench", dbgs() << "FID: " << x.first << " " << get<1>(x.second) << " " << get<0>(x.second) << "\n");
   }
 
   ShuffleInfo::ReorderInfo_FixupInfo* fixupInfo = ri->add_fixup();
