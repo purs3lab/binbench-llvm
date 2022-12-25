@@ -44,6 +44,13 @@
 #include <string>
 #include "llvm/MC/MCAsmInfo.h"
 
+#include <sstream>
+#include <fstream>
+#include <iostream>
+#include <iomanip>
+#include <map>
+#include <set>
+#include <utility>
 using namespace llvm;
 
 // Akul
@@ -53,6 +60,7 @@ namespace llvm {
 class MCSectionELF;
 class MCSubtargetInfo;
 }
+
 
 MCELFStreamer::MCELFStreamer(MCContext &Context,
                              std::unique_ptr<MCAsmBackend> TAB,
@@ -573,6 +581,15 @@ static void CheckBundleSubtargets(const MCSubtargetInfo *OldSTI,
     report_fatal_error("A Bundle can only have one Subtarget.");
 }
 
+// Koo: Convert int into hex (0x00abcdef)
+template<typename T>
+std::string hexlify(T i) {
+    std::stringbuf buf;
+    std::ostream os(&buf);
+    os << "0x" << std::setfill('0') << std::setw(sizeof(T) * 2) << std::hex << i;
+    return buf.str();
+}
+
 void MCELFStreamer::emitInstToData(const MCInst &Inst,
                                    const MCSubtargetInfo &STI) {
   MCAssembler &Assembler = getAssembler();
@@ -708,6 +725,13 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   //      addMachineBasicBlockTag() keeps track of the IDs that identifies (MF+MBB) pair
   //      MCRelaxableFragment will be generating in MCObjectStreamer::EmitInstToFragment()
   unsigned EmittedBytes = Code.size();
+  DEBUG_WITH_TYPE("binbench", dbgs() << "EmittedBytes " << EmittedBytes << "\n");
+  DEBUG_WITH_TYPE("binbench", dbgs() << "Code: " << "\n");
+
+  for (auto &C : Code) {
+    DEBUG_WITH_TYPE("binbench", dbgs() << (unsigned int)(C) << " ");
+  }
+  DEBUG_WITH_TYPE("binbench", dbgs() << "\n");
   const MCAsmInfo *MAI = Assembler.getContext().getAsmInfo();
   unsigned numFixups = Fixups.size();
 

@@ -887,7 +887,7 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
     std::string tmpSN, sectionName = ELFSec.getSectionName().str();
     if (sectionName.find(".text") == 0) {
       DEBUG_WITH_TYPE("binbench", dbgs() << "Found the .text section!" << "\n");
-      unsigned totalOffset = 0, totalFixups = 0, totalAlignSize = 0;
+      unsigned totalOffset = 0, totalFixups = 0, totalAlignSize = 0, fragOff = 0, prevMBB = 0;
       int MFID, MBBID, prevMFID = -1;
       std::string prevID, canFallThrough;
       unsigned MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs;
@@ -900,6 +900,8 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
         // Here MCDataFragment has combined with the following MCRelaxableFragment or MCAlignFragment
         // Corner case: MCDataFragment with no instruction - just skip it
         if (isa<MCDataFragment>(MCF) && MCF.hasInstructions()) {
+        totalOffset = MCF.getOffset();
+        fragOff = totalOffset;
 
         // Update the MBB offset and MF Size for all collected MBBs in the MF
           for (std::string ID : MCF.getAllMBBs()) {
@@ -928,9 +930,13 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
                 MBBSize += MAI->specialCntPriorToFunc;
                 MAI->specialCntPriorToFunc = 0;
               }
-
+              if (!MAI->isSeenFuncs(MFID)) {
+                prevMBB = 0;
+                MAI->updateSeenFuncs(MFID);
+              }
               // Update the MBB offset, MF Size and section name accordingly
-              std::get<1>(MAI->MachineBasicBlocks[ID]) = totalOffset;
+              std::get<1>(MAI->MachineBasicBlocks[ID]) += (fragOff + prevMBB);
+              prevMBB += MBBSize;
               totalOffset += MBBSize;
               totalFixups += numFixups;
               totalAlignSize += alignSize;
@@ -976,8 +982,13 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
             if (tmpSN.length() > 0) continue;
             MAI->MBBLayoutOrder.push_back(ID);
 
+            if (!MAI->isSeenFuncs(MFID)) {
+              prevMBB = 0;
+              MAI->updateSeenFuncs(MFID);
+            }
             // Update the MBB offset, MF Size and section name accordingly
-            std::get<1>(MAI->MachineBasicBlocks[ID]) = totalOffset;
+            std::get<1>(MAI->MachineBasicBlocks[ID]) += (fragOff + prevMBB);
+            prevMBB += MBBSize;
             totalOffset += MBBSize;
             totalFixups += numFixups;
             totalAlignSize += alignSize;
@@ -1310,6 +1321,8 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
           alignSize = computeFragmentSize(Layout, Frag);
           MAI->updateByteCounter(ID, alignSize, 0, /*isAlign=*/true,
                                  /*isInline=*/false);
+          // MAI->updateByteCounter(ID, 0, 0, /*isAlign=*/true,
+          //                         /*isInline=*/false);
         }
       }
       ArrayRef<MCFixup> Fixups;
@@ -1588,6 +1601,8 @@ bool MCAssembler::relaxInstruction(MCAsmLayout &Layout,
         // for the adjustment in case of re-evaluation (simple hack but tricky)
         MAI->updateByteCounter(ID, curBytes - relaxedBytes, 1 - fixupCtr, 
                               /*isAlign=*/ false, /*isInline=*/ false);
+        DEBUG_WITH_TYPE("binbench", dbgs() << "Relaxed instruction: " 
+                                               << ID << " " << curBytes << "\n");
         F.setRelaxedBytes(curBytes);
         F.setFixup(1);
 

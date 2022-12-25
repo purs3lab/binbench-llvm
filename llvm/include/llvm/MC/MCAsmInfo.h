@@ -580,6 +580,21 @@ public:
   //    - The order of the ID in a binary should be maintained layout because it might be non-sequential.
   mutable std::list<std::string> MBBLayoutOrder;
 
+  mutable std::vector<unsigned> SeenFunctionIDs;
+
+  void updateSeenFuncs(unsigned funcID) const {
+    if (std::find(SeenFunctionIDs.begin(), SeenFunctionIDs.end(), funcID) ==
+        SeenFunctionIDs.end())
+      SeenFunctionIDs.push_back(funcID);
+  }
+
+  bool isSeenFuncs(unsigned funcID) const {
+    if (std::find(SeenFunctionIDs.begin(), SeenFunctionIDs.end(), funcID) ==
+        SeenFunctionIDs.end())
+      return false;
+    return true;
+  }
+
   // (b) Fixups (list)
   //    * <offset, size, isRela, parentID, SymbolRefFixupName, isNewSection, secName, numJTEntries, JTEntrySz>
   //    - The last two elements are jump table information for FixupsText only,

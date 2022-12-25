@@ -1543,7 +1543,6 @@ void AsmPrinter::emitFunctionBody() {
           OutStreamer->emitRawComment("ARITH_FENCE");
         break;
       default:
-        emitInstruction(&MI);
         // Akul 
         std::vector<std::string> Preds;
         std::vector<std::string> Succs;
@@ -1592,6 +1591,7 @@ void AsmPrinter::emitFunctionBody() {
           auto I = MnemonicCounts.insert({Name, 0u});
           I.first->second++;
         }
+        emitInstruction(&MI);
         break;
       }
 
