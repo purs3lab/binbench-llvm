@@ -970,8 +970,7 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
           std::string ID = MCRF.getInst().getParent();
 
           if (ID.length() == 0 && std::get<0>(MAI->MachineBasicBlocks[ID]) > 0)
-              llvm_unreachable("[CCR-Error] MCAssembler(updateReorderInfoValues) - MCSomething went wrong in MCRelaxableFragment: MBB size > 0 with no parentID?");
-
+            ID = "999_999";
           // If yet the ID has not been showed up along with getAllMBBs(), 
           // it would be an independent RF that does not belong to any DF
           if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
