@@ -967,7 +967,7 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
         // It happens when there are consecutive MCRelaxableFragment (i.e., switch/case)
         if (isa<MCRelaxableFragment>(MCF) && MCF.hasInstructions()) {
           MCRelaxableFragment &MCRF = static_cast<MCRelaxableFragment&>(MCF);
-          std::string ID = MCRF.getInst().getParent();
+          std::string ID = MCRF.getInst().getParentID();
 
           if (ID.length() == 0 && std::get<0>(MAI->MachineBasicBlocks[ID]) > 0)
             ID = "999_999";
@@ -1315,7 +1315,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
           if (isa<MCRelaxableFragment>(*prevFrag))
             ID = static_cast<MCRelaxableFragment *>(prevFrag)
                      ->getInst()
-                     .getParent();
+                     .getParentID();
 
           alignSize = computeFragmentSize(Layout, Frag);
           MAI->updateByteCounter(ID, alignSize, 0, /*isAlign=*/true,
@@ -1587,7 +1587,7 @@ bool MCAssembler::relaxInstruction(MCAsmLayout &Layout,
   // Whether or not the instruction has been relaxed
   // The RelaxableFragment must be counted as the emitted bytes
   const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
-  std::string ID = F.getInst().getParent();
+  std::string ID = F.getInst().getParentID();
   unsigned relaxedBytes = F.getRelaxedBytes();
   unsigned fixupCtr = F.getFixup();
 

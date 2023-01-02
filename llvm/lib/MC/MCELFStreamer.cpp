@@ -599,8 +599,6 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   Assembler.getEmitter().encodeInstruction(Inst, VecOS, Fixups, STI);
 
   // Koo: Obtain the parent of this instruction (MFID_MBBID)
-  // Inst.setParent(ID);
-  // XXX AKUL
 
   for (auto &Fixup : Fixups)
     fixSymbolsInTLSFixups(Fixup.getValue());
@@ -670,13 +668,15 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   }
   // FUNC_ARGS_TODO : propogate func arg changes
   auto MSI = Assembler.getContext().getSubtargetInfo();
-  std::string ID = MSI->getParentID();
-  unsigned nargs = MSI->getNArgs();
-  unsigned funcsize = MSI->getFunctionSize();
-  std::string FunctionID = MSI->getFunctionID();
-  std::string FunctionName = MSI->getFunctionName();
-  std::vector<std::string> succs = MSI->getSuccs();
-  std::vector<std::string> preds = MSI->getPreds();
+  // std::string ID = MSI->getParentID();
+  std::string ID = Inst.getParentID();
+  
+  unsigned nargs = Inst.getNArgs();
+  unsigned funcsize = Inst.getFunctionSize();
+  std::string FunctionID = Inst.getFunctionID();
+  std::string FunctionName = Inst.getFunctionName();
+  std::vector<std::string> succs = Inst.getSuccs();
+  std::vector<std::string> preds = Inst.getPreds();
   DEBUG_WITH_TYPE("binbench", dbgs() << "Parent ID in ELFStreamer " << ID << "\n");
   DEBUG_WITH_TYPE("binbench", dbgs() << "NArgs ELFStreamer " << nargs << "\n");
   // Add the fixups and data.

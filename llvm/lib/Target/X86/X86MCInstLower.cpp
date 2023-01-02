@@ -48,9 +48,12 @@
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Transforms/Instrumentation/AddressSanitizer.h"
 #include "llvm/Transforms/Instrumentation/AddressSanitizerCommon.h"
+#include "llvm/Support/Debug.h"
 #include <string>
 
 using namespace llvm;
+
+#define DEBUG_TYPE "binbench"
 
 namespace {
 
@@ -2673,6 +2676,65 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
 
   MCInst TmpInst;
   MCInstLowering.Lower(MI, TmpInst);
+
+  std::vector<std::string> Preds;
+  std::vector<std::string> Succs;
+  unsigned op = TmpInst.getOpcode();
+  LLVM_DEBUG(dbgs() << "MIOp:" << op
+                    << " MI:" << TM.getMCInstrInfo()->getName(op)
+                    << " MBB:" << MI->getParent()->getNumber()
+                    << " MF:" << MI->getMF()->getName() << "\n");
+  LLVM_DEBUG(dbgs() << "Successors: ");
+  auto succs = MI->getParent()->successors();
+  for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+    LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
+    unsigned SMBBID = (*succ)->getNumber();
+    unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
+    std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+    Succs.push_back(SID);
+  }
+  LLVM_DEBUG(dbgs() << "\n");
+  LLVM_DEBUG(dbgs() << "Predecessors: ");
+  auto preds = MI->getParent()->predecessors();
+  for (auto pred = preds.begin(); pred != preds.end(); pred++) {
+    LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
+    unsigned PMBBID = (*pred)->getNumber();
+    unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
+    std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+    Preds.push_back(PID);
+  }
+  LLVM_DEBUG(dbgs() << "\n");
+  //auto preds = MI.getParent()->predessors
+  const MachineBasicBlock *MBB = MI->getParent();
+  unsigned MBBID = MBB->getNumber();
+  unsigned MFID = MBB->getParent()->getFunctionNumber();
+  unsigned funcsize = MBB->getParent()->size();
+  std::string FunctionName = MBB->getParent()->getName().str();
+  std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+  TmpInst.setParentID(ID);
+  TmpInst.setFunctionID(std::to_string(MFID));
+  TmpInst.setFunctionName(FunctionName);
+  TmpInst.setFunctionSize(funcsize);
+  TmpInst.setSuccs(ID, Succs);
+  TmpInst.setPreds(ID, Preds);
+
+  // Koo [Note] While converting MachineInstr into MCInst, it is essential to maintain
+  //            its parent MF and MBB because MCStreamer and MCAssembler do not care 
+  //            them any more semantically. After this phase, fragment and section govern.
+  // const MachineBasicBlock *MBB = MI->getParent();
+  // unsigned MBBID = MBB->getNumber();
+  // unsigned MFID = MBB->getParent()->getFunctionNumber();
+  // std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+  // TmpInst.setParentID(ID);
+
+  // Koo [Note] Simple hack: both MF and MAI can be accessible, thus update fallThrough here.
+  const MCAsmInfo *MAI = TM.getMCAsmInfo();
+  if (MAI->canMBBFallThrough.count(ID) == 0)
+     MAI->canMBBFallThrough[ID] = MF->canMBBFallThrough[ID];
+  MAI->latestParentID = ID;
+
+
+  // Akul 
 
   // Stackmap shadows cannot include branch targets, so we can count the bytes
   // in a call towards the shadow, but must ensure that the no thread returns

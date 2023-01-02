@@ -490,7 +490,7 @@ void MCObjectStreamer::emitInstToFragment(const MCInst &Inst,
 
 
   // Koo: Process the parent of this instruction when emitting to a separate fragment
-  std::string ID = Inst.getParent();
+  std::string ID = Inst.getParentID();
   MCAssembler &Assembler = getAssembler();
   const MCAsmInfo *MAI = Assembler.getContext().getAsmInfo();
   DEBUG_WITH_TYPE("binbench", dbgs() << "ID Found? :" << ID << "\n");

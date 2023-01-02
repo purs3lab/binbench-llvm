@@ -1609,6 +1609,7 @@ void AsmPrinter::emitFunctionBody() {
             TM.getMCSubtargetInfo()->setFunctionSize(funcsize);
             TM.getMCSubtargetInfo()->setSuccs(ID, Succs);
             TM.getMCSubtargetInfo()->setPreds(ID, Preds);
+
             emitInstruction(&MI);
           }
         }
@@ -1627,6 +1628,7 @@ void AsmPrinter::emitFunctionBody() {
           OutStreamer->emitRawComment("ARITH_FENCE");
         break;
       default:
+
         // Akul 
         unsigned op = MI.getOpcode();
         LLVM_DEBUG(dbgs() << "MIOp:" << op
