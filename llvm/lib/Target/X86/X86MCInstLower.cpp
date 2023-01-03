@@ -2677,13 +2677,31 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
   MCInst TmpInst;
   MCInstLowering.Lower(MI, TmpInst);
 
+  // Akul 
+
+  // Stackmap shadows cannot include branch targets, so we can count the bytes
+  // in a call towards the shadow, but must ensure that the no thread returns
+  // in to the stackmap shadow.  The only way to achieve this is if the call
+  // is at the end of the shadow.
+  if (MI->isCall()) {
+    // Count then size of the call towards the shadow
+    SMShadowTracker.count(TmpInst, getSubtargetInfo(), CodeEmitter.get());
+    // Then flush the shadow so that we fill with nops before the call, not
+    // after it.
+    SMShadowTracker.emitShadowPadding(*OutStreamer, getSubtargetInfo());
+    // Then emit the call
+    OutStreamer->emitInstruction(TmpInst, getSubtargetInfo());
+    return;
+  }
+
+  LLVM_DEBUG(dbgs() << "MIOp:" << TmpInst.getOpcode()
+                    << " MI:" << TM.getMCInstrInfo()->getName(TmpInst.getOpcode())
+                    << " MBB:" << MI->getParent()->getNumber()
+                    << " MF:" << MI->getMF()->getName() << "\n");
+
   std::vector<std::string> Preds;
   std::vector<std::string> Succs;
   unsigned op = TmpInst.getOpcode();
-  LLVM_DEBUG(dbgs() << "MIOp:" << op
-                    << " MI:" << TM.getMCInstrInfo()->getName(op)
-                    << " MBB:" << MI->getParent()->getNumber()
-                    << " MF:" << MI->getMF()->getName() << "\n");
   LLVM_DEBUG(dbgs() << "Successors: ");
   auto succs = MI->getParent()->successors();
   for (auto succ = succs.begin(); succ != succs.end(); succ++) {
@@ -2704,7 +2722,6 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
     Preds.push_back(PID);
   }
   LLVM_DEBUG(dbgs() << "\n");
-  //auto preds = MI.getParent()->predessors
   const MachineBasicBlock *MBB = MI->getParent();
   unsigned MBBID = MBB->getNumber();
   unsigned MFID = MBB->getParent()->getFunctionNumber();
@@ -2733,23 +2750,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
      MAI->canMBBFallThrough[ID] = MF->canMBBFallThrough[ID];
   MAI->latestParentID = ID;
 
-
-  // Akul 
-
-  // Stackmap shadows cannot include branch targets, so we can count the bytes
-  // in a call towards the shadow, but must ensure that the no thread returns
-  // in to the stackmap shadow.  The only way to achieve this is if the call
-  // is at the end of the shadow.
-  if (MI->isCall()) {
-    // Count then size of the call towards the shadow
-    SMShadowTracker.count(TmpInst, getSubtargetInfo(), CodeEmitter.get());
-    // Then flush the shadow so that we fill with nops before the call, not
-    // after it.
-    SMShadowTracker.emitShadowPadding(*OutStreamer, getSubtargetInfo());
-    // Then emit the call
-    OutStreamer->emitInstruction(TmpInst, getSubtargetInfo());
-    return;
-  }
+  LLVM_DEBUG(dbgs() << "\n");
 
   EmitAndCountInstruction(TmpInst);
 }

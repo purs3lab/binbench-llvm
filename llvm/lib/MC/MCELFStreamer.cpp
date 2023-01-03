@@ -670,15 +670,6 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   auto MSI = Assembler.getContext().getSubtargetInfo();
   // std::string ID = MSI->getParentID();
   std::string ID = Inst.getParentID();
-  
-  unsigned nargs = Inst.getNArgs();
-  unsigned funcsize = Inst.getFunctionSize();
-  std::string FunctionID = Inst.getFunctionID();
-  std::string FunctionName = Inst.getFunctionName();
-  std::vector<std::string> succs = Inst.getSuccs();
-  std::vector<std::string> preds = Inst.getPreds();
-  DEBUG_WITH_TYPE("binbench", dbgs() << "Parent ID in ELFStreamer " << ID << "\n");
-  DEBUG_WITH_TYPE("binbench", dbgs() << "NArgs ELFStreamer " << nargs << "\n");
   // Add the fixups and data.
   for (auto &Fixup : Fixups) {
     Fixup.setOffset(Fixup.getOffset() + DF->getContents().size());
@@ -721,6 +712,20 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   DF->setHasInstructions(STI);
   DF->getContents().append(Code.begin(), Code.end());
 
+  
+  LLVM_DEBUG(dbgs() << "Prev MFBID " << ID << "\n");
+  LLVM_DEBUG(dbgs() << "MInst: ");
+  Inst.print(dbgs(), getContext().getRegisterInfo());
+  LLVM_DEBUG(dbgs() << "\n");
+
+  unsigned nargs = Inst.getNArgs();
+  unsigned funcsize = Inst.getFunctionSize();
+  std::string FunctionID = Inst.getFunctionID();
+  std::string FunctionName = Inst.getFunctionName();
+  std::vector<std::string> succs = Inst.getSuccs();
+  std::vector<std::string> preds = Inst.getPreds();
+  DEBUG_WITH_TYPE("binbench", dbgs() << "Parent ID in ELFStreamer " << ID << "\n");
+  DEBUG_WITH_TYPE("binbench", dbgs() << "NArgs ELFStreamer " << nargs << "\n");
   // Koo: Here combines the emitted data as MCDataFragment
   //      addMachineBasicBlockTag() keeps track of the IDs that identifies (MF+MBB) pair
   //      MCRelaxableFragment will be generating in MCObjectStreamer::EmitInstToFragment()
@@ -741,13 +746,11 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   // TODO: Akul
   // Do we get the IDs here?
 
-  LLVM_DEBUG(dbgs() << "Prev MFBID " << ID << "\n");
-  LLVM_DEBUG(dbgs() << "MInst: ");
-  Inst.print(dbgs(), getContext().getRegisterInfo());
-  LLVM_DEBUG(dbgs() << "\n");
   
+  // AKUL XXX: This might not be required
   if (ID.length() == 0)
     ID = MAI->latestParentID;
+
   DF->setLastParentTag(ID);
   DF->setNArgs(nargs);
   DF->addMachineBasicBlockTag(ID);
