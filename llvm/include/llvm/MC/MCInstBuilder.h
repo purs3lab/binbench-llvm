@@ -15,6 +15,11 @@
 #define LLVM_MC_MCINSTBUILDER_H
 
 #include "llvm/MC/MCInst.h"
+#include "llvm/MC/MCAsmBackend.h"
+#include "llvm/MC/MCAsmInfo.h"
+#include "llvm/CodeGen/MachineFunction.h"
+
+#include <string>
 
 namespace llvm {
 
@@ -60,6 +65,47 @@ public:
   /// Add a new MCInst operand.
   MCInstBuilder &addInst(const MCInst *Val) {
     Inst.addOperand(MCOperand::createInst(Val));
+    return *this;
+  }
+
+  MCInstBuilder &setMetaData(const MachineInstr *MI) {
+
+    std::vector<std::string> Preds;
+    std::vector<std::string> Succs;
+    // LLVM_DEBUG(dbgs() << "Successors: ");
+    auto succs = MI->getParent()->successors();
+    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
+      unsigned SMBBID = (*succ)->getNumber();
+      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
+      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+      Succs.push_back(SID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    // LLVM_DEBUG(dbgs() << "Predecessors: ");
+    auto preds = MI->getParent()->predecessors();
+    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
+      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
+      unsigned PMBBID = (*pred)->getNumber();
+      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
+      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+      Preds.push_back(PID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    const MachineBasicBlock *MBBa = MI->getParent();
+    unsigned MBBID = MBBa->getNumber();
+    unsigned MFID = MBBa->getParent()->getFunctionNumber();
+    unsigned funcsize = MBBa->getParent()->size();
+    std::string FunctionName = MBBa->getParent()->getName().str();
+    std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+
+    Inst.setParentID(ID);
+    Inst.setFunctionID(std::to_string(MFID));
+    Inst.setFunctionName(FunctionName);
+    Inst.setFunctionSize(funcsize);
+    Inst.setSuccs(ID, Succs);
+    Inst.setPreds(ID, Preds);
+
     return *this;
   }
 

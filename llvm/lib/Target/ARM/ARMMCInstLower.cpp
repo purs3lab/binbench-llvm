@@ -205,7 +205,7 @@ void ARMAsmPrinter::EmitSled(const MachineInstr &MI, SledKind Kind)
   // By analogy to ARMAsmPrinter::emitPseudoExpansionLowering() |case ARM::B|.
   // It is not clear why |addReg(0)| is needed (the last operand).
   EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::Bcc).addImm(20)
-    .addImm(ARMCC::AL).addReg(0));
+    .addImm(ARMCC::AL).addReg(0).setMetaData(&MI));
 
   emitNops(NoopsInSledCount);
 

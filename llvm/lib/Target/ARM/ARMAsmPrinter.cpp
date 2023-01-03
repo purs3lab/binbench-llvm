@@ -66,6 +66,8 @@ void ARMAsmPrinter::emitFunctionBodyEnd() {
   OutStreamer->emitDataRegion(MCDR_DataRegionEnd);
 }
 
+
+
 void ARMAsmPrinter::emitFunctionEntryLabel() {
   if (AFI->isThumbFunction()) {
     OutStreamer->emitAssemblerFlag(MCAF_Code16);
@@ -1043,10 +1045,24 @@ void ARMAsmPrinter::emitJumpTableInsts(const MachineInstr *MI) {
     const MCExpr *MBBSymbolExpr = MCSymbolRefExpr::create(MBB->getSymbol(),
                                                           OutContext);
     // If this isn't a TBB or TBH, the entries are direct branch instructions.
-    EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::t2B)
+    // LLVM_DEBUG(dbgs() << "MIOp:" << TmpInst.getOpcode()
+    //                   << " MI:" << TM.getMCInstrInfo()->getName(TmpInst.getOpcode())
+    //                   << " MBB:" << MI->getParent()->getNumber()
+    //                   << " MF:" << MI->getMF()->getName() << "\n");
+
+
+    MCInst TmpInst = MCInstBuilder(ARM::t2B)
         .addExpr(MBBSymbolExpr)
         .addImm(ARMCC::AL)
-        .addReg(0));
+        .addReg(0).setMetaData(MI);
+
+    // TmpInst.setParentID(ID);
+    // TmpInst.setFunctionID(std::to_string(MFID));
+    // TmpInst.setFunctionName(FunctionName);
+    // TmpInst.setFunctionSize(funcsize);
+    // TmpInst.setSuccs(ID, Succs);
+    // TmpInst.setPreds(ID, Preds);
+    EmitToStreamer(*OutStreamer, TmpInst);
   }
 }
 
@@ -1381,7 +1397,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addExpr(MCSymbolRefExpr::create(CPISymbol, OutContext))
       // Add predicate operands.
       .addImm(MI->getOperand(2).getImm())
-      .addReg(MI->getOperand(3).getReg()));
+      .addReg(MI->getOperand(3).getReg()).setMetaData(MI));
     return;
   }
   case ARM::LEApcrelJT:
@@ -1397,7 +1413,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addExpr(MCSymbolRefExpr::create(JTIPICSymbol, OutContext))
       // Add predicate operands.
       .addImm(MI->getOperand(2).getImm())
-      .addReg(MI->getOperand(3).getReg()));
+      .addReg(MI->getOperand(3).getReg()).setMetaData(MI));
     return;
   }
   // Darwin call instructions are just normal call instructions with different
@@ -1410,11 +1426,11 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(ARMCC::AL)
       .addReg(0)
       // Add 's' bit operand (always reg0 for this)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
 
     assert(Subtarget->hasV4TOps());
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::BX)
-      .addReg(MI->getOperand(0).getReg()));
+      .addReg(MI->getOperand(0).getReg()).setMetaData(MI));
     return;
   }
   case ARM::tBX_CALL: {
@@ -1445,7 +1461,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::tBL)
         // Predicate comes first here.
         .addImm(ARMCC::AL).addReg(0)
-        .addExpr(MCSymbolRefExpr::create(TRegSym, OutContext)));
+        .addExpr(MCSymbolRefExpr::create(TRegSym, OutContext)).setMetaData(MI));
     return;
   }
   case ARM::BMOVPCRX_CALL: {
@@ -1456,7 +1472,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(ARMCC::AL)
       .addReg(0)
       // Add 's' bit operand (always reg0 for this)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
 
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::MOVr)
       .addReg(ARM::PC)
@@ -1465,7 +1481,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(ARMCC::AL)
       .addReg(0)
       // Add 's' bit operand (always reg0 for this)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
     return;
   }
   case ARM::BMOVPCB_CALL: {
@@ -1476,7 +1492,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(ARMCC::AL)
       .addReg(0)
       // Add 's' bit operand (always reg0 for this)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
 
     const MachineOperand &Op = MI->getOperand(0);
     const GlobalValue *GV = Op.getGlobal();
@@ -1487,7 +1503,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addExpr(GVSymExpr)
       // Add predicate operands.
       .addImm(ARMCC::AL)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
     return;
   }
   case ARM::MOVi16_ga_pcrel:
@@ -1518,6 +1534,43 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
     TmpInst.addOperand(MCOperand::createReg(0));
     // Add 's' bit operand (always reg0 for this)
     TmpInst.addOperand(MCOperand::createReg(0));
+
+    std::vector<std::string> Preds;
+    std::vector<std::string> Succs;
+    // LLVM_DEBUG(dbgs() << "Successors: ");
+    auto succs = MI->getParent()->successors();
+    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
+      unsigned SMBBID = (*succ)->getNumber();
+      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
+      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+      Succs.push_back(SID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    // LLVM_DEBUG(dbgs() << "Predecessors: ");
+    auto preds = MI->getParent()->predecessors();
+    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
+      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
+      unsigned PMBBID = (*pred)->getNumber();
+      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
+      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+      Preds.push_back(PID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    const MachineBasicBlock *MBBa = MI->getParent();
+    unsigned MBBID = MBBa->getNumber();
+    unsigned MFID = MBBa->getParent()->getFunctionNumber();
+    unsigned funcsize = MBBa->getParent()->size();
+    std::string FunctionName = MBBa->getParent()->getName().str();
+    std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+
+    TmpInst.setParentID(ID);
+    TmpInst.setFunctionID(std::to_string(MFID));
+    TmpInst.setFunctionName(FunctionName);
+    TmpInst.setFunctionSize(funcsize);
+    TmpInst.setSuccs(ID, Succs);
+    TmpInst.setPreds(ID, Preds);
+    
     EmitToStreamer(*OutStreamer, TmpInst);
     return;
   }
@@ -1550,6 +1603,43 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
     TmpInst.addOperand(MCOperand::createReg(0));
     // Add 's' bit operand (always reg0 for this)
     TmpInst.addOperand(MCOperand::createReg(0));
+
+    std::vector<std::string> Preds;
+    std::vector<std::string> Succs;
+    // LLVM_DEBUG(dbgs() << "Successors: ");
+    auto succs = MI->getParent()->successors();
+    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
+      unsigned SMBBID = (*succ)->getNumber();
+      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
+      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+      Succs.push_back(SID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    // LLVM_DEBUG(dbgs() << "Predecessors: ");
+    auto preds = MI->getParent()->predecessors();
+    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
+      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
+      unsigned PMBBID = (*pred)->getNumber();
+      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
+      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+      Preds.push_back(PID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    const MachineBasicBlock *MBBa = MI->getParent();
+    unsigned MBBID = MBBa->getNumber();
+    unsigned MFID = MBBa->getParent()->getFunctionNumber();
+    unsigned funcsize = MBBa->getParent()->size();
+    std::string FunctionName = MBBa->getParent()->getName().str();
+    std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+
+    TmpInst.setParentID(ID);
+    TmpInst.setFunctionID(std::to_string(MFID));
+    TmpInst.setFunctionName(FunctionName);
+    TmpInst.setFunctionSize(funcsize);
+    TmpInst.setSuccs(ID, Succs);
+    TmpInst.setPreds(ID, Preds);
+
     EmitToStreamer(*OutStreamer, TmpInst);
     return;
   }
@@ -1565,7 +1655,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
                    MI->getOperand(0).getIndex(), OutContext),
         OutContext);
 
-    auto MCInst = MCInstBuilder(Opc).addExpr(BranchLabel);
+    auto MCInst = MCInstBuilder(Opc).addExpr(BranchLabel).setMetaData(MI);
     if (MI->getOperand(1).isReg()) {
       // For BFr/BFLr
       MCInst.addReg(MI->getOperand(1).getReg());
@@ -1631,7 +1721,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addReg(ARM::PC)
       // Add predicate operands.
       .addImm(ARMCC::AL)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
     return;
   }
   case ARM::PICADD: {
@@ -1654,7 +1744,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(MI->getOperand(3).getImm())
       .addReg(MI->getOperand(4).getReg())
       // Add 's' bit operand (always reg0 for this)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
     return;
   }
   case ARM::PICSTR:
@@ -1697,7 +1787,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(0)
       // Add predicate operands.
       .addImm(MI->getOperand(3).getImm())
-      .addReg(MI->getOperand(4).getReg()));
+      .addReg(MI->getOperand(4).getReg()).setMetaData(MI));
 
     return;
   }
@@ -1744,7 +1834,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addReg(MI->getOperand(0).getReg())
       // Add predicate operands.
       .addImm(ARMCC::AL)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
     return;
   }
   case ARM::t2TBB_JT:
@@ -1757,7 +1847,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
                                      .addReg(MI->getOperand(1).getReg())
                                      // Add predicate operands.
                                      .addImm(ARMCC::AL)
-                                     .addReg(0));
+                                     .addReg(0).setMetaData(MI));
     return;
   }
   case ARM::tTBB_JT:
@@ -1777,7 +1867,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
                                        .addImm(1)
                                        // Add predicate operands.
                                        .addImm(ARMCC::AL)
-                                       .addReg(0));
+                                       .addReg(0).setMetaData(MI));
 
     if (Base == ARM::PC) {
       // TBB [base, idx] =
@@ -1800,7 +1890,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
                                        .addReg(Base)
                                        // Add predicate operands.
                                        .addImm(ARMCC::AL)
-                                       .addReg(0));
+                                       .addReg(0).setMetaData(MI));
 
       unsigned Opc = Is8Bit ? ARM::tLDRBi : ARM::tLDRHi;
       EmitToStreamer(*OutStreamer, MCInstBuilder(Opc)
@@ -1809,7 +1899,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
                                        .addImm(Is8Bit ? 4 : 2)
                                        // Add predicate operands.
                                        .addImm(ARMCC::AL)
-                                       .addReg(0));
+                                       .addReg(0).setMetaData(MI));
     } else {
       // TBB [base, idx] =
       //    LDRB idx, [base, idx] ; or LDRH if TBH
@@ -1823,7 +1913,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
                                        .addReg(Idx)
                                        // Add predicate operands.
                                        .addImm(ARMCC::AL)
-                                       .addReg(0));
+                                       .addReg(0).setMetaData(MI));
     }
 
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::tLSLri)
@@ -1833,7 +1923,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
                                      .addImm(1)
                                      // Add predicate operands.
                                      .addImm(ARMCC::AL)
-                                     .addReg(0));
+                                     .addReg(0).setMetaData(MI));
 
     OutStreamer->emitLabel(GetCPISymbol(MI->getOperand(3).getImm()));
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::tADDhirr)
@@ -1842,7 +1932,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
                                      .addReg(Idx)
                                      // Add predicate operands.
                                      .addImm(ARMCC::AL)
-                                     .addReg(0));
+                                     .addReg(0).setMetaData(MI));
     return;
   }
   case ARM::tBR_JTr:
@@ -1860,6 +1950,43 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
     // Add 's' bit operand (always reg0 for this)
     if (Opc == ARM::MOVr)
       TmpInst.addOperand(MCOperand::createReg(0));
+    
+        std::vector<std::string> Preds;
+    std::vector<std::string> Succs;
+    // LLVM_DEBUG(dbgs() << "Successors: ");
+    auto succs = MI->getParent()->successors();
+    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
+      unsigned SMBBID = (*succ)->getNumber();
+      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
+      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+      Succs.push_back(SID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    // LLVM_DEBUG(dbgs() << "Predecessors: ");
+    auto preds = MI->getParent()->predecessors();
+    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
+      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
+      unsigned PMBBID = (*pred)->getNumber();
+      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
+      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+      Preds.push_back(PID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    const MachineBasicBlock *MBBa = MI->getParent();
+    unsigned MBBID = MBBa->getNumber();
+    unsigned MFID = MBBa->getParent()->getFunctionNumber();
+    unsigned funcsize = MBBa->getParent()->size();
+    std::string FunctionName = MBBa->getParent()->getName().str();
+    std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+
+    TmpInst.setParentID(ID);
+    TmpInst.setFunctionID(std::to_string(MFID));
+    TmpInst.setFunctionName(FunctionName);
+    TmpInst.setFunctionSize(funcsize);
+    TmpInst.setSuccs(ID, Succs);
+    TmpInst.setPreds(ID, Preds);
+
     EmitToStreamer(*OutStreamer, TmpInst);
     return;
   }
@@ -1873,6 +2000,43 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
     // Add predicate operands.
     TmpInst.addOperand(MCOperand::createImm(ARMCC::AL));
     TmpInst.addOperand(MCOperand::createReg(0));
+
+    std::vector<std::string> Preds;
+    std::vector<std::string> Succs;
+    // LLVM_DEBUG(dbgs() << "Successors: ");
+    auto succs = MI->getParent()->successors();
+    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
+      unsigned SMBBID = (*succ)->getNumber();
+      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
+      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+      Succs.push_back(SID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    // LLVM_DEBUG(dbgs() << "Predecessors: ");
+    auto preds = MI->getParent()->predecessors();
+    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
+      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
+      unsigned PMBBID = (*pred)->getNumber();
+      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
+      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+      Preds.push_back(PID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    const MachineBasicBlock *MBBa = MI->getParent();
+    unsigned MBBID = MBBa->getNumber();
+    unsigned MFID = MBBa->getParent()->getFunctionNumber();
+    unsigned funcsize = MBBa->getParent()->size();
+    std::string FunctionName = MBBa->getParent()->getName().str();
+    std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+
+    TmpInst.setParentID(ID);
+    TmpInst.setFunctionID(std::to_string(MFID));
+    TmpInst.setFunctionName(FunctionName);
+    TmpInst.setFunctionSize(funcsize);
+    TmpInst.setSuccs(ID, Succs);
+    TmpInst.setPreds(ID, Preds);
+
     EmitToStreamer(*OutStreamer, TmpInst);
     return;
   }
@@ -1887,6 +2051,43 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
     // Add predicate operands.
     TmpInst.addOperand(MCOperand::createImm(ARMCC::AL));
     TmpInst.addOperand(MCOperand::createReg(0));
+
+    std::vector<std::string> Preds;
+    std::vector<std::string> Succs;
+    // LLVM_DEBUG(dbgs() << "Successors: ");
+    auto succs = MI->getParent()->successors();
+    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
+      unsigned SMBBID = (*succ)->getNumber();
+      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
+      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+      Succs.push_back(SID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    // LLVM_DEBUG(dbgs() << "Predecessors: ");
+    auto preds = MI->getParent()->predecessors();
+    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
+      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
+      unsigned PMBBID = (*pred)->getNumber();
+      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
+      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+      Preds.push_back(PID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    const MachineBasicBlock *MBBa = MI->getParent();
+    unsigned MBBID = MBBa->getNumber();
+    unsigned MFID = MBBa->getParent()->getFunctionNumber();
+    unsigned funcsize = MBBa->getParent()->size();
+    std::string FunctionName = MBBa->getParent()->getName().str();
+    std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+
+    TmpInst.setParentID(ID);
+    TmpInst.setFunctionID(std::to_string(MFID));
+    TmpInst.setFunctionName(FunctionName);
+    TmpInst.setFunctionSize(funcsize);
+    TmpInst.setSuccs(ID, Succs);
+    TmpInst.setPreds(ID, Preds);
+
     EmitToStreamer(*OutStreamer, TmpInst);
     return;
   }
@@ -1900,7 +2101,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(ARMCC::AL)
       .addReg(0)
       // Add 's' bit operand (always reg0 for this)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
     return;
   }
   case ARM::SPACE:
@@ -1954,7 +2155,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addReg(ARM::PC)
       // Predicate.
       .addImm(ARMCC::AL)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
 
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::tADDi3)
       .addReg(ValReg)
@@ -1964,7 +2165,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(7)
       // Predicate.
       .addImm(ARMCC::AL)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
 
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::tSTRi)
       .addReg(ValReg)
@@ -1974,7 +2175,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(1)
       // Predicate.
       .addImm(ARMCC::AL)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
 
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::tMOVi8)
       .addReg(ARM::R0)
@@ -1982,13 +2183,13 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(0)
       // Predicate.
       .addImm(ARMCC::AL)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
 
     const MCExpr *SymbolExpr = MCSymbolRefExpr::create(Label, OutContext);
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::tB)
       .addExpr(SymbolExpr)
       .addImm(ARMCC::AL)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
 
     OutStreamer->AddComment("eh_setjmp end");
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::tMOVi8)
@@ -1997,7 +2198,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(1)
       // Predicate.
       .addImm(ARMCC::AL)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
 
     OutStreamer->emitLabel(Label);
     return;
@@ -2023,7 +2224,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(ARMCC::AL)
       .addReg(0)
       // 's' bit operand (always reg0 for this).
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
 
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::STRi12)
       .addReg(ValReg)
@@ -2031,7 +2232,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(4)
       // Predicate.
       .addImm(ARMCC::AL)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
 
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::MOVi)
       .addReg(ARM::R0)
@@ -2040,7 +2241,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(ARMCC::AL)
       .addReg(0)
       // 's' bit operand (always reg0 for this).
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
 
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::ADDri)
       .addReg(ARM::PC)
@@ -2050,7 +2251,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(ARMCC::AL)
       .addReg(0)
       // 's' bit operand (always reg0 for this).
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
 
     OutStreamer->AddComment("eh_setjmp end");
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::MOVi)
@@ -2060,7 +2261,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(ARMCC::AL)
       .addReg(0)
       // 's' bit operand (always reg0 for this).
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
     return;
   }
   case ARM::Int_eh_sjlj_longjmp: {
@@ -2076,7 +2277,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(8)
       // Predicate.
       .addImm(ARMCC::AL)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
 
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::LDRi12)
       .addReg(ScratchReg)
@@ -2084,7 +2285,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(4)
       // Predicate.
       .addImm(ARMCC::AL)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
 
     const MachineFunction &MF = *MI->getParent()->getParent();
     const ARMSubtarget &STI = MF.getSubtarget<ARMSubtarget>();
@@ -2097,7 +2298,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
                                        .addImm(0)
                                        // Predicate.
                                        .addImm(ARMCC::AL)
-                                       .addReg(0));
+                                       .addReg(0).setMetaData(MI));
     } else {
       // If the calling code might use either R7 or R11 as
       // frame pointer register, restore it into both.
@@ -2107,14 +2308,14 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
         .addImm(0)
         // Predicate.
         .addImm(ARMCC::AL)
-        .addReg(0));
+        .addReg(0).setMetaData(MI));
       EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::LDRi12)
         .addReg(ARM::R11)
         .addReg(SrcReg)
         .addImm(0)
         // Predicate.
         .addImm(ARMCC::AL)
-        .addReg(0));
+        .addReg(0).setMetaData(MI));
     }
 
     assert(Subtarget->hasV4TOps());
@@ -2122,7 +2323,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addReg(ScratchReg)
       // Predicate.
       .addImm(ARMCC::AL)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
     return;
   }
   case ARM::tInt_eh_sjlj_longjmp: {
@@ -2145,14 +2346,14 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(2)
       // Predicate.
       .addImm(ARMCC::AL)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
 
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::tMOVr)
       .addReg(ARM::SP)
       .addReg(ScratchReg)
       // Predicate.
       .addImm(ARMCC::AL)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
 
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::tLDRi)
       .addReg(ScratchReg)
@@ -2160,7 +2361,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
       .addImm(1)
       // Predicate.
       .addImm(ARMCC::AL)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
 
     if (STI.isTargetDarwin() || STI.isTargetWindows()) {
       // These platforms always use the same frame register
@@ -2170,7 +2371,7 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
                                        .addImm(0)
                                        // Predicate.
                                        .addImm(ARMCC::AL)
-                                       .addReg(0));
+                                       .addReg(0).setMetaData(MI));
     } else {
       // If the calling code might use either R7 or R11 as
       // frame pointer register, restore it into both.
@@ -2180,21 +2381,21 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
         .addImm(0)
         // Predicate.
         .addImm(ARMCC::AL)
-        .addReg(0));
+        .addReg(0).setMetaData(MI));
       EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::tLDRi)
         .addReg(ARM::R11)
         .addReg(SrcReg)
         .addImm(0)
         // Predicate.
         .addImm(ARMCC::AL)
-        .addReg(0));
+        .addReg(0).setMetaData(MI));
     }
 
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::tBX)
       .addReg(ScratchReg)
       // Predicate.
       .addImm(ARMCC::AL)
-      .addReg(0));
+      .addReg(0).setMetaData(MI));
     return;
   }
   case ARM::tInt_WIN_eh_sjlj_longjmp: {
@@ -2210,21 +2411,21 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
                                      .addImm(0)
                                      // Predicate
                                      .addImm(ARMCC::AL)
-                                     .addReg(0));
+                                     .addReg(0).setMetaData(MI));
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::t2LDRi12)
                                      .addReg(ARM::SP)
                                      .addReg(SrcReg)
                                      .addImm(8)
                                      // Predicate
                                      .addImm(ARMCC::AL)
-                                     .addReg(0));
+                                     .addReg(0).setMetaData(MI));
     EmitToStreamer(*OutStreamer, MCInstBuilder(ARM::t2LDRi12)
                                      .addReg(ARM::PC)
                                      .addReg(SrcReg)
                                      .addImm(4)
                                      // Predicate
                                      .addImm(ARMCC::AL)
-                                     .addReg(0));
+                                     .addReg(0).setMetaData(MI));
     return;
   }
   case ARM::PATCHABLE_FUNCTION_ENTER:
@@ -2241,10 +2442,81 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
     MCInst TmpInstDSB;
     TmpInstDSB.setOpcode(ARM::DSB);
     TmpInstDSB.addOperand(MCOperand::createImm(0xf));
+
+    std::vector<std::string> Preds;
+    std::vector<std::string> Succs;
+    // LLVM_DEBUG(dbgs() << "Successors: ");
+    auto succs = MI->getParent()->successors();
+    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
+      unsigned SMBBID = (*succ)->getNumber();
+      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
+      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+      Succs.push_back(SID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    // LLVM_DEBUG(dbgs() << "Predecessors: ");
+    auto preds = MI->getParent()->predecessors();
+    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
+      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
+      unsigned PMBBID = (*pred)->getNumber();
+      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
+      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+      Preds.push_back(PID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    const MachineBasicBlock *MBBa = MI->getParent();
+    unsigned MBBID = MBBa->getNumber();
+    unsigned MFID = MBBa->getParent()->getFunctionNumber();
+    unsigned funcsize = MBBa->getParent()->size();
+    std::string FunctionName = MBBa->getParent()->getName().str();
+    std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+
+    TmpInstDSB.setParentID(ID);
+    TmpInstDSB.setFunctionID(std::to_string(MFID));
+    TmpInstDSB.setFunctionName(FunctionName);
+    TmpInstDSB.setFunctionSize(funcsize);
+    TmpInstDSB.setSuccs(ID, Succs);
+    TmpInstDSB.setPreds(ID, Preds);
     EmitToStreamer(*OutStreamer, TmpInstDSB);
     MCInst TmpInstISB;
     TmpInstISB.setOpcode(ARM::ISB);
     TmpInstISB.addOperand(MCOperand::createImm(0xf));
+
+
+    // LLVM_DEBUG(dbgs() << "Successors: ");
+    succs = MI->getParent()->successors();
+    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
+      unsigned SMBBID = (*succ)->getNumber();
+      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
+      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+      Succs.push_back(SID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    // LLVM_DEBUG(dbgs() << "Predecessors: ");
+    preds = MI->getParent()->predecessors();
+    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
+      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
+      unsigned PMBBID = (*pred)->getNumber();
+      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
+      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+      Preds.push_back(PID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    MBBa = MI->getParent();
+    MBBID = MBBa->getNumber();
+    MFID = MBBa->getParent()->getFunctionNumber();
+    funcsize = MBBa->getParent()->size();
+    FunctionName = MBBa->getParent()->getName().str();
+    ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+
+    TmpInstISB.setParentID(ID);
+    TmpInstISB.setFunctionID(std::to_string(MFID));
+    TmpInstISB.setFunctionName(FunctionName);
+    TmpInstISB.setFunctionSize(funcsize);
+    TmpInstISB.setSuccs(ID, Succs);
+    TmpInstISB.setPreds(ID, Preds);
     EmitToStreamer(*OutStreamer, TmpInstISB);
     return;
   }
@@ -2255,12 +2527,82 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
     TmpInstDSB.addOperand(MCOperand::createImm(0xf));
     TmpInstDSB.addOperand(MCOperand::createImm(ARMCC::AL));
     TmpInstDSB.addOperand(MCOperand::createReg(0));
+
+    std::vector<std::string> Preds;
+    std::vector<std::string> Succs;
+    // LLVM_DEBUG(dbgs() << "Successors: ");
+    auto succs = MI->getParent()->successors();
+    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
+      unsigned SMBBID = (*succ)->getNumber();
+      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
+      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+      Succs.push_back(SID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    // LLVM_DEBUG(dbgs() << "Predecessors: ");
+    auto preds = MI->getParent()->predecessors();
+    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
+      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
+      unsigned PMBBID = (*pred)->getNumber();
+      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
+      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+      Preds.push_back(PID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    const MachineBasicBlock *MBBa = MI->getParent();
+    unsigned MBBID = MBBa->getNumber();
+    unsigned MFID = MBBa->getParent()->getFunctionNumber();
+    unsigned funcsize = MBBa->getParent()->size();
+    std::string FunctionName = MBBa->getParent()->getName().str();
+    std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+
+    TmpInstDSB.setParentID(ID);
+    TmpInstDSB.setFunctionID(std::to_string(MFID));
+    TmpInstDSB.setFunctionName(FunctionName);
+    TmpInstDSB.setFunctionSize(funcsize);
+    TmpInstDSB.setSuccs(ID, Succs);
+    TmpInstDSB.setPreds(ID, Preds);
     EmitToStreamer(*OutStreamer, TmpInstDSB);
     MCInst TmpInstISB;
     TmpInstISB.setOpcode(ARM::t2ISB);
     TmpInstISB.addOperand(MCOperand::createImm(0xf));
     TmpInstISB.addOperand(MCOperand::createImm(ARMCC::AL));
     TmpInstISB.addOperand(MCOperand::createReg(0));
+
+    // LLVM_DEBUG(dbgs() << "Successors: ");
+    succs = MI->getParent()->successors();
+    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
+      unsigned SMBBID = (*succ)->getNumber();
+      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
+      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+      Succs.push_back(SID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    // LLVM_DEBUG(dbgs() << "Predecessors: ");
+    preds = MI->getParent()->predecessors();
+    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
+      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
+      unsigned PMBBID = (*pred)->getNumber();
+      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
+      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+      Preds.push_back(PID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    MBBa = MI->getParent();
+    MBBID = MBBa->getNumber();
+    MFID = MBBa->getParent()->getFunctionNumber();
+    funcsize = MBBa->getParent()->size();
+    FunctionName = MBBa->getParent()->getName().str();
+    ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+
+    TmpInstISB.setParentID(ID);
+    TmpInstISB.setFunctionID(std::to_string(MFID));
+    TmpInstISB.setFunctionName(FunctionName);
+    TmpInstISB.setFunctionSize(funcsize);
+    TmpInstISB.setSuccs(ID, Succs);
+    TmpInstISB.setPreds(ID, Preds);
     EmitToStreamer(*OutStreamer, TmpInstISB);
     return;
   }
@@ -2268,6 +2610,42 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
     // Print SB
     MCInst TmpInstSB;
     TmpInstSB.setOpcode(ARM::SB);
+
+    std::vector<std::string> Preds;
+    std::vector<std::string> Succs;
+    // LLVM_DEBUG(dbgs() << "Successors: ");
+    auto succs = MI->getParent()->successors();
+    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
+      unsigned SMBBID = (*succ)->getNumber();
+      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
+      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+      Succs.push_back(SID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    // LLVM_DEBUG(dbgs() << "Predecessors: ");
+    auto preds = MI->getParent()->predecessors();
+    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
+      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
+      unsigned PMBBID = (*pred)->getNumber();
+      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
+      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+      Preds.push_back(PID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    const MachineBasicBlock *MBBa = MI->getParent();
+    unsigned MBBID = MBBa->getNumber();
+    unsigned MFID = MBBa->getParent()->getFunctionNumber();
+    unsigned funcsize = MBBa->getParent()->size();
+    std::string FunctionName = MBBa->getParent()->getName().str();
+    std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+
+    TmpInstSB.setParentID(ID);
+    TmpInstSB.setFunctionID(std::to_string(MFID));
+    TmpInstSB.setFunctionName(FunctionName);
+    TmpInstSB.setFunctionSize(funcsize);
+    TmpInstSB.setSuccs(ID, Succs);
+    TmpInstSB.setPreds(ID, Preds);
     EmitToStreamer(*OutStreamer, TmpInstSB);
     return;
   }
@@ -2275,6 +2653,42 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
     // Print SB
     MCInst TmpInstSB;
     TmpInstSB.setOpcode(ARM::t2SB);
+
+    std::vector<std::string> Preds;
+    std::vector<std::string> Succs;
+    // LLVM_DEBUG(dbgs() << "Successors: ");
+    auto succs = MI->getParent()->successors();
+    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
+      unsigned SMBBID = (*succ)->getNumber();
+      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
+      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+      Succs.push_back(SID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    // LLVM_DEBUG(dbgs() << "Predecessors: ");
+    auto preds = MI->getParent()->predecessors();
+    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
+      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
+      unsigned PMBBID = (*pred)->getNumber();
+      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
+      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+      Preds.push_back(PID);
+    }
+    // LLVM_DEBUG(dbgs() << "\n");
+    const MachineBasicBlock *MBBa = MI->getParent();
+    unsigned MBBID = MBBa->getNumber();
+    unsigned MFID = MBBa->getParent()->getFunctionNumber();
+    unsigned funcsize = MBBa->getParent()->size();
+    std::string FunctionName = MBBa->getParent()->getName().str();
+    std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+
+    TmpInstSB.setParentID(ID);
+    TmpInstSB.setFunctionID(std::to_string(MFID));
+    TmpInstSB.setFunctionName(FunctionName);
+    TmpInstSB.setFunctionSize(funcsize);
+    TmpInstSB.setSuccs(ID, Succs);
+    TmpInstSB.setPreds(ID, Preds);
     EmitToStreamer(*OutStreamer, TmpInstSB);
     return;
   }
@@ -2324,6 +2738,41 @@ void ARMAsmPrinter::emitInstruction(const MachineInstr *MI) {
   MCInst TmpInst;
   LowerARMMachineInstrToMCInst(MI, TmpInst, *this);
 
+  std::vector<std::string> Preds;
+  std::vector<std::string> Succs;
+  // LLVM_DEBUG(dbgs() << "Successors: ");
+  auto succs = MI->getParent()->successors();
+  for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+    // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
+    unsigned SMBBID = (*succ)->getNumber();
+    unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
+    std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+    Succs.push_back(SID);
+  }
+  // LLVM_DEBUG(dbgs() << "\n");
+  // LLVM_DEBUG(dbgs() << "Predecessors: ");
+  auto preds = MI->getParent()->predecessors();
+  for (auto pred = preds.begin(); pred != preds.end(); pred++) {
+    // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
+    unsigned PMBBID = (*pred)->getNumber();
+    unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
+    std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+    Preds.push_back(PID);
+  }
+  // LLVM_DEBUG(dbgs() << "\n");
+  const MachineBasicBlock *MBBa = MI->getParent();
+  unsigned MBBID = MBBa->getNumber();
+  unsigned MFID = MBBa->getParent()->getFunctionNumber();
+  unsigned funcsize = MBBa->getParent()->size();
+  std::string FunctionName = MBBa->getParent()->getName().str();
+  std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+
+  TmpInst.setParentID(ID);
+  TmpInst.setFunctionID(std::to_string(MFID));
+  TmpInst.setFunctionName(FunctionName);
+  TmpInst.setFunctionSize(funcsize);
+  TmpInst.setSuccs(ID, Succs);
+  TmpInst.setPreds(ID, Preds);
   EmitToStreamer(*OutStreamer, TmpInst);
 }
 
