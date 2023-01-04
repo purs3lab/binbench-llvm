@@ -887,7 +887,7 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
     std::string tmpSN, sectionName = ELFSec.getSectionName().str();
     if (sectionName.find(".text") == 0) {
       DEBUG_WITH_TYPE("binbench", dbgs() << "Found the .text section!" << "\n");
-      unsigned totalOffset = 0, totalFixups = 0, totalAlignSize = 0, fragOff = 0, prevMBB = 0;
+      unsigned totalOffset = 0, totalFixups = 0, totalAlignSize = 0, fragOff = 0, prevMBB = 0, prevMBBSize = 0;
       int MFID, MBBID, prevMFID = -1;
       std::string prevID, canFallThrough;
       unsigned MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs;
@@ -931,13 +931,27 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
                 MAI->specialCntPriorToFunc = 0;
               }
               if (!MAI->isSeenFuncs(MFID)) {
-                prevMBB = 0;
+                prevMBB = fragOff;
+                prevMBBSize = 0;
                 MAI->updateSeenFuncs(MFID);
               }
               // Update the MBB offset, MF Size and section name accordingly
-              std::get<1>(MAI->MachineBasicBlocks[ID]) += (fragOff + prevMBB);
+
+              // print all variable values using DEBUG_WITH_TYPE
+              DEBUG_WITH_TYPE("binbench", dbgs() << "ID: " << ID << "\t");
+              DEBUG_WITH_TYPE("binbench", dbgs() << "MBBSize: " << MBBSize << "\t");
+              DEBUG_WITH_TYPE("binbench", dbgs() << "Align: " << alignSize << "\t");
+              DEBUG_WITH_TYPE("binbench", dbgs() << "Fixups: " << numFixups << "\t");
+              DEBUG_WITH_TYPE("binbench", dbgs() << "Offset: " << totalOffset << "\t");
+              DEBUG_WITH_TYPE("binbench", dbgs() << "PrevMBB: " << prevMBB << "\t");
+              DEBUG_WITH_TYPE("binbench", dbgs() << "fragOff: " << fragOff << "\t");
+              DEBUG_WITH_TYPE("binbench", dbgs() << "Section: " << sectionName << "\t");
+
+
+              std::get<1>(MAI->MachineBasicBlocks[ID]) += (prevMBB);
               prevMBB += MBBSize - alignSize;
-              totalOffset += MBBSize;
+              totalOffset += MBBSize - alignSize;
+              prevMBBSize = MBBSize - alignSize;
               totalFixups += numFixups;
               totalAlignSize += alignSize;
               countedMBBs.insert(ID);
@@ -982,13 +996,16 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
             MAI->MBBLayoutOrder.push_back(ID);
 
             if (!MAI->isSeenFuncs(MFID)) {
-              prevMBB = 0;
+              prevMBB = fragOff;
+              prevMBBSize = 0;
               MAI->updateSeenFuncs(MFID);
             }
             // Update the MBB offset, MF Size and section name accordingly
-            std::get<1>(MAI->MachineBasicBlocks[ID]) += (fragOff + prevMBB);
+            // std::get<1>(MAI->MachineBasicBlocks[ID]) += (fragOff + prevMBB);
+            std::get<1>(MAI->MachineBasicBlocks[ID]) += (prevMBB);
             prevMBB += MBBSize - alignSize;
-            totalOffset += MBBSize;
+            totalOffset += MBBSize - alignSize;
+            prevMBBSize = MBBSize - alignSize;
             totalFixups += numFixups;
             totalAlignSize += alignSize;
             countedMBBs.insert(ID);
