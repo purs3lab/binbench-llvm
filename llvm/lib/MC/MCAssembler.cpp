@@ -930,14 +930,14 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
                 MBBSize += MAI->specialCntPriorToFunc;
                 MAI->specialCntPriorToFunc = 0;
               }
-              // if (!MAI->isSeenFuncs(MFID)) {
-              //   prevMBB = 0;
-              //   MAI->updateSeenFuncs(MFID);
-              // }
+              if (!MAI->isSeenFuncs(MFID)) {
+                prevMBB = 0;
+                MAI->updateSeenFuncs(MFID);
+              }
               // Update the MBB offset, MF Size and section name accordingly
-              std::get<1>(MAI->MachineBasicBlocks[ID]) += fragOff;
-              totalOffset = std::get<1>(MAI->MachineBasicBlocks[ID]) + MBBSize;
-              // prevMBB += MBBSize;
+              std::get<1>(MAI->MachineBasicBlocks[ID]) += (fragOff + prevMBB);
+              prevMBB += MBBSize - alignSize;
+              totalOffset += MBBSize;
               totalFixups += numFixups;
               totalAlignSize += alignSize;
               countedMBBs.insert(ID);
@@ -986,11 +986,9 @@ void updateReorderInfoValues(const MCAsmLayout &Layout) {
               MAI->updateSeenFuncs(MFID);
             }
             // Update the MBB offset, MF Size and section name accordingly
-            // std::get<1>(MAI->MachineBasicBlocks[ID]) += (fragOff + prevMBB);
-            // prevMBB += MBBSize;
-            // totalOffset += MBBSize;
-            std::get<1>(MAI->MachineBasicBlocks[ID]) += fragOff;
-            totalOffset = std::get<1>(MAI->MachineBasicBlocks[ID]) + MBBSize;
+            std::get<1>(MAI->MachineBasicBlocks[ID]) += (fragOff + prevMBB);
+            prevMBB += MBBSize - alignSize;
+            totalOffset += MBBSize;
             totalFixups += numFixups;
             totalAlignSize += alignSize;
             countedMBBs.insert(ID);
