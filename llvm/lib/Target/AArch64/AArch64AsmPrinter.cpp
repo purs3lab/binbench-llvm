@@ -69,6 +69,7 @@ using namespace llvm;
 namespace {
 
 class AArch64AsmPrinter : public AsmPrinter {
+
   AArch64MCInstLower MCInstLowering;
   StackMaps SM;
   FaultMaps FM;
@@ -179,7 +180,6 @@ private:
   void emitEndOfAsmFile(Module &M) override;
 
   AArch64FunctionInfo *AArch64FI = nullptr;
-
   /// Emit the LOHs contained in AArch64FI.
   void emitLOHs();
 
@@ -196,6 +196,46 @@ private:
 };
 
 } // end anonymous namespace
+
+MCInst &setMetaData(const MachineInstr *MI, MCInst *Inst) {
+  std::vector<std::string> Preds;
+  std::vector<std::string> Succs;
+  // LLVM_DEBUG(dbgs() << "Successors: ");
+  auto succs = MI->getParent()->successors();
+  for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+    // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
+    unsigned SMBBID = (*succ)->getNumber();
+    unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
+    std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+    Succs.push_back(SID);
+  }
+  // LLVM_DEBUG(dbgs() << "\n");
+  // LLVM_DEBUG(dbgs() << "Predecessors: ");
+  auto preds = MI->getParent()->predecessors();
+  for (auto pred = preds.begin(); pred != preds.end(); pred++) {
+    // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
+    unsigned PMBBID = (*pred)->getNumber();
+    unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
+    std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+    Preds.push_back(PID);
+  }
+  // LLVM_DEBUG(dbgs() << "\n");
+  const MachineBasicBlock *MBBa = MI->getParent();
+  unsigned MBBID = MBBa->getNumber();
+  unsigned MFID = MBBa->getParent()->getFunctionNumber();
+  unsigned funcsize = MBBa->getParent()->size();
+  std::string FunctionName = MBBa->getParent()->getName().str();
+  std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+
+  Inst->setParentID(ID);
+  Inst->setFunctionID(std::to_string(MFID));
+  Inst->setFunctionName(FunctionName);
+  Inst->setFunctionSize(funcsize);
+  Inst->setSuccs(ID, Succs);
+  Inst->setPreds(ID, Preds);
+
+  return *Inst;
+}
 
 void AArch64AsmPrinter::emitStartOfAsmFile(Module &M) {
   const Triple &TT = TM.getTargetTriple();
@@ -1144,41 +1184,7 @@ void AArch64AsmPrinter::emitFMov0(const MachineInstr &MI) {
     MOVI.addOperand(MCOperand::createReg(DestReg));
     MOVI.addOperand(MCOperand::createImm(0));
 
-    std::vector<std::string> Preds;
-    std::vector<std::string> Succs;
-    // LLVM_DEBUG(dbgs() << "Successors: ");
-    auto succs = MI.getParent()->successors();
-    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
-      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
-      unsigned SMBBID = (*succ)->getNumber();
-      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-      Succs.push_back(SID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    // LLVM_DEBUG(dbgs() << "Predecessors: ");
-    auto preds = MI.getParent()->predecessors();
-    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
-      unsigned PMBBID = (*pred)->getNumber();
-      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-      Preds.push_back(PID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    const MachineBasicBlock *MBBa = MI.getParent();
-    unsigned MBBID = MBBa->getNumber();
-    unsigned MFID = MBBa->getParent()->getFunctionNumber();
-    unsigned funcsize = MBBa->getParent()->size();
-    std::string FunctionName = MBBa->getParent()->getName().str();
-    std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
-
-    MOVI.setParentID(ID);
-    MOVI.setFunctionID(std::to_string(MFID));
-    MOVI.setFunctionName(FunctionName);
-    MOVI.setFunctionSize(funcsize);
-    MOVI.setSuccs(ID, Succs);
-    MOVI.setPreds(ID, Preds);
+    setMetaData(&MI, &MOVI);
     EmitToStreamer(*OutStreamer, MOVI);
   } else {
     MCInst FMov;
@@ -1200,41 +1206,7 @@ void AArch64AsmPrinter::emitFMov0(const MachineInstr &MI) {
       FMov.addOperand(MCOperand::createReg(AArch64::XZR));
       break;
     }
-    std::vector<std::string> Preds;
-    std::vector<std::string> Succs;
-    // LLVM_DEBUG(dbgs() << "Successors: ");
-    auto succs = MI.getParent()->successors();
-    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
-      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
-      unsigned SMBBID = (*succ)->getNumber();
-      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-      Succs.push_back(SID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    // LLVM_DEBUG(dbgs() << "Predecessors: ");
-    auto preds = MI.getParent()->predecessors();
-    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
-      unsigned PMBBID = (*pred)->getNumber();
-      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-      Preds.push_back(PID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    const MachineBasicBlock *MBBa = MI.getParent();
-    unsigned MBBID = MBBa->getNumber();
-    unsigned MFID = MBBa->getParent()->getFunctionNumber();
-    unsigned funcsize = MBBa->getParent()->size();
-    std::string FunctionName = MBBa->getParent()->getName().str();
-    std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
-
-    FMov.setParentID(ID);
-    FMov.setFunctionID(std::to_string(MFID));
-    FMov.setFunctionName(FunctionName);
-    FMov.setFunctionSize(funcsize);
-    FMov.setSuccs(ID, Succs);
-    FMov.setPreds(ID, Preds);
+    setMetaData(&MI, &FMov);
     EmitToStreamer(*OutStreamer, FMov);
   }
 }
@@ -1286,41 +1258,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
         MCInst Inst;
         MCInstLowering.Lower(MI, Inst);
 
-        std::vector<std::string> Preds;
-        std::vector<std::string> Succs;
-        // LLVM_DEBUG(dbgs() << "Successors: ");
-        auto succs = MI->getParent()->successors();
-        for (auto succ = succs.begin(); succ != succs.end(); succ++) {
-          // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
-          unsigned SMBBID = (*succ)->getNumber();
-          unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-          std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-          Succs.push_back(SID);
-        }
-        // LLVM_DEBUG(dbgs() << "\n");
-        // LLVM_DEBUG(dbgs() << "Predecessors: ");
-        auto preds = MI->getParent()->predecessors();
-        for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-          // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
-          unsigned PMBBID = (*pred)->getNumber();
-          unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-          std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-          Preds.push_back(PID);
-        }
-        // LLVM_DEBUG(dbgs() << "\n");
-        const MachineBasicBlock *MBBa = MI->getParent();
-        unsigned MBBID = MBBa->getNumber();
-        unsigned MFID = MBBa->getParent()->getFunctionNumber();
-        unsigned funcsize = MBBa->getParent()->size();
-        std::string FunctionName = MBBa->getParent()->getName().str();
-        std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
-
-        Inst.setParentID(ID);
-        Inst.setFunctionID(std::to_string(MFID));
-        Inst.setFunctionName(FunctionName);
-        Inst.setFunctionSize(funcsize);
-        Inst.setSuccs(ID, Succs);
-        Inst.setPreds(ID, Preds);
+        setMetaData(MI, &Inst);
 
         EmitToStreamer(*OutStreamer, Inst);
         CurrentPatchableFunctionEntrySym = createTempSymbol("patch");
@@ -1348,43 +1286,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
       MovZ.addOperand(Hi_MCSym);
       MovZ.addOperand(MCOperand::createImm(16));
 
-
-      std::vector<std::string> Preds;
-      std::vector<std::string> Succs;
-      // LLVM_DEBUG(dbgs() << "Successors: ");
-      auto succs = MI->getParent()->successors();
-      for (auto succ = succs.begin(); succ != succs.end(); succ++) {
-        // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
-        unsigned SMBBID = (*succ)->getNumber();
-        unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-        std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-        Succs.push_back(SID);
-      }
-      // LLVM_DEBUG(dbgs() << "\n");
-      // LLVM_DEBUG(dbgs() << "Predecessors: ");
-      auto preds = MI->getParent()->predecessors();
-      for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-        // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
-        unsigned PMBBID = (*pred)->getNumber();
-        unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-        std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-        Preds.push_back(PID);
-      }
-      // LLVM_DEBUG(dbgs() << "\n");
-      const MachineBasicBlock *MBBa = MI->getParent();
-      unsigned MBBID = MBBa->getNumber();
-      unsigned MFID = MBBa->getParent()->getFunctionNumber();
-      unsigned funcsize = MBBa->getParent()->size();
-      std::string FunctionName = MBBa->getParent()->getName().str();
-      std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
-
-      MovZ.setParentID(ID);
-      MovZ.setFunctionID(std::to_string(MFID));
-      MovZ.setFunctionName(FunctionName);
-      MovZ.setFunctionSize(funcsize);
-      MovZ.setSuccs(ID, Succs);
-      MovZ.setPreds(ID, Preds);
-      
+      setMetaData(MI, &MovZ); 
       EmitToStreamer(*OutStreamer, MovZ);
 
       MCInst MovK;
@@ -1394,39 +1296,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
       MovK.addOperand(Lo_MCSym);
       MovK.addOperand(MCOperand::createImm(0));
 
-      // LLVM_DEBUG(dbgs() << "Successors: ");
-      succs = MI->getParent()->successors();
-      for (auto succ = succs.begin(); succ != succs.end(); succ++) {
-        // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
-        unsigned SMBBID = (*succ)->getNumber();
-        unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-        std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-        Succs.push_back(SID);
-      }
-      // LLVM_DEBUG(dbgs() << "\n");
-      // LLVM_DEBUG(dbgs() << "Predecessors: ");
-      preds = MI->getParent()->predecessors();
-      for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-        // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
-        unsigned PMBBID = (*pred)->getNumber();
-        unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-        std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-        Preds.push_back(PID);
-      }
-      // LLVM_DEBUG(dbgs() << "\n");
-      MBBa = MI->getParent();
-      MBBID = MBBa->getNumber();
-      MFID = MBBa->getParent()->getFunctionNumber();
-      funcsize = MBBa->getParent()->size();
-      FunctionName = MBBa->getParent()->getName().str();
-      ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
-
-      MovK.setParentID(ID);
-      MovK.setFunctionID(std::to_string(MFID));
-      MovK.setFunctionName(FunctionName);
-      MovK.setFunctionSize(funcsize);
-      MovK.setSuccs(ID, Succs);
-      MovK.setPreds(ID, Preds);
+      setMetaData(MI, &MovK);
       EmitToStreamer(*OutStreamer, MovK);
       return;
   }
@@ -1441,42 +1311,9 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
       TmpInst.addOperand(MCOperand::createImm(MI->getOperand(1).getImm()));
 
 
-      std::vector<std::string> Preds;
-      std::vector<std::string> Succs;
-      // LLVM_DEBUG(dbgs() << "Successors: ");
-      auto succs = MI->getParent()->successors();
-      for (auto succ = succs.begin(); succ != succs.end(); succ++) {
-        // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
-        unsigned SMBBID = (*succ)->getNumber();
-        unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-        std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-        Succs.push_back(SID);
-      }
-      // LLVM_DEBUG(dbgs() << "\n");
-      // LLVM_DEBUG(dbgs() << "Predecessors: ");
-      auto preds = MI->getParent()->predecessors();
-      for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-        // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
-        unsigned PMBBID = (*pred)->getNumber();
-        unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-        std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-        Preds.push_back(PID);
-      }
-      // LLVM_DEBUG(dbgs() << "\n");
-      const MachineBasicBlock *MBBa = MI->getParent();
-      unsigned MBBID = MBBa->getNumber();
-      unsigned MFID = MBBa->getParent()->getFunctionNumber();
-      unsigned funcsize = MBBa->getParent()->size();
-      std::string FunctionName = MBBa->getParent()->getName().str();
-      std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
 
-      TmpInst.setParentID(ID);
-      TmpInst.setFunctionID(std::to_string(MFID));
-      TmpInst.setFunctionName(FunctionName);
-      TmpInst.setFunctionSize(funcsize);
-      TmpInst.setSuccs(ID, Succs);
-      TmpInst.setPreds(ID, Preds);
-      
+      setMetaData(MI, &TmpInst);
+
 
       EmitToStreamer(*OutStreamer, TmpInst);
       return;
@@ -1527,43 +1364,8 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
     TmpInst.setOpcode(AArch64::BR);
     TmpInst.addOperand(MCOperand::createReg(MI->getOperand(0).getReg()));
 
+    setMetaData(MI, &TmpInst);
 
-    std::vector<std::string> Preds;
-    std::vector<std::string> Succs;
-    // LLVM_DEBUG(dbgs() << "Successors: ");
-    auto succs = MI->getParent()->successors();
-    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
-      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
-      unsigned SMBBID = (*succ)->getNumber();
-      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-      Succs.push_back(SID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    // LLVM_DEBUG(dbgs() << "Predecessors: ");
-    auto preds = MI->getParent()->predecessors();
-    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
-      unsigned PMBBID = (*pred)->getNumber();
-      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-      Preds.push_back(PID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    const MachineBasicBlock *MBBa = MI->getParent();
-    unsigned MBBID = MBBa->getNumber();
-    unsigned MFID = MBBa->getParent()->getFunctionNumber();
-    unsigned funcsize = MBBa->getParent()->size();
-    std::string FunctionName = MBBa->getParent()->getName().str();
-    std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
-
-    TmpInst.setParentID(ID);
-    TmpInst.setFunctionID(std::to_string(MFID));
-    TmpInst.setFunctionName(FunctionName);
-    TmpInst.setFunctionSize(funcsize);
-    TmpInst.setSuccs(ID, Succs);
-    TmpInst.setPreds(ID, Preds);
-    
     EmitToStreamer(*OutStreamer, TmpInst);
     return;
   }
@@ -1574,41 +1376,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
     TmpInst.setOpcode(AArch64::B);
     TmpInst.addOperand(Dest);
 
-    std::vector<std::string> Preds;
-    std::vector<std::string> Succs;
-    // LLVM_DEBUG(dbgs() << "Successors: ");
-    auto succs = MI->getParent()->successors();
-    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
-      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
-      unsigned SMBBID = (*succ)->getNumber();
-      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-      Succs.push_back(SID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    // LLVM_DEBUG(dbgs() << "Predecessors: ");
-    auto preds = MI->getParent()->predecessors();
-    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
-      unsigned PMBBID = (*pred)->getNumber();
-      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-      Preds.push_back(PID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    const MachineBasicBlock *MBBa = MI->getParent();
-    unsigned MBBID = MBBa->getNumber();
-    unsigned MFID = MBBa->getParent()->getFunctionNumber();
-    unsigned funcsize = MBBa->getParent()->size();
-    std::string FunctionName = MBBa->getParent()->getName().str();
-    std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
-
-    TmpInst.setParentID(ID);
-    TmpInst.setFunctionID(std::to_string(MFID));
-    TmpInst.setFunctionName(FunctionName);
-    TmpInst.setFunctionSize(funcsize);
-    TmpInst.setSuccs(ID, Succs);
-    TmpInst.setPreds(ID, Preds);
+    setMetaData(MI, &TmpInst);
     EmitToStreamer(*OutStreamer, TmpInst);
     return;
   }
@@ -1619,47 +1387,14 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
     TmpInstDSB.addOperand(MCOperand::createImm(0xf));
 
 
-    std::vector<std::string> Preds;
-    std::vector<std::string> Succs;
-    // LLVM_DEBUG(dbgs() << "Successors: ");
-    auto succs = MI->getParent()->successors();
-    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
-      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
-      unsigned SMBBID = (*succ)->getNumber();
-      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-      Succs.push_back(SID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    // LLVM_DEBUG(dbgs() << "Predecessors: ");
-    auto preds = MI->getParent()->predecessors();
-    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
-      unsigned PMBBID = (*pred)->getNumber();
-      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-      Preds.push_back(PID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    const MachineBasicBlock *MBBa = MI->getParent();
-    unsigned MBBID = MBBa->getNumber();
-    unsigned MFID = MBBa->getParent()->getFunctionNumber();
-    unsigned funcsize = MBBa->getParent()->size();
-    std::string FunctionName = MBBa->getParent()->getName().str();
-    std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
 
-    TmpInstDSB.setParentID(ID);
-    TmpInstDSB.setFunctionID(std::to_string(MFID));
-    TmpInstDSB.setFunctionName(FunctionName);
-    TmpInstDSB.setFunctionSize(funcsize);
-    TmpInstDSB.setSuccs(ID, Succs);
-    TmpInstDSB.setPreds(ID, Preds);
-
-
+    setMetaData(MI, &TmpInstDSB);
     EmitToStreamer(*OutStreamer, TmpInstDSB);
     MCInst TmpInstISB;
     TmpInstISB.setOpcode(AArch64::ISB);
     TmpInstISB.addOperand(MCOperand::createImm(0xf));
+
+    setMetaData(MI, &TmpInstISB);
     EmitToStreamer(*OutStreamer, TmpInstISB);
     return;
   }
@@ -1668,41 +1403,8 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
     MCInst TmpInstSB;
     TmpInstSB.setOpcode(AArch64::SB);
   
-    std::vector<std::string> Preds;
-    std::vector<std::string> Succs;
-    // LLVM_DEBUG(dbgs() << "Successors: ");
-    auto succs = MI->getParent()->successors();
-    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
-      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
-      unsigned SMBBID = (*succ)->getNumber();
-      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-      Succs.push_back(SID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    // LLVM_DEBUG(dbgs() << "Predecessors: ");
-    auto preds = MI->getParent()->predecessors();
-    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
-      unsigned PMBBID = (*pred)->getNumber();
-      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-      Preds.push_back(PID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    const MachineBasicBlock *MBBa = MI->getParent();
-    unsigned MBBID = MBBa->getNumber();
-    unsigned MFID = MBBa->getParent()->getFunctionNumber();
-    unsigned funcsize = MBBa->getParent()->size();
-    std::string FunctionName = MBBa->getParent()->getName().str();
-    std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
 
-    TmpInstSB.setParentID(ID);
-    TmpInstSB.setFunctionID(std::to_string(MFID));
-    TmpInstSB.setFunctionName(FunctionName);
-    TmpInstSB.setFunctionSize(funcsize);
-    TmpInstSB.setSuccs(ID, Succs);
-    TmpInstSB.setPreds(ID, Preds);
+    setMetaData(MI, &TmpInstSB);
     EmitToStreamer(*OutStreamer, TmpInstSB);
     return;
   }
@@ -1728,41 +1430,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
     Adrp.addOperand(MCOperand::createReg(AArch64::X0));
     Adrp.addOperand(SymTLSDesc);
   
-    std::vector<std::string> Preds;
-    std::vector<std::string> Succs;
-    // LLVM_DEBUG(dbgs() << "Successors: ");
-    auto succs = MI->getParent()->successors();
-    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
-      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
-      unsigned SMBBID = (*succ)->getNumber();
-      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-      Succs.push_back(SID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    // LLVM_DEBUG(dbgs() << "Predecessors: ");
-    auto preds = MI->getParent()->predecessors();
-    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
-      unsigned PMBBID = (*pred)->getNumber();
-      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-      Preds.push_back(PID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    const MachineBasicBlock *MBBa = MI->getParent();
-    unsigned MBBID = MBBa->getNumber();
-    unsigned MFID = MBBa->getParent()->getFunctionNumber();
-    unsigned funcsize = MBBa->getParent()->size();
-    std::string FunctionName = MBBa->getParent()->getName().str();
-    std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
-
-    Adrp.setParentID(ID);
-    Adrp.setFunctionID(std::to_string(MFID));
-    Adrp.setFunctionName(FunctionName);
-    Adrp.setFunctionSize(funcsize);
-    Adrp.setSuccs(ID, Succs);
-    Adrp.setPreds(ID, Preds);
+    setMetaData(MI, &Adrp);
     EmitToStreamer(*OutStreamer, Adrp);
 
     MCInst Ldr;
@@ -1776,38 +1444,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
     Ldr.addOperand(MCOperand::createReg(AArch64::X0));
     Ldr.addOperand(SymTLSDescLo12);
     Ldr.addOperand(MCOperand::createImm(0));
-    succs = MI->getParent()->successors();
-    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
-      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
-      unsigned SMBBID = (*succ)->getNumber();
-      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-      Succs.push_back(SID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    // LLVM_DEBUG(dbgs() << "Predecessors: ");
-    preds = MI->getParent()->predecessors();
-    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
-      unsigned PMBBID = (*pred)->getNumber();
-      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-      Preds.push_back(PID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    MBBa = MI->getParent();
-    MBBID = MBBa->getNumber();
-    MFID = MBBa->getParent()->getFunctionNumber();
-    funcsize = MBBa->getParent()->size();
-    FunctionName = MBBa->getParent()->getName().str();
-    ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
-
-    Ldr.setParentID(ID);
-    Ldr.setFunctionID(std::to_string(MFID));
-    Ldr.setFunctionName(FunctionName);
-    Ldr.setFunctionSize(funcsize);
-    Ldr.setSuccs(ID, Succs);
-    Ldr.setPreds(ID, Preds);
+    setMetaData(MI, &Ldr);
     EmitToStreamer(*OutStreamer, Ldr);
 
     MCInst Add;
@@ -1823,38 +1460,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
     Add.addOperand(SymTLSDescLo12);
     Add.addOperand(MCOperand::createImm(AArch64_AM::getShiftValue(0)));
 
-    succs = MI->getParent()->successors();
-    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
-      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
-      unsigned SMBBID = (*succ)->getNumber();
-      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-      Succs.push_back(SID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    // LLVM_DEBUG(dbgs() << "Predecessors: ");
-    preds = MI->getParent()->predecessors();
-    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
-      unsigned PMBBID = (*pred)->getNumber();
-      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-      Preds.push_back(PID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    MBBa = MI->getParent();
-    MBBID = MBBa->getNumber();
-    MFID = MBBa->getParent()->getFunctionNumber();
-    funcsize = MBBa->getParent()->size();
-    FunctionName = MBBa->getParent()->getName().str();
-    ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
-
-    Add.setParentID(ID);
-    Add.setFunctionID(std::to_string(MFID));
-    Add.setFunctionName(FunctionName);
-    Add.setFunctionSize(funcsize);
-    Add.setSuccs(ID, Succs);
-    Add.setPreds(ID, Preds);
+    setMetaData(MI, &Add);
     EmitToStreamer(*OutStreamer, Add);
 
     // Emit a relocation-annotation. This expands to no code, but requests
@@ -1863,76 +1469,14 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
     TLSDescCall.setOpcode(AArch64::TLSDESCCALL);
     TLSDescCall.addOperand(Sym);
 
-    succs = MI->getParent()->successors();
-    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
-      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
-      unsigned SMBBID = (*succ)->getNumber();
-      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-      Succs.push_back(SID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    // LLVM_DEBUG(dbgs() << "Predecessors: ");
-    preds = MI->getParent()->predecessors();
-    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
-      unsigned PMBBID = (*pred)->getNumber();
-      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-      Preds.push_back(PID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    MBBa = MI->getParent();
-    MBBID = MBBa->getNumber();
-    MFID = MBBa->getParent()->getFunctionNumber();
-    funcsize = MBBa->getParent()->size();
-    FunctionName = MBBa->getParent()->getName().str();
-    ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
-
-    TLSDescCall.setParentID(ID);
-    TLSDescCall.setFunctionID(std::to_string(MFID));
-    TLSDescCall.setFunctionName(FunctionName);
-    TLSDescCall.setFunctionSize(funcsize);
-    TLSDescCall.setSuccs(ID, Succs);
-    TLSDescCall.setPreds(ID, Preds);
+    setMetaData(MI, &TLSDescCall);
     EmitToStreamer(*OutStreamer, TLSDescCall);
 
     MCInst Blr;
     Blr.setOpcode(AArch64::BLR);
     Blr.addOperand(MCOperand::createReg(AArch64::X1));
 
-    succs = MI->getParent()->successors();
-    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
-      // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
-      unsigned SMBBID = (*succ)->getNumber();
-      unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-      std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-      Succs.push_back(SID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    // LLVM_DEBUG(dbgs() << "Predecessors: ");
-    preds = MI->getParent()->predecessors();
-    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-      // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
-      unsigned PMBBID = (*pred)->getNumber();
-      unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-      std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-      Preds.push_back(PID);
-    }
-    // LLVM_DEBUG(dbgs() << "\n");
-    MBBa = MI->getParent();
-    MBBID = MBBa->getNumber();
-    MFID = MBBa->getParent()->getFunctionNumber();
-    funcsize = MBBa->getParent()->size();
-    FunctionName = MBBa->getParent()->getName().str();
-    ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
-
-    Blr.setParentID(ID);
-    Blr.setFunctionID(std::to_string(MFID));
-    Blr.setFunctionName(FunctionName);
-    Blr.setFunctionSize(funcsize);
-    Blr.setSuccs(ID, Succs);
-    Blr.setPreds(ID, Preds);
+    setMetaData(MI, &Blr);
     EmitToStreamer(*OutStreamer, Blr);
 
     return;
@@ -2092,42 +1636,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
   // Finally, do the automated lowerings for everything else.
   MCInst TmpInst;
   MCInstLowering.Lower(MI, TmpInst);
-
-  std::vector<std::string> Preds;
-  std::vector<std::string> Succs;
-  // LLVM_DEBUG(dbgs() << "Successors: ");
-  auto succs = MI->getParent()->successors();
-  for (auto succ = succs.begin(); succ != succs.end(); succ++) {
-    // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
-    unsigned SMBBID = (*succ)->getNumber();
-    unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-    std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-    Succs.push_back(SID);
-  }
-  // LLVM_DEBUG(dbgs() << "\n");
-  // LLVM_DEBUG(dbgs() << "Predecessors: ");
-  auto preds = MI->getParent()->predecessors();
-  for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-    // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
-    unsigned PMBBID = (*pred)->getNumber();
-    unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-    std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-    Preds.push_back(PID);
-  }
-  // LLVM_DEBUG(dbgs() << "\n");
-  const MachineBasicBlock *MBBa = MI->getParent();
-  unsigned MBBID = MBBa->getNumber();
-  unsigned MFID = MBBa->getParent()->getFunctionNumber();
-  unsigned funcsize = MBBa->getParent()->size();
-  std::string FunctionName = MBBa->getParent()->getName().str();
-  std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
-
-  TmpInst.setParentID(ID);
-  TmpInst.setFunctionID(std::to_string(MFID));
-  TmpInst.setFunctionName(FunctionName);
-  TmpInst.setFunctionSize(funcsize);
-  TmpInst.setSuccs(ID, Succs);
-  TmpInst.setPreds(ID, Preds);
+  setMetaData(MI, &TmpInst);
   EmitToStreamer(*OutStreamer, TmpInst);
 }
 
