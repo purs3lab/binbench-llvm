@@ -34,6 +34,7 @@
 #include "llvm/Support/Compiler.h"
 #include "llvm/Support/Recycler.h"
 #include "llvm/Target/TargetOptions.h"
+#include "llvm/IR/Function.h"
 #include <cassert>
 #include <cstdint>
 #include <memory>
@@ -625,7 +626,10 @@ public:
   const Function &getFunction() const { return F; }
 
   /// getName - Return the name of the corresponding LLVM function.
-  StringRef getName() const;
+  // StringRef getName() const;
+  StringRef getName() const {
+    return getFunction().getName();
+  }
 
   /// getFunctionNumber - Return a unique ID for the current function.
   unsigned getFunctionNumber() const { return FunctionNumber; }

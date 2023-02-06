@@ -62,6 +62,8 @@
 #include <map>
 #include <memory>
 
+#include "llvm/BCollector/BCollectorAPI.h"
+
 using namespace llvm;
 
 #define DEBUG_TYPE "asm-printer"
@@ -1184,7 +1186,7 @@ void AArch64AsmPrinter::emitFMov0(const MachineInstr &MI) {
     MOVI.addOperand(MCOperand::createReg(DestReg));
     MOVI.addOperand(MCOperand::createImm(0));
 
-    setMetaData(&MI, &MOVI);
+    BBlockCollector::setMetadata(&MI, &MOVI);
     EmitToStreamer(*OutStreamer, MOVI);
   } else {
     MCInst FMov;

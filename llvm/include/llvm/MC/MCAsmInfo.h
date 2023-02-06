@@ -557,6 +557,13 @@ public:
   /// Get the code pointer size in bytes.
   unsigned getCodePointerSize() const { return CodePointerSize; }
 
+  bool updateMetadata() const {
+    bool success = false;
+    // collect all the bookkeeping information and send it to the BCollector
+    // where should this function be called? 
+    return success;
+  }
+
   // Akul : Porting essential stuctures that hold metadata before printing
   // Here we skip changes made for supporting inline assembly.
   // To what extent do we want to support inline assembly? 

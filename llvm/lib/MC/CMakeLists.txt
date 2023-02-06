@@ -74,6 +74,7 @@ add_llvm_component_library(LLVMMC
   ${LLVM_MAIN_INCLUDE_DIR}/llvm/MC
 
   LINK_COMPONENTS
+  BC
   Support
   BinaryFormat
   DebugInfoCodeView

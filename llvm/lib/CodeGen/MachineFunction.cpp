@@ -604,9 +604,9 @@ LLVM_DUMP_METHOD void MachineFunction::dump() const {
 }
 #endif
 
-StringRef MachineFunction::getName() const {
-  return getFunction().getName();
-}
+// StringRef MachineFunction::getName() const {
+//   return getFunction().getName();
+// }
 
 void MachineFunction::print(raw_ostream &OS, const SlotIndexes *Indexes) const {
   OS << "# Machine code for function " << getName() << ": ";

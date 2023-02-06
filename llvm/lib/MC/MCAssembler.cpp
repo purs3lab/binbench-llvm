@@ -38,6 +38,7 @@
 #include "llvm/Support/LEB128.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/Debug.h"
+// #include "llvm/MC/BCollectorAPI.h"
 #include <cassert>
 #include <cstdint>
 #include <tuple>
@@ -804,7 +805,8 @@ void MCAssembler::writeSectionData(raw_ostream &OS, const MCSection *Sec,
   assert(getContext().hadError() ||
          OS.tell() - Start == Layout.getSectionAddressSize(Sec));
 }
-
+// Akul: This function is called from MCAssembler::writeSectionData()
+// Move it to BCollector?
 std::tuple<MCValue, uint64_t, bool, bool>
 MCAssembler::handleFixup(const MCAsmLayout &Layout, MCFragment &F,
                          const MCFixup &Fixup) {
@@ -829,398 +831,6 @@ MCAssembler::handleFixup(const MCAsmLayout &Layout, MCFragment &F,
 }
 
 
-// Koo: Dump all fixups if necessary 
-//      In .text, .rodata, .data, .data.rel.ro, .eh_frame, and debugging sections
-void dumpFixups(std::list<std::tuple<unsigned, unsigned, bool, std::string, std::string, bool, std::string, unsigned, unsigned>> \
-                Fixups, std::string kind, bool isDebug) {
-  if (Fixups.size() > 0) {
-    DEBUG_WITH_TYPE("binbench", dbgs() << " - Fixups Info (." << kind << "): " << Fixups.size() << "\n");
-    unsigned offset, size, numJTEntries, JTEntrySize;
-    bool isRel, isNewSection;
-    std::string FixupParentID, SymbolRefFixupName, sectionName;
-
-    for (auto it = Fixups.begin(); it != Fixups.end(); ++it) {
-      std::tie(offset, size, isRel, FixupParentID, SymbolRefFixupName, isNewSection, sectionName, numJTEntries, JTEntrySize) = *it;
-      char isRelTF = isRel ? 'T' : 'F';
-      if (isDebug && SymbolRefFixupName.length() > 0) {
-        errs() << "\t[" << FixupParentID << "]\t(" << offset << ", "  << size << ", " << isRelTF;
-        if (SymbolRefFixupName.length() > 0)
-          errs() << ", JT#" << SymbolRefFixupName;
-        errs() << ")\n";
-      }
-    }
-  }
-}
-
-// Koo: Helper function to separate ID into MFID and MBBID
-std::tuple<int, int> separateID(std::string ID) {
-  return std::make_tuple(std::stoi(ID.substr(0, ID.find("_"))), \
-                         std::stoi(ID.substr(ID.find("_") + 1, ID.length())));
-}
-
-// Koo: Convert int into hex (0x00abcdef)
-template<typename T>
-std::string hexlify(T i) {
-    std::stringbuf buf;
-    std::ostream os(&buf);
-    os << "0x" << std::setfill('0') << std::setw(sizeof(T) * 2) << std::hex << i;
-    return buf.str();
-}
-
-// Koo: Final value updates for the entire layout of both MFs and MBBs
-void updateReorderInfoValues(const MCAsmLayout &Layout) {
-  const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
-  const MCObjectFileInfo *MOFI = Layout.getAssembler().getContext().getObjectFileInfo();
-  std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> \
-        jumpTables = MOFI->getJumpTableTargets();
-
-  // Show both MF and MBB offsets according to the final layout order
-  DEBUG_WITH_TYPE("binbench", dbgs() << "\n<MF/MBB Layout Summary>\n");
-  DEBUG_WITH_TYPE("binbench", dbgs() << "----------------------------------------------------------------------------------\n");
-  DEBUG_WITH_TYPE("binbench", dbgs() << " Layout\tMF_MBB_ID\tMBBSize\tAlign\tFixups\tOffset   \tMFSize\tSection\n");
-
-  // Deal with MFs and MBBs in a ELF code section (.text) only
-  for (MCSection &Sec : Layout.getAssembler()) {
-    MCSectionELF &ELFSec = reinterpret_cast<MCSectionELF &>(Sec);
-    // MCSection &ELFSec = Sec;
-
-    std::string tmpSN, sectionName = ELFSec.getSectionName().str();
-    if (sectionName.find(".text") == 0) {
-      DEBUG_WITH_TYPE("binbench", dbgs() << "Found the .text section!" << "\n");
-      unsigned totalOffset = 0, totalFixups = 0, totalAlignSize = 0, fragOff = 0, prevMBB = 0, prevMBBSize = 0;
-      int MFID, MBBID, prevMFID = -1;
-      std::string prevID, canFallThrough;
-      unsigned MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs;
-      std::set<std::string> countedMBBs;
-      std::vector<std::string> preds;
-      std::vector<std::string> succs;
-
-      // Per each fragment in a .text section
-      for (MCFragment &MCF : Sec) {
-        // Here MCDataFragment has combined with the following MCRelaxableFragment or MCAlignFragment
-        // Corner case: MCDataFragment with no instruction - just skip it
-        if (isa<MCDataFragment>(MCF) && MCF.hasInstructions()) {
-        totalOffset = MCF.getOffset();
-        fragOff = totalOffset;
-
-        // Update the MBB offset and MF Size for all collected MBBs in the MF
-          for (std::string ID : MCF.getAllMBBs()) {
-            DEBUG_WITH_TYPE("binbench", dbgs() << "Found a fragment with MBBs" << "\n");
-            if (ID.length() == 0 &&
-                std::get<0>(MAI->MachineBasicBlocks[ID]) > 0) {
-              ID = "999_999";
-              // llvm::dbgs()
-              //     << "[CCR-Error] MCAssembler(updateReorderInfoValues) - "
-              //        "MCSomething went wrong in MCRelaxableFragment: MBB size "
-              //        "> -1 with no parentID?";
-            }
-
-            DEBUG_WITH_TYPE("binbench", dbgs() << "Got ID" << ID << "\n");
-            if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
-              bool isStartMF = false; // check if the new MF begins
-              std::tie(MFID, MBBID) = separateID(ID);
-              std::tie(MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs, tmpSN, preds, succs) = MAI->MachineBasicBlocks[ID];
-
-              if (tmpSN.length() > 0) continue;
-              MAI->MBBLayoutOrder.push_back(ID);
-
-              // Handle a corner case: see handleDirectEmitDirectives() in AsmParser.cpp
-              if (MAI->specialCntPriorToFunc > 0) {
-                MAI->updateByteCounter(ID, MAI->specialCntPriorToFunc, /*numFixups=*/ 0, /*isAlign=*/ false, /*isInline=*/ false);
-                MBBSize += MAI->specialCntPriorToFunc;
-                MAI->specialCntPriorToFunc = 0;
-              }
-              if (!MAI->isSeenFuncs(MFID)) {
-                prevMBB = 0;
-                prevMBBSize = 0;
-                MAI->updateSeenFuncs(MFID);
-              }
-              // Update the MBB offset, MF Size and section name accordingly
-
-              // print all variable values using DEBUG_WITH_TYPE
-              DEBUG_WITH_TYPE("binbench", dbgs() << "ID: " << ID << "\t");
-              DEBUG_WITH_TYPE("binbench", dbgs() << "MBBSize: " << MBBSize << "\t");
-              DEBUG_WITH_TYPE("binbench", dbgs() << "Align: " << alignSize << "\t");
-              DEBUG_WITH_TYPE("binbench", dbgs() << "Fixups: " << numFixups << "\t");
-              DEBUG_WITH_TYPE("binbench", dbgs() << "Offset: " << totalOffset << "\t");
-              DEBUG_WITH_TYPE("binbench", dbgs() << "PrevMBB: " << prevMBB << "\t");
-              DEBUG_WITH_TYPE("binbench", dbgs() << "fragOff: " << fragOff << "\t");
-              DEBUG_WITH_TYPE("binbench", dbgs() << "Section: " << sectionName << "\t");
-
-
-              std::get<1>(MAI->MachineBasicBlocks[ID]) = totalOffset; 
-              prevMBB += MBBSize - alignSize;
-              totalOffset += MBBSize - alignSize;
-              prevMBBSize = MBBSize - alignSize;
-              totalFixups += numFixups;
-              totalAlignSize += alignSize;
-              countedMBBs.insert(ID);
-              MAI->MachineFunctionSizes[MFID] += MBBSize;
-              std::get<6>(MAI->MachineBasicBlocks[ID]) = sectionName;
-              canFallThrough = MAI->canMBBFallThrough[ID] ? "*":"";
-
-              if (MFID > prevMFID) {
-                isStartMF = true;
-                std::get<4>(MAI->MachineBasicBlocks[prevID]) = 1; // Type = End of the function
-              }
-
-              unsigned layoutID = MCF.getLayoutOrder();
-              if (isStartMF) 
-                DEBUG_WITH_TYPE("binbench", dbgs() << "----------------------------------------------------------------------------------\n");
-              DEBUG_WITH_TYPE("binbench", dbgs() << " " << layoutID << "\t[DF " << ID << "]" << canFallThrough << "\t" << MBBSize << "B\t" \
-                     << alignSize << "B\t" << numFixups << "\t" << hexlify(totalOffset) << "\t" \
-                     << MAI->MachineFunctionSizes[MFID] << "B\t" << "(" << sectionName << ")\n");
-
-              prevMFID = MFID;
-              prevID = ID;
-            }
-          }
-        }
-
-        // Check out MCRelaxableFragments, which have not combined with any MCDataFragment
-        // It happens when there are consecutive MCRelaxableFragment (i.e., switch/case)
-        if (isa<MCRelaxableFragment>(MCF) && MCF.hasInstructions()) {
-          MCRelaxableFragment &MCRF = static_cast<MCRelaxableFragment&>(MCF);
-          std::string ID = MCRF.getInst().getParentID();
-
-          if (ID.length() == 0 && std::get<0>(MAI->MachineBasicBlocks[ID]) > 0)
-            ID = "999_999";
-          // If yet the ID has not been showed up along with getAllMBBs(), 
-          // it would be an independent RF that does not belong to any DF
-          if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
-            bool isStartMF = false;
-            std::tie(MFID, MBBID) = separateID(ID);
-            std::tie(MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs, tmpSN, preds, succs) = MAI->MachineBasicBlocks[ID];
-
-            if (tmpSN.length() > 0) continue;
-            MAI->MBBLayoutOrder.push_back(ID);
-
-            if (!MAI->isSeenFuncs(MFID)) {
-              prevMBB = 0;
-              prevMBBSize = 0;
-              MAI->updateSeenFuncs(MFID);
-            }
-            // Update the MBB offset, MF Size and section name accordingly
-            // std::get<1>(MAI->MachineBasicBlocks[ID]) += (fragOff + prevMBB);
-            std::get<1>(MAI->MachineBasicBlocks[ID]) = totalOffset;
-            prevMBB += MBBSize - alignSize;
-            totalOffset += MBBSize - alignSize;
-            prevMBBSize = MBBSize - alignSize;
-            totalFixups += numFixups;
-            totalAlignSize += alignSize;
-            countedMBBs.insert(ID);
-            MAI->MachineFunctionSizes[MFID] += MBBSize;
-            std::get<6>(MAI->MachineBasicBlocks[ID]) = sectionName;
-            canFallThrough = MAI->canMBBFallThrough[ID] ? "*":"";
-
-            if (MFID > prevMFID) {
-              isStartMF = true;
-              std::get<4>(MAI->MachineBasicBlocks[prevID]) = 1; // Type = End of the function
-            }
-
-            unsigned layoutID = MCF.getLayoutOrder();
-            if (isStartMF) 
-              DEBUG_WITH_TYPE("binbench", dbgs() << "----------------------------------------------------------------------------------\n");
-            DEBUG_WITH_TYPE("binbench", dbgs() << " " << layoutID << "\t[DF " << ID << "]" << canFallThrough << "\t" << MBBSize << "B\t" \
-                     << alignSize << "B\t" << numFixups << "\t" << hexlify(totalOffset) << "\t" \
-                     << MAI->MachineFunctionSizes[MFID] << "B\t" << "(" << sectionName << ")\n");
-
-            prevMFID = MFID;
-            prevID = ID;
-          }
-        }
-      }
-
-      // The last ID Type is always the end of the object
-      std::get<4>(MAI->MachineBasicBlocks[prevID]) = 2; 
-      DEBUG_WITH_TYPE("binbench", dbgs() << "----------------------------------------------------------------------------------\n");
-      DEBUG_WITH_TYPE("binbench", dbgs() << "Code(B)\tNOPs(B)\tMFs\tMBBs\tFixups\n");
-      DEBUG_WITH_TYPE("binbench", dbgs() << totalOffset << "\t" << totalAlignSize << "\t" << MAI->MachineFunctionSizes.size() \
-                                             << "\t" << MAI->MachineBasicBlocks.size() << "\t" << totalFixups << "\n"); 
-      DEBUG_WITH_TYPE("binbench", dbgs() << "\tLegend\n\t(*) FallThrough MBB\n  ");
-    }
-  }
-
-  // Dump if there is any CFI-generated JT
-  if (jumpTables.size() > 0) {
-    DEBUG_WITH_TYPE("binbench", dbgs() << "\n<Jump Tables Summary>\n");
-    unsigned totalEntries = 0;
-    for(auto it = jumpTables.begin(); it != jumpTables.end(); ++it) {
-      int JTI, MFID, MFID2, MBBID;
-      unsigned entryKind, entrySize;
-      std::list<std::string> JTEntries;
-
-      std::tie(MFID, JTI) = separateID(it->first);
-      std::tie(entryKind, entrySize, JTEntries) = it->second;
-
-      DEBUG_WITH_TYPE("binbench", dbgs() << "[JT@Function#" << MFID << "_" << JTI << "] " << "(Kind: " \
-                      << entryKind << ", " << JTEntries.size() << " Entries of " << entrySize << "B each)\n");
-
-      for (std::string JTE : JTEntries) {
-        std::tie(MFID2, MBBID) = separateID(JTE);
-        totalEntries++;
-        if (MFID != MFID2)
-          errs() << "[CCR-Error] MCAssembler::updateReorderInfoValues - JT Entry points to the outside of MF! \n";
-        DEBUG_WITH_TYPE("binbench", dbgs() << "\t[" << JTE << "]\t" << \
-                        hexlify(std::get<1>(MAI->MachineBasicBlocks[JTE])) << "\n");
-      }
-    }
-
-    DEBUG_WITH_TYPE("binbench", dbgs() << "#JTs\t#Entries\n" << jumpTables.size() << "\t" << totalEntries << "\n");
-  }
-}
-
-// Koo: These sections contain the fixups that we want to handle
-static const char* fixupLookupSections[] = 
-{
-    ".text",
-    ".rodata",
-    ".data",
-    ".data.rel.ro",
-    ".init_array",
-};
-
-
-// Koo: Helper functions for serializeReorderInfo()
-int getFixupSectionId(std::string secName) {
-    for (size_t i = 0; i < sizeof(fixupLookupSections)/sizeof(*fixupLookupSections); ++i)
-        if (secName.compare(fixupLookupSections[i]) == 0)
-            return i;
-    return -1;
-}
-
-ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple* getFixupTuple(ShuffleInfo::ReorderInfo_FixupInfo* FI, std::string secName) {
-  switch (getFixupSectionId(secName)) {
-    case 0: return FI->add_text();
-    case 1: return FI->add_rodata();
-    case 2: return FI->add_data();
-    case 3: return FI->add_datarel();
-    case 4: return FI->add_initarray();
-    default: llvm_unreachable("[CCR-Error] ShuffleInfo::getFixupTuple - No such section to collect fixups!");
-  }
-}
-
-void setFixups(std::list<std::tuple<unsigned, unsigned, bool, std::string, std::string, bool, std::string, unsigned, unsigned>> Fixups,
-               ShuffleInfo::ReorderInfo_FixupInfo* fixupInfo, std::string secName) {
-  unsigned FixupOffset, FixupSize, FixupisRela, numJTEntries, JTEntrySize;
-  std::string sectionName, FixupParentID, SymbolRefFixupName;
-  bool isNewSection;
-
-  for (auto F = Fixups.begin(); F != Fixups.end(); ++F) {
-    ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple* pFixupTuple = getFixupTuple(fixupInfo, secName);
-    std::tie(FixupOffset, FixupSize, FixupisRela, FixupParentID, \
-             SymbolRefFixupName, isNewSection, sectionName, numJTEntries, JTEntrySize) = *F;
-    pFixupTuple->set_offset(FixupOffset);
-    pFixupTuple->set_deref_sz(FixupSize);
-    pFixupTuple->set_is_rela(FixupisRela);
-    pFixupTuple->set_section_name(sectionName);
-    if (isNewSection) 
-      pFixupTuple->set_type(4); // let linker know if there are multiple .text sections
-    else
-      pFixupTuple->set_type(0); // c2c, c2d, d2c, d2d default=0; should be updated by linker
-
-    // The following jump table information is fixups in .text for JT entry update only (pic/pie)
-    if (numJTEntries > 0) {
-       pFixupTuple->set_num_jt_entries(numJTEntries);
-       pFixupTuple->set_jt_entry_sz(JTEntrySize);
-    }
-  }
-}
-
-// Koo: Serialize all information for future reordering, which has been stored in MCAsmInfo
-void serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmLayout &Layout) {
-  // TODO Akul: We can add new info here for the functions
-  // Set the binary information for reordering
-  ShuffleInfo::ReorderInfo_BinaryInfo* binaryInfo = ri->mutable_bin();
-  binaryInfo->set_rand_obj_offset(0x0);     // Should be updated at linking time
-  binaryInfo->set_main_addr_offset(0x0);    // Should be updated at linking time
-
-  const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
-
-  // Identify this object file has been compiled from:
-  //    obj_type = 0: a general source file (i.e., *.c, *.cc, *.cpp, ...)
-  //    obj_type = 1: a source file that contains inline assembly
-  //    obj_type = 2: standalone assembly file (i.e., *.s, *.S, ...)
-  if (MAI->isAssemFile)
-    binaryInfo->set_src_type(2);
-  else if (MAI->hasInlineAssembly)
-    binaryInfo->set_src_type(1);
-  else
-    binaryInfo->set_src_type(0);
-
-  updateReorderInfoValues(Layout);
-  // Set the layout of both Machine Functions and Machine Basic Blocks with protobuf definition
-  std::string sectionName;
-  unsigned MBBSize, MBBoffset, numFixups, alignSize, MBBtype, nargs;
-  unsigned objSz = 0, numFuncs = 0, numBBs = 0;
-  int MFID, MBBID, prevMFID = 0;
-  std::vector<std::string> preds;
-  std::vector<std::string> succs;
-
-  for (auto MBBI = MAI->MBBLayoutOrder.begin(); MBBI != MAI->MBBLayoutOrder.end(); ++MBBI) {
-    ShuffleInfo::ReorderInfo_LayoutInfo* layoutInfo = ri->add_layout();
-    std::string ID = *MBBI;
-    std::tie(MFID, MBBID) = separateID(ID);
-    std::tie(MBBSize, MBBoffset, numFixups, alignSize, MBBtype, nargs, sectionName, preds, succs) = MAI->MachineBasicBlocks[ID];
-    bool MBBFallThrough = MAI->canMBBFallThrough[ID];
-
-    // Akul XXX: Add MBB succs, preds, and function calling convention stuff
-    // here
-    layoutInfo->set_bb_size(MBBSize);
-    layoutInfo->set_type(MBBtype);
-    layoutInfo->set_num_fixups(numFixups);
-    layoutInfo->set_bb_fallthrough(MBBFallThrough);
-    layoutInfo->set_section_name(sectionName);
-    layoutInfo->set_offset(MBBoffset);
-    layoutInfo->set_nargs(nargs);
-    layoutInfo->set_bb_id(ID);
-    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-      layoutInfo->add_preds((*pred));
-    }
-    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
-      layoutInfo->add_succs((*succ));
-    }
-    layoutInfo->set_padding_size(alignSize);
-
-    if (MFID > prevMFID) {
-      numFuncs++;
-      numBBs = 0;
-    }
-
-    objSz += MBBSize;
-    numBBs++;
-    prevMFID = MFID;
-  }
-
-  binaryInfo->set_obj_sz(objSz);
-
-  // Set the fixup information (.text, .rodata, .data, .data.rel.ro and .init_array)
-  std::map<std::string, std::tuple<unsigned, std::string>> MFs = MAI->getMFs();
-  for (auto const& x : MFs) {
-    ShuffleInfo::ReorderInfo_FunctionInfo* FunctionInfo = ri->add_func();
-    // TODO: Add check for empty ID
-    FunctionInfo->set_f_id(x.first);
-    FunctionInfo->set_bb_num(std::get<0>(x.second));
-    FunctionInfo->set_f_name(std::get<1>(x.second));
-    // DEBUG_WITH_TYPE("binbench", dbgs() << "FID: " << x.first << " " << get<1>(x.second) << " " << get<0>(x.second) << "\n");
-  }
-
-  ShuffleInfo::ReorderInfo_FixupInfo* fixupInfo = ri->add_fixup();
-  setFixups(MAI->FixupsText, fixupInfo, ".text");
-  setFixups(MAI->FixupsRodata, fixupInfo, ".rodata");
-  setFixups(MAI->FixupsData, fixupInfo, ".data");
-  setFixups(MAI->FixupsDataRel, fixupInfo, ".data.rel.ro");
-  setFixups(MAI->FixupsInitArray, fixupInfo, ".init_array");
-
-  // Show the fixup information for each section
-  DEBUG_WITH_TYPE("binbench", dbgs() << "\n<Fixups Summary>\n");
-  dumpFixups(MAI->FixupsText, "text", /*isDebug*/ false);
-  dumpFixups(MAI->FixupsRodata, "rodata", false);
-  dumpFixups(MAI->FixupsData, "data", false);
-  dumpFixups(MAI->FixupsDataRel, "data.rel.ro", false);
-  dumpFixups(MAI->FixupsInitArray, "init_array", false);
-}
-
 void MCAssembler::layout(MCAsmLayout &Layout) {
   assert(getBackendPtr() && "Expected assembler backend");
   DEBUG_WITH_TYPE("mc-dump", {
@@ -1228,6 +838,9 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
       dump(); });
   // LLVM_DEBUG(dbgs() << "BasicBlock Info:" << "\n");
   // Koo - Collect what we need once layout has been finalized
+  // Akul FIXME: This code can't be moved, hence create a function for the
+  // Maybe transfer metadate to the BCollector object here?
+  // following instrumentation, is it even needed though? 
   const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
   const MCObjectFileInfo *MOFI = Layout.getAssembler().getContext().getObjectFileInfo();
   bool isNewTextSection = false, isNewRodataSection = false;
@@ -1242,6 +855,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
     if (sectionName.find(".text") == 0) {
       LLVM_DEBUG(dbgs() << "Basic Blocks in .text: " <<"\n");
       const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
+      MAI->updateMetadata();
       for (MCFragment &MCF : Sec) {
         if (isa<MCDataFragment>(MCF) && MCF.hasInstructions()) {
           for (std::string ID : MCF.getAllMBBs()) {
@@ -1519,13 +1133,15 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
     }
   }
 }
+
+// Akul FIXME: move this function to BCollector.cpp
 // Koo: Serialize reorder_info data with Google's protocol buffer format,
 // calling by
 //      ELFObjectWriter::writeSectionData() from
 //      writeObject()@ELFObjectWriter.cpp
 std::string MCAssembler::WriteRandInfo(const MCAsmLayout &Layout) const {
   ShuffleInfo::ReorderInfo reorder_info;
-  serializeReorderInfo(&reorder_info, Layout);
+  BCollector::serializeReorderInfo(&reorder_info, Layout);
   std::string randContents;
 
   if (!reorder_info.SerializeToString(&randContents)) {
@@ -1603,6 +1219,7 @@ bool MCAssembler::relaxInstruction(MCAsmLayout &Layout,
   // Koo
   // Whether or not the instruction has been relaxed
   // The RelaxableFragment must be counted as the emitted bytes
+  // Akul FIXME: Unmmovable instrumentation, use a function if possible 
   const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
   std::string ID = F.getInst().getParentID();
   unsigned relaxedBytes = F.getRelaxedBytes();
