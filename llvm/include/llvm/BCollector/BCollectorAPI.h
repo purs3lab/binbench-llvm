@@ -11,6 +11,7 @@
 #include "llvm/CodeGen/MachineBasicBlock.h"
 #include "llvm/Support/shuffleInfo.pb.h"
 #include "llvm/BCollector/BCollectorUtils.h"
+#include "llvm/BCollector/BCollectorTypes.h"
 
 #include <iomanip>
 
@@ -20,12 +21,9 @@ namespace llvm {
 class BCollector {
 public:
   BCollectorUtils* utils;
-  mutable std::map<
-      std::string,
-      std::tuple<unsigned, unsigned, unsigned, unsigned, unsigned, unsigned,
-                  std::string, std::vector<std::string>,
-                  std::vector<std::string>>>
-      MachineBasicBlocks;
+
+  // Information about all machine basic blocks.
+  MBBCONTAINER MachineBasicBlocks;
 
   mutable std::map<std::string, std::tuple<unsigned, std::string>> MachineFunctions;
   mutable std::map<std::string, bool> canMBBFallThrough;
@@ -147,33 +145,26 @@ public:
   virtual void performCollection(const MachineInstr *MI, MCInst *Inst);
 
   // BBlockCollector
-  void updateByteCounter(std::string id, unsigned emittedBytes, unsigned numFixups, \
+  void updateByteCounter(MBBIDTYPE &id, unsigned emittedBytes, unsigned numFixups, \
                          bool isAlign, bool isInline) const {
-    // std::string id = std::to_string(fnid) + "_" + std::to_string(bbid);
-    // Create the tuple for the MBB
-    if (MachineBasicBlocks.count(id) == 0) {
-      std::vector<std::string> succs;
-      std::vector<std::string> preds;
-      MachineBasicBlocks[id] = std::make_tuple(0, 0, 0, 0, 0, 0, "", preds, succs);
-    }
 
-    // Otherwise update MBB tuples
-    std::get<0>(MachineBasicBlocks[id]) += emittedBytes; // Acutal size in MBB
-    std::get<5>(MachineBasicBlocks[id]) = nargs; // Acutal size in MBB
-    std::get<2>(MachineBasicBlocks[id]) += numFixups;    // Number of Fixups in MBB
+    MachineBasicBlocks[id].TotalSizeInBytes += emittedBytes; // Acutal size in MBB
+    MachineBasicBlocks[id].NumArgs = nargs; // Acutal size in MBB
+    MachineBasicBlocks[id].NumFixUps += numFixups;    // Number of Fixups in MBB
+
     if (isAlign)
-      std::get<3>(MachineBasicBlocks[id]) += emittedBytes;  // Count NOPs in MBB
+      MachineBasicBlocks[id].Alignments += emittedBytes;  // Count NOPs in MBB
 
-    // If inlined, add the bytes in the next MBB instead of current one
+      // If inlined, add the bytes in the next MBB instead of current one
     if (isInline)
-      std::get<0>(MachineBasicBlocks[latestParentID]) -= emittedBytes;
+      MachineBasicBlocks[id].TotalSizeInBytes -= emittedBytes;
   }
-  void setSuccs(std::string id, std::vector<std::string> succs) const {
-    std::get<8>(MachineBasicBlocks[id]) = succs; 
+  void setSuccs(std::string id, const std::vector<std::string> &succs) const {
+    MachineBasicBlocks[id].Successors = succs;
   }
 
-  void setPreds(std::string id, std::vector<std::string> preds) const {
-    std::get<7>(MachineBasicBlocks[id]) = preds; 
+  void setPreds(std::string id, const std::vector<std::string> &preds) const {
+    MachineBasicBlocks[id].Predecessors = preds;
   }
   BasicBlockCollector() {}
   virtual ~BasicBlockCollector() {}
