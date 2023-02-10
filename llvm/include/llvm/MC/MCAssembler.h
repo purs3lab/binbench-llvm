@@ -19,7 +19,6 @@
 #include "llvm/MC/MCDwarf.h"
 #include "llvm/MC/MCLinkerOptimizationHint.h"
 #include "llvm/MC/MCSymbol.h"
-#include "llvm/BCollector/BCollectorAPI.h"
 #include "llvm/Support/SMLoc.h"
 #include "llvm/Support/VersionTuple.h"
 #include <algorithm>
@@ -79,7 +78,7 @@ class MCAssembler {
   friend class MCAsmLayout;
 
 public:
-  BCollector *BC; // Akul
+  // BCollector *BC; // Akul
   using SectionListType = std::vector<MCSection *>;
   using SymbolDataListType = std::vector<const MCSymbol *>;
 

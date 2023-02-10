@@ -17,6 +17,7 @@
 #include "llvm/MC/MCExpr.h"
 #include "llvm/MC/MCStreamer.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/BCollector/BCollectorAPI.h"
 
 using namespace llvm;
 
@@ -39,6 +40,7 @@ cl::opt<cl::boolOrDefault> UseLEB128Directives(
 }
 
 MCAsmInfo::MCAsmInfo() {
+  BC = new BasicBlockCollector();
   SeparatorString = ";";
   CommentString = "#";
   LabelSuffix = ":";

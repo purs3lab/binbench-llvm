@@ -10,7 +10,6 @@
 #include "llvm/MC/MCObjectFileInfo.h"
 #include "llvm/MC/MCAsmLayout.h"
 #include "llvm/MC/MCAsmInfo.h"
-#include "llvm/MC/MCAssembler.h"
 #include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCSectionELF.h"
 #include "llvm/Support/Debug.h"
@@ -21,7 +20,7 @@
 
 using namespace llvm;
 
-void BBlockCollector::setMetadata(const MachineInstr *MI, MCInst *Inst) {
+void BasicBlockCollector::performCollection(const MachineInstr *MI, MCInst *Inst) {
     std::vector<std::string> Preds;
     std::vector<std::string> Succs;
     auto succs = MI->getParent()->successors();
@@ -43,7 +42,7 @@ void BBlockCollector::setMetadata(const MachineInstr *MI, MCInst *Inst) {
     unsigned MFID = MBBa->getParent()->getFunctionNumber();
     unsigned funcsize = MBBa->getParent()->size();
     const MachineFunction* MF = MBBa->getParent();
-    // const StringRef FunctionName = MF->getName();
+    // const StringRef FunctionName = MF->;
     std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
 
     Inst->setParentID(ID);
@@ -52,6 +51,10 @@ void BBlockCollector::setMetadata(const MachineInstr *MI, MCInst *Inst) {
     Inst->setFunctionSize(funcsize);
     Inst->setSuccs(ID, Succs);
     Inst->setPreds(ID, Preds);
+}
+
+BCollector::BCollector() {
+  utils = new BCollectorUtils();
 }
 
 // Akul FIXME: Move this to BCollector
@@ -119,7 +122,7 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
           for (std::string ID : MCF.getAllMBBs()) {
             DEBUG_WITH_TYPE("binbench", dbgs() << "Found a fragment with MBBs" << "\n");
             if (ID.length() == 0 &&
-                std::get<0>(MAI->MachineBasicBlocks[ID]) > 0) {
+                std::get<0>(MAI->getBC()->MachineBasicBlocks[ID]) > 0) {
               ID = "999_999";
               // llvm::dbgs()
               //     << "[CCR-Error] MCAssembler(updateReorderInfoValues) - "
@@ -131,21 +134,21 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
             if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
               bool isStartMF = false; // check if the new MF begins
               std::tie(MFID, MBBID) = BCollector::separateID(ID);
-              std::tie(MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs, tmpSN, preds, succs) = MAI->MachineBasicBlocks[ID];
+              std::tie(MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs, tmpSN, preds, succs) = MAI->getBC()->MachineBasicBlocks[ID];
 
               if (tmpSN.length() > 0) continue;
-              MAI->MBBLayoutOrder.push_back(ID);
+              MAI->getBC()->MBBLayoutOrder.push_back(ID);
 
               // Handle a corner case: see handleDirectEmitDirectives() in AsmParser.cpp
-              if (MAI->specialCntPriorToFunc > 0) {
-                MAI->updateByteCounter(ID, MAI->specialCntPriorToFunc, /*numFixups=*/ 0, /*isAlign=*/ false, /*isInline=*/ false);
-                MBBSize += MAI->specialCntPriorToFunc;
-                MAI->specialCntPriorToFunc = 0;
+              if (MAI->getBC()->specialCntPriorToFunc > 0) {
+                MAI->getBC()->updateByteCounter(ID, MAI->getBC()->specialCntPriorToFunc, /*numFixups=*/ 0, /*isAlign=*/ false, /*isInline=*/ false);
+                MBBSize += MAI->getBC()->specialCntPriorToFunc;
+                MAI->getBC()->specialCntPriorToFunc = 0;
               }
               if (!MAI->isSeenFuncs(MFID)) {
                 prevMBB = 0;
                 prevMBBSize = 0;
-                MAI->updateSeenFuncs(MFID);
+                MAI->getBC()->updateSeenFuncs(MFID);
               }
               // Update the MBB offset, MF Size and section name accordingly
 
@@ -160,28 +163,28 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
               DEBUG_WITH_TYPE("binbench", dbgs() << "Section: " << sectionName << "\t");
 
 
-              std::get<1>(MAI->MachineBasicBlocks[ID]) = totalOffset; 
+              std::get<1>(MAI->getBC()->MachineBasicBlocks[ID]) = totalOffset; 
               prevMBB += MBBSize - alignSize;
               totalOffset += MBBSize - alignSize;
               prevMBBSize = MBBSize - alignSize;
               totalFixups += numFixups;
               totalAlignSize += alignSize;
               countedMBBs.insert(ID);
-              MAI->MachineFunctionSizes[MFID] += MBBSize;
-              std::get<6>(MAI->MachineBasicBlocks[ID]) = sectionName;
-              canFallThrough = MAI->canMBBFallThrough[ID] ? "*":"";
+              MAI->getBC()->MachineFunctionSizes[MFID] += MBBSize;
+              std::get<6>(MAI->getBC()->MachineBasicBlocks[ID]) = sectionName;
+              canFallThrough = MAI->getBC()->canMBBFallThrough[ID] ? "*":"";
 
               if (MFID > prevMFID) {
                 isStartMF = true;
-                std::get<4>(MAI->MachineBasicBlocks[prevID]) = 1; // Type = End of the function
+                std::get<4>(MAI->getBC()->MachineBasicBlocks[prevID]) = 1; // Type = End of the function
               }
 
               unsigned layoutID = MCF.getLayoutOrder();
               if (isStartMF) 
                 DEBUG_WITH_TYPE("binbench", dbgs() << "----------------------------------------------------------------------------------\n");
               DEBUG_WITH_TYPE("binbench", dbgs() << " " << layoutID << "\t[DF " << ID << "]" << canFallThrough << "\t" << MBBSize << "B\t" \
-                     << alignSize << "B\t" << numFixups << "\t" << BCollector::hexlify(totalOffset) << "\t" \
-                     << MAI->MachineFunctionSizes[MFID] << "B\t" << "(" << sectionName << ")\n");
+                     << alignSize << "B\t" << numFixups << "\t" << BCollectorUtils::hexlify(totalOffset) << "\t" \
+                     << MAI->getBC()->MachineFunctionSizes[MFID] << "B\t" << "(" << sectionName << ")\n");
 
               prevMFID = MFID;
               prevID = ID;
@@ -195,47 +198,47 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
           MCRelaxableFragment &MCRF = static_cast<MCRelaxableFragment&>(MCF);
           std::string ID = MCRF.getInst().getParentID();
 
-          if (ID.length() == 0 && std::get<0>(MAI->MachineBasicBlocks[ID]) > 0)
+          if (ID.length() == 0 && std::get<0>(MAI->getBC()->MachineBasicBlocks[ID]) > 0)
             ID = "999_999";
           // If yet the ID has not been showed up along with getAllMBBs(), 
           // it would be an independent RF that does not belong to any DF
           if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
             bool isStartMF = false;
             std::tie(MFID, MBBID) = BCollector::separateID(ID);
-            std::tie(MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs, tmpSN, preds, succs) = MAI->MachineBasicBlocks[ID];
+            std::tie(MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs, tmpSN, preds, succs) = MAI->getBC()->MachineBasicBlocks[ID];
 
             if (tmpSN.length() > 0) continue;
-            MAI->MBBLayoutOrder.push_back(ID);
+            MAI->getBC()->MBBLayoutOrder.push_back(ID);
 
-            if (!MAI->isSeenFuncs(MFID)) {
+            if (!MAI->getBC()->isSeenFuncs(MFID)) {
               prevMBB = 0;
               prevMBBSize = 0;
-              MAI->updateSeenFuncs(MFID);
+              MAI->getBC()->updateSeenFuncs(MFID);
             }
             // Update the MBB offset, MF Size and section name accordingly
             // std::get<1>(MAI->MachineBasicBlocks[ID]) += (fragOff + prevMBB);
-            std::get<1>(MAI->MachineBasicBlocks[ID]) = totalOffset;
+            std::get<1>(MAI->getBC()->MachineBasicBlocks[ID]) = totalOffset;
             prevMBB += MBBSize - alignSize;
             totalOffset += MBBSize - alignSize;
             prevMBBSize = MBBSize - alignSize;
             totalFixups += numFixups;
             totalAlignSize += alignSize;
             countedMBBs.insert(ID);
-            MAI->MachineFunctionSizes[MFID] += MBBSize;
-            std::get<6>(MAI->MachineBasicBlocks[ID]) = sectionName;
-            canFallThrough = MAI->canMBBFallThrough[ID] ? "*":"";
+            MAI->getBC()->MachineFunctionSizes[MFID] += MBBSize;
+            std::get<6>(MAI->getBC()->MachineBasicBlocks[ID]) = sectionName;
+            canFallThrough = MAI->getBC()->canMBBFallThrough[ID] ? "*":"";
 
             if (MFID > prevMFID) {
               isStartMF = true;
-              std::get<4>(MAI->MachineBasicBlocks[prevID]) = 1; // Type = End of the function
+              std::get<4>(MAI->getBC()->MachineBasicBlocks[prevID]) = 1; // Type = End of the function
             }
 
             unsigned layoutID = MCF.getLayoutOrder();
             if (isStartMF) 
               DEBUG_WITH_TYPE("binbench", dbgs() << "----------------------------------------------------------------------------------\n");
             DEBUG_WITH_TYPE("binbench", dbgs() << " " << layoutID << "\t[DF " << ID << "]" << canFallThrough << "\t" << MBBSize << "B\t" \
-                     << alignSize << "B\t" << numFixups << "\t" << BCollector::hexlify(totalOffset) << "\t" \
-                     << MAI->MachineFunctionSizes[MFID] << "B\t" << "(" << sectionName << ")\n");
+                     << alignSize << "B\t" << numFixups << "\t" << BCollectorUtils::hexlify(totalOffset) << "\t" \
+                     << MAI->getBC()->MachineFunctionSizes[MFID] << "B\t" << "(" << sectionName << ")\n");
 
             prevMFID = MFID;
             prevID = ID;
@@ -244,11 +247,11 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
       }
 
       // The last ID Type is always the end of the object
-      std::get<4>(MAI->MachineBasicBlocks[prevID]) = 2; 
+      std::get<4>(MAI->getBC()->MachineBasicBlocks[prevID]) = 2; 
       DEBUG_WITH_TYPE("binbench", dbgs() << "----------------------------------------------------------------------------------\n");
       DEBUG_WITH_TYPE("binbench", dbgs() << "Code(B)\tNOPs(B)\tMFs\tMBBs\tFixups\n");
-      DEBUG_WITH_TYPE("binbench", dbgs() << totalOffset << "\t" << totalAlignSize << "\t" << MAI->MachineFunctionSizes.size() \
-                                             << "\t" << MAI->MachineBasicBlocks.size() << "\t" << totalFixups << "\n"); 
+      DEBUG_WITH_TYPE("binbench", dbgs() << totalOffset << "\t" << totalAlignSize << "\t" << MAI->getBC()->MachineFunctionSizes.size() \
+                                             << "\t" << MAI->getBC()->MachineBasicBlocks.size() << "\t" << totalFixups << "\n"); 
       DEBUG_WITH_TYPE("binbench", dbgs() << "\tLegend\n\t(*) FallThrough MBB\n  ");
     }
   }
@@ -274,7 +277,7 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
         if (MFID != MFID2)
           errs() << "[CCR-Error] MCAssembler::updateReorderInfoValues - JT Entry points to the outside of MF! \n";
         DEBUG_WITH_TYPE("binbench", dbgs() << "\t[" << JTE << "]\t" << \
-                        BCollector::hexlify(std::get<1>(MAI->MachineBasicBlocks[JTE])) << "\n");
+                        BCollectorUtils::hexlify(std::get<1>(MAI->getBC()->MachineBasicBlocks[JTE])) << "\n");
       }
     }
 
@@ -324,9 +327,9 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmL
   //    obj_type = 0: a general source file (i.e., *.c, *.cc, *.cpp, ...)
   //    obj_type = 1: a source file that contains inline assembly
   //    obj_type = 2: standalone assembly file (i.e., *.s, *.S, ...)
-  if (MAI->isAssemFile)
+  if (MAI->getBC()->isAssemFile)
     binaryInfo->set_src_type(2);
-  else if (MAI->hasInlineAssembly)
+  else if (MAI->getBC()->hasInlineAssembly)
     binaryInfo->set_src_type(1);
   else
     binaryInfo->set_src_type(0);
@@ -340,12 +343,12 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmL
   std::vector<std::string> preds;
   std::vector<std::string> succs;
 
-  for (auto MBBI = MAI->MBBLayoutOrder.begin(); MBBI != MAI->MBBLayoutOrder.end(); ++MBBI) {
+  for (auto MBBI = MAI->getBC()->MBBLayoutOrder.begin(); MBBI != MAI->getBC()->MBBLayoutOrder.end(); ++MBBI) {
     ShuffleInfo::ReorderInfo_LayoutInfo* layoutInfo = ri->add_layout();
     std::string ID = *MBBI;
     std::tie(MFID, MBBID) = separateID(ID);
-    std::tie(MBBSize, MBBoffset, numFixups, alignSize, MBBtype, nargs, sectionName, preds, succs) = MAI->MachineBasicBlocks[ID];
-    bool MBBFallThrough = MAI->canMBBFallThrough[ID];
+    std::tie(MBBSize, MBBoffset, numFixups, alignSize, MBBtype, nargs, sectionName, preds, succs) = MAI->getBC()->MachineBasicBlocks[ID];
+    bool MBBFallThrough = MAI->getBC()->canMBBFallThrough[ID];
 
     // Akul XXX: Add MBB succs, preds, and function calling convention stuff
     // here
@@ -378,7 +381,7 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmL
   binaryInfo->set_obj_sz(objSz);
 
   // Set the fixup information (.text, .rodata, .data, .data.rel.ro and .init_array)
-  std::map<std::string, std::tuple<unsigned, std::string>> MFs = MAI->getMFs();
+  std::map<std::string, std::tuple<unsigned, std::string>> MFs = MAI->getBC()->getMFs();
   for (auto const& x : MFs) {
     ShuffleInfo::ReorderInfo_FunctionInfo* FunctionInfo = ri->add_func();
     // TODO: Add check for empty ID
@@ -389,22 +392,17 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmL
   }
 
   ShuffleInfo::ReorderInfo_FixupInfo* fixupInfo = ri->add_fixup();
-  setFixups(MAI->FixupsText, fixupInfo, ".text");
-  setFixups(MAI->FixupsRodata, fixupInfo, ".rodata");
-  setFixups(MAI->FixupsData, fixupInfo, ".data");
-  setFixups(MAI->FixupsDataRel, fixupInfo, ".data.rel.ro");
-  setFixups(MAI->FixupsInitArray, fixupInfo, ".init_array");
+  setFixups(MAI->getBC()->FixupsText, fixupInfo, ".text");
+  setFixups(MAI->getBC()->FixupsRodata, fixupInfo, ".rodata");
+  setFixups(MAI->getBC()->FixupsData, fixupInfo, ".data");
+  setFixups(MAI->getBC()->FixupsDataRel, fixupInfo, ".data.rel.ro");
+  setFixups(MAI->getBC()->FixupsInitArray, fixupInfo, ".init_array");
 
   // Show the fixup information for each section
   DEBUG_WITH_TYPE("binbench", dbgs() << "\n<Fixups Summary>\n");
-  BCollector::dumpFixups(MAI->FixupsText, "text", /*isDebug*/ false);
-  BCollector::dumpFixups(MAI->FixupsRodata, "rodata", false);
-  BCollector::dumpFixups(MAI->FixupsData, "data", false);
-  BCollector::dumpFixups(MAI->FixupsDataRel, "data.rel.ro", false);
-  BCollector::dumpFixups(MAI->FixupsInitArray, "init_array", false);
-
-}
-
-void BBlockCollector::getMetadata() {
-    llvm_unreachable("getMetadata() is not implemented");
+  dumpFixups(MAI->getBC()->FixupsText, "text", /*isDebug*/ false);
+  dumpFixups(MAI->getBC()->FixupsRodata, "rodata", false);
+  dumpFixups(MAI->getBC()->FixupsData, "data", false);
+  dumpFixups(MAI->getBC()->FixupsDataRel, "data.rel.ro", false);
+  dumpFixups(MAI->getBC()->FixupsInitArray, "init_array", false);
 }

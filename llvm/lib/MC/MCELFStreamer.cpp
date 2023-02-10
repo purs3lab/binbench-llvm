@@ -754,17 +754,17 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   DF->setLastParentTag(ID);
   DF->setNArgs(nargs);
   DF->addMachineBasicBlockTag(ID);
-  MAI->updateByteCounter(ID, EmittedBytes, numFixups, /*isAlign=*/ false, /*isInline=*/ false);
-  MAI->updateFuncDetails(FunctionID, FunctionName, funcsize);
+  MAI->getBC()->updateByteCounter(ID, EmittedBytes, numFixups, /*isAlign=*/ false, /*isInline=*/ false);
+  MAI->getBC()->updateFuncDetails(FunctionID, FunctionName, funcsize);
 
-  MAI->setSuccs(ID, succs);
-  MAI->setPreds(ID, preds);
+  MAI->getBC()->setSuccs(ID, succs);
+  MAI->getBC()->setPreds(ID, preds);
   unsigned size, offset, fixups, alignments, type, Nargs;
   std::string sectionName;
   std::tie(size, offset, fixups, alignments, type, Nargs, sectionName, preds, succs) = MAI->MachineBasicBlocks[ID];
 
-  MAI->latestParentID = ID;
-  MAI->nargs = nargs;
+  MAI->getBC()->latestParentID = ID;
+  MAI->getBC()->nargs = nargs;
 
   if (Assembler.isBundlingEnabled() && Assembler.getRelaxAll()) {
     if (!isBundleLocked()) {

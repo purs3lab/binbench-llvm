@@ -1,27 +1,25 @@
 // Base class for backend metadata collectors
+#ifndef LLVM_BCOLLECTOR_H
+#define LLVM_BCOLLECTOR_H
+
 
 #include "llvm/MC/MCInst.h"
 #include "llvm/Support/Debug.h"
+#include "llvm/MC/MCAsmInfo.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/CodeGen/MachineInstr.h"
 #include "llvm/CodeGen/MachineBasicBlock.h"
 #include "llvm/Support/shuffleInfo.pb.h"
+#include "llvm/BCollector/BCollectorUtils.h"
 
 #include <iomanip>
 
-using namespace llvm;
+namespace llvm {
 
-static const char* fixupLookupSections[] = 
-{
-    ".text",
-    ".rodata",
-    ".data",
-    ".data.rel.ro",
-    ".init_array",
-};
 
 class BCollector {
 public:
+  BCollectorUtils* utils;
   mutable std::map<
       std::string,
       std::tuple<unsigned, unsigned, unsigned, unsigned, unsigned, unsigned,
@@ -36,37 +34,29 @@ public:
 
   mutable std::vector<unsigned> SeenFunctionIDs;
 
-  static void dumpFixups(std::list<std::tuple<unsigned, unsigned, bool, std::string, std::string, bool, std::string, unsigned, unsigned>> \
+  // virtual void performCollection() = 0;
+
+  const char* fixupLookupSections[5] = 
+  {
+      ".text",
+      ".rodata",
+      ".data",
+      ".data.rel.ro",
+      ".init_array",
+  };
+
+  void dumpFixups(std::list<std::tuple<unsigned, unsigned, bool, std::string, std::string, bool, std::string, unsigned, unsigned>> \
                   Fixups, std::string kind, bool isDebug);
 
-  static void updateReorderInfoValues(const MCAsmLayout &Layout);
-  static std::tuple<int, int> separateID(std::string ID) {
+  void updateReorderInfoValues(const MCAsmLayout &Layout);
+  std::tuple<int, int> separateID(std::string ID) {
     return std::make_tuple(std::stoi(ID.substr(0, ID.find("_"))), \
                           std::stoi(ID.substr(ID.find("_") + 1, ID.length())));
   }
 
-  bool updateMetadata(MCAsmInfo *MAI) const {
-    bool success = false;
-    // collect all the bookkeeping information and send it to the BCollector
-    // where should this function be called? 
-    return success;
-  }
-
-  template<typename T> static
-  std::string hexlify(T i) {
-      std::stringbuf buf;
-      std::ostream os(&buf);
-      os << "0x" << std::setfill('0') << std::setw(sizeof(T) * 2) << std::hex << i;
-      return buf.str();
-  }
-
-  static void setFixups(std::list<std::tuple<unsigned, unsigned, bool, std::string, std::string, bool, std::string, unsigned, unsigned>> Fixups,
+  void setFixups(std::list<std::tuple<unsigned, unsigned, bool, std::string, std::string, bool, std::string, unsigned, unsigned>> Fixups,
                 ShuffleInfo::ReorderInfo_FixupInfo* fixupInfo, std::string secName); 
-  // Akul FIXME: Move this to BCollector
-  // Koo: These sections contain the fixups that we want to handle
-  // Akul FIXME: Move this to BCollector
-  // Koo: Helper functions for serializeReorderInfo()
-  static int getFixupSectionId(std::string secName) {
+  int getFixupSectionId(std::string secName) {
       for (size_t i = 0; i < sizeof(fixupLookupSections)/sizeof(*fixupLookupSections); ++i)
           if (secName.compare(fixupLookupSections[i]) == 0)
               return i;
@@ -74,7 +64,7 @@ public:
   }
 
 // Akul FIXME: Move this to BCollector
-  static ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple* getFixupTuple(ShuffleInfo::ReorderInfo_FixupInfo* FI, std::string secName) {
+  ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple* getFixupTuple(ShuffleInfo::ReorderInfo_FixupInfo* FI, std::string secName) {
     switch (getFixupSectionId(secName)) {
       case 0: return FI->add_text();
       case 1: return FI->add_rodata();
@@ -85,6 +75,7 @@ public:
     }
   }
 
+  // TODO: Overload these in derived classes?
   void getMetadata() {
     llvm_unreachable("getMetadata() is not implemented");
   }
@@ -95,18 +86,99 @@ public:
     llvm_unreachable("printMetadata() is not implemented");
   }
 
-  static void serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmLayout &Layout);
-  BCollector() {}
-  ~BCollector() {}
+  void serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmLayout &Layout);
+
+  void updateSeenFuncs(unsigned funcID) const {
+    if (std::find(SeenFunctionIDs.begin(), SeenFunctionIDs.end(), funcID) ==
+        SeenFunctionIDs.end())
+      SeenFunctionIDs.push_back(funcID);
+  }
+
+  bool isSeenFuncs(unsigned funcID) const {
+    if (std::find(SeenFunctionIDs.begin(), SeenFunctionIDs.end(), funcID) ==
+        SeenFunctionIDs.end())
+      return false;
+    return true;
+  }
+
+  // (b) Fixups (list)
+  //    * <offset, size, isRela, parentID, SymbolRefFixupName, isNewSection, secName, numJTEntries, JTEntrySz>
+  //    - The last two elements are jump table information for FixupsText only,
+  //      which allows for updating the jump table entries (relative values) with pic/pie-enabled.
+  mutable std::list<std::tuple<unsigned, unsigned, bool, std::string, std::string, bool, std::string, unsigned, unsigned>>
+          FixupsText, FixupsRodata, FixupsData, FixupsDataRel, FixupsInitArray;
+  //    - FixupsEhframe, FixupsExceptTable; (Not needed any more as a randomizer directly handles them later on)
+  //    - Keep track of the latest ID when parent ID is unavailable
+  mutable std::string latestParentID;
+  mutable std::string latestFunctionID;
+  mutable unsigned nargs;
+
+  // (c) Others
+  //     The following method helps full-assembly file (*.s) identify functions and basic blocks
+  //     that inherently lacks their boundaries because neither MF nor MBB has been constructed.
+  mutable bool isAssemFile = false;
+  mutable bool hasInlineAssembly = false;
+  mutable std::string prevOpcode;
+  mutable unsigned assemFuncNo = 0xffffffff;
+  mutable unsigned assemBBLNo = 0;
+  mutable unsigned specialCntPriorToFunc = 0;
+
+  void updateFuncDetails(std::string id, std::string funcname, unsigned size) const {
+    if (MachineFunctions.count(id) == 0) {
+      MachineFunctions[id] = std::make_tuple(size, funcname); 
+    }
+    std::get<0>(MachineFunctions[id]) = size;
+    std::get<1>(MachineFunctions[id]) = funcname;
+  }
+
+  std::map<std::string, std::tuple<unsigned, std::string>> getMFs() const {return MachineFunctions;}
+
+
+  void setFunctionid(std::string id) {
+    latestFunctionID = id;
+  }
+
+  explicit BCollector(); 
+  virtual ~BCollector() {}
 };
 
-class BBlockCollector : public BCollector {
-private:
-   
-
+class BasicBlockCollector : public BCollector {
 public:
-  static void setMetadata(const MachineInstr *MI, MCInst *Inst);
-  void getMetadata(); 
-  BBlockCollector() {}
-  ~BBlockCollector() {}
+  virtual void performCollection(const MachineInstr *MI, MCInst *Inst);
+
+  // BBlockCollector
+  void updateByteCounter(std::string id, unsigned emittedBytes, unsigned numFixups, \
+                         bool isAlign, bool isInline) const {
+    // std::string id = std::to_string(fnid) + "_" + std::to_string(bbid);
+    // Create the tuple for the MBB
+    if (MachineBasicBlocks.count(id) == 0) {
+      std::vector<std::string> succs;
+      std::vector<std::string> preds;
+      MachineBasicBlocks[id] = std::make_tuple(0, 0, 0, 0, 0, 0, "", preds, succs);
+    }
+
+    // Otherwise update MBB tuples
+    std::get<0>(MachineBasicBlocks[id]) += emittedBytes; // Acutal size in MBB
+    std::get<5>(MachineBasicBlocks[id]) = nargs; // Acutal size in MBB
+    std::get<2>(MachineBasicBlocks[id]) += numFixups;    // Number of Fixups in MBB
+    if (isAlign)
+      std::get<3>(MachineBasicBlocks[id]) += emittedBytes;  // Count NOPs in MBB
+
+    // If inlined, add the bytes in the next MBB instead of current one
+    if (isInline)
+      std::get<0>(MachineBasicBlocks[latestParentID]) -= emittedBytes;
+  }
+  void setSuccs(std::string id, std::vector<std::string> succs) const {
+    std::get<8>(MachineBasicBlocks[id]) = succs; 
+  }
+
+  void setPreds(std::string id, std::vector<std::string> preds) const {
+    std::get<7>(MachineBasicBlocks[id]) = preds; 
+  }
+  BasicBlockCollector() {}
+  virtual ~BasicBlockCollector() {}
 };
+
+} // namespace llvm
+
+#endif // LLVM_BCOLLECTOR_H

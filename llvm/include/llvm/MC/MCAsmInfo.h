@@ -18,6 +18,8 @@
 #include "llvm/ADT/StringRef.h"
 #include "llvm/MC/MCDirectives.h"
 #include "llvm/MC/MCTargetOptions.h"
+#include "llvm/MC/MCAssembler.h"
+#include "llvm/BCollector/BCollectorAPI.h"
 #include "llvm/Support/Debug.h"
 #include <vector>
 #define DEBUG_TYPE "binbench"
@@ -27,8 +29,6 @@
 #include <tuple>
 #include <string>
 #include <list>
-
-
 
 namespace llvm {
 
@@ -572,6 +572,7 @@ public:
   //    * MFID_MBBID: <size, offset, # of fixups within MBB, alignments, type, sectionName>
   //    - The type field represents when the block is the end of MF or Object where MBB = 0, MF = 1, and Obj = 2
   //    - The sectionOrdinal field is for C++ only; it tells current BBL belongs to which section!
+  BasicBlockCollector *BC;
   mutable std::map<
       std::string,
       std::tuple<unsigned, unsigned, unsigned, unsigned, unsigned, unsigned,
@@ -588,6 +589,8 @@ public:
   mutable std::list<std::string> MBBLayoutOrder;
 
   mutable std::vector<unsigned> SeenFunctionIDs;
+
+  BasicBlockCollector *getBC() const { return BC; }
 
   void updateSeenFuncs(unsigned funcID) const {
     if (std::find(SeenFunctionIDs.begin(), SeenFunctionIDs.end(), funcID) ==

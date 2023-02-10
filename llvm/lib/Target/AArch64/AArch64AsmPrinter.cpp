@@ -62,8 +62,6 @@
 #include <map>
 #include <memory>
 
-#include "llvm/BCollector/BCollectorAPI.h"
-
 using namespace llvm;
 
 #define DEBUG_TYPE "asm-printer"
@@ -75,13 +73,16 @@ class AArch64AsmPrinter : public AsmPrinter {
   AArch64MCInstLower MCInstLowering;
   StackMaps SM;
   FaultMaps FM;
+  BasicBlockCollector* BBC;
   const AArch64Subtarget *STI;
   bool ShouldEmitWeakSwiftAsyncExtendedFramePointerFlags = false;
 
 public:
   AArch64AsmPrinter(TargetMachine &TM, std::unique_ptr<MCStreamer> Streamer)
       : AsmPrinter(TM, std::move(Streamer)), MCInstLowering(OutContext, *this),
-        SM(*this), FM(*this) {}
+        SM(*this), FM(*this) {
+          BBC = new BasicBlockCollector();
+        }
 
   StringRef getPassName() const override { return "AArch64 Assembly Printer"; }
 
@@ -1186,7 +1187,7 @@ void AArch64AsmPrinter::emitFMov0(const MachineInstr &MI) {
     MOVI.addOperand(MCOperand::createReg(DestReg));
     MOVI.addOperand(MCOperand::createImm(0));
 
-    BBlockCollector::setMetadata(&MI, &MOVI);
+    BBC->performCollection(&MI, &MOVI);
     EmitToStreamer(*OutStreamer, MOVI);
   } else {
     MCInst FMov;

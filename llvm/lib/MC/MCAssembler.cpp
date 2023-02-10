@@ -38,7 +38,6 @@
 #include "llvm/Support/LEB128.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/Debug.h"
-// #include "llvm/MC/BCollectorAPI.h"
 #include <cassert>
 #include <cstdint>
 #include <tuple>
@@ -63,6 +62,7 @@ using namespace llvm;
 namespace llvm {
 class MCSectionELF;
 class MCSubtargetInfo;
+// class BCollector;
 }
 
 
@@ -855,7 +855,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
     if (sectionName.find(".text") == 0) {
       LLVM_DEBUG(dbgs() << "Basic Blocks in .text: " <<"\n");
       const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
-      MAI->updateMetadata();
+      // BC->updateMetadata(MAI);
       for (MCFragment &MCF : Sec) {
         if (isa<MCDataFragment>(MCF) && MCF.hasInstructions()) {
           for (std::string ID : MCF.getAllMBBs()) {
@@ -1141,7 +1141,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
 //      writeObject()@ELFObjectWriter.cpp
 std::string MCAssembler::WriteRandInfo(const MCAsmLayout &Layout) const {
   ShuffleInfo::ReorderInfo reorder_info;
-  BCollector::serializeReorderInfo(&reorder_info, Layout);
+  // BC->serializeReorderInfo(&reorder_info, Layout);
   std::string randContents;
 
   if (!reorder_info.SerializeToString(&randContents)) {
