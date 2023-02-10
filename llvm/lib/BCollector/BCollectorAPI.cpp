@@ -217,7 +217,7 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
             }
             // Update the MBB offset, MF Size and section name accordingly
             // std::get<1>(MAI->MachineBasicBlocks[ID]) += (fragOff + prevMBB);
-            std::get<1>(MAI->getBC()->MachineBasicBlocks[ID]) = totalOffset;
+            MAI->getBC()->MachineBasicBlocks[ID].Offset = totalOffset;
             prevMBB += MBBSize - alignSize;
             totalOffset += MBBSize - alignSize;
             prevMBBSize = MBBSize - alignSize;
@@ -225,12 +225,13 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
             totalAlignSize += alignSize;
             countedMBBs.insert(ID);
             MAI->getBC()->MachineFunctionSizes[MFID] += MBBSize;
-            std::get<6>(MAI->getBC()->MachineBasicBlocks[ID]) = sectionName;
+            MAI->getBC()->MachineBasicBlocks[ID].SectionName = sectionName;
             canFallThrough = MAI->getBC()->canMBBFallThrough[ID] ? "*":"";
 
             if (MFID > prevMFID) {
               isStartMF = true;
-              std::get<4>(MAI->getBC()->MachineBasicBlocks[prevID]) = 1; // Type = End of the function
+              // Type = End of the function
+              MAI->getBC()->MachineBasicBlocks[ID].BBType = MBBINFOTYPE::END;
             }
 
             unsigned layoutID = MCF.getLayoutOrder();
@@ -247,7 +248,7 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
       }
 
       // The last ID Type is always the end of the object
-      std::get<4>(MAI->getBC()->MachineBasicBlocks[prevID]) = 2; 
+      MAI->getBC()->MachineBasicBlocks[prevID].BBType = MBBINFOTYPE::ENDOFOBJECT;
       DEBUG_WITH_TYPE("binbench", dbgs() << "----------------------------------------------------------------------------------\n");
       DEBUG_WITH_TYPE("binbench", dbgs() << "Code(B)\tNOPs(B)\tMFs\tMBBs\tFixups\n");
       DEBUG_WITH_TYPE("binbench", dbgs() << totalOffset << "\t" << totalAlignSize << "\t" << MAI->getBC()->MachineFunctionSizes.size() \
@@ -277,7 +278,7 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
         if (MFID != MFID2)
           errs() << "[CCR-Error] MCAssembler::updateReorderInfoValues - JT Entry points to the outside of MF! \n";
         DEBUG_WITH_TYPE("binbench", dbgs() << "\t[" << JTE << "]\t" << \
-                        BCollectorUtils::hexlify(std::get<1>(MAI->getBC()->MachineBasicBlocks[JTE])) << "\n");
+        BCollectorUtils::hexlify(MAI->getBC()->MachineBasicBlocks[JTE].Offset) << "\n");
       }
     }
 
@@ -347,26 +348,30 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmL
     ShuffleInfo::ReorderInfo_LayoutInfo* layoutInfo = ri->add_layout();
     std::string ID = *MBBI;
     std::tie(MFID, MBBID) = separateID(ID);
-    std::tie(MBBSize, MBBoffset, numFixups, alignSize, MBBtype, nargs, sectionName, preds, succs) = MAI->getBC()->MachineBasicBlocks[ID];
+
+    auto &MBBInfo = MAI->getBC()->MachineBasicBlocks[ID];
+
+
+
     bool MBBFallThrough = MAI->getBC()->canMBBFallThrough[ID];
 
     // Akul XXX: Add MBB succs, preds, and function calling convention stuff
     // here
-    layoutInfo->set_bb_size(MBBSize);
-    layoutInfo->set_type(MBBtype);
-    layoutInfo->set_num_fixups(numFixups);
+    layoutInfo->set_bb_size(MBBInfo.TotalSizeInBytes);
+    layoutInfo->set_type(MBBInfo.BBType);
+    layoutInfo->set_num_fixups(MBBInfo.NumFixUps);
     layoutInfo->set_bb_fallthrough(MBBFallThrough);
-    layoutInfo->set_section_name(sectionName);
-    layoutInfo->set_offset(MBBoffset);
-    layoutInfo->set_nargs(nargs);
+    layoutInfo->set_section_name(MBBInfo.SectionName);
+    layoutInfo->set_offset(MBBInfo.Offset);
+    layoutInfo->set_nargs(MBBInfo.NumArgs);
     layoutInfo->set_bb_id(ID);
-    for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-      layoutInfo->add_preds((*pred));
+    for (auto &pred : MBBInfo.Predecessors) {
+      layoutInfo->add_preds(pred);
     }
-    for (auto succ = succs.begin(); succ != succs.end(); succ++) {
-      layoutInfo->add_succs((*succ));
+    for (auto succ : MBBInfo.Successors) {
+      layoutInfo->add_succs(succ);
     }
-    layoutInfo->set_padding_size(alignSize);
+    layoutInfo->set_padding_size(MBBInfo.Alignments);
 
     if (MFID > prevMFID) {
       numFuncs++;
