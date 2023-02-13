@@ -13,6 +13,24 @@ typedef enum MachineBasicBlocksInfoType { NOTEND = 0, END = 1,
                                           ENDOFOBJECT = 2 } MBBINFOTYPE;
 
 typedef std::string MBBIDTYPE;
+typedef std::string MFIDTYPE;
+
+// Class that contains information about Machine Functions
+class BMachineFunctionInfo {
+public:
+  unsigned TotalSizeInBytes;
+
+  std::string FunctionName;
+
+  BMachineFunctionInfo() {
+    TotalSizeInBytes = 0;
+    FunctionName = "";
+  }
+  virtual ~BMachineFunctionInfo() {
+  }
+};
+
+typedef std::map<MFIDTYPE, BMachineFunctionInfo> MFCONTAINER;
 
 // Class that contains information about BasicBlocks
 

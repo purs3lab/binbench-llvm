@@ -181,7 +181,7 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
 
               if (MFID > prevMFID) {
                 isStartMF = true;
-                MAI->getBC()->MachineBasicBlocks[prevID].BBType = END; // Type = End of the function
+                MAI->getBC()->MachineBasicBlocks[prevID].BBType = MBBINFOTYPE::END; // Type = End of the function
               }
 
               unsigned layoutID = MCF.getLayoutOrder();
@@ -404,13 +404,13 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo* ri, const MCAsmL
   binaryInfo->set_obj_sz(objSz);
 
   // Set the fixup information (.text, .rodata, .data, .data.rel.ro and .init_array)
-  std::map<std::string, std::tuple<unsigned, std::string>> MFs = MAI->getBC()->getMFs();
+  MFCONTAINER MFs = MAI->getBC()->getMFs();
   for (auto const& x : MFs) {
     ShuffleInfo::ReorderInfo_FunctionInfo* FunctionInfo = ri->add_func();
     // TODO: Add check for empty ID
     FunctionInfo->set_f_id(x.first);
-    FunctionInfo->set_bb_num(std::get<0>(x.second));
-    FunctionInfo->set_f_name(std::get<1>(x.second));
+    FunctionInfo->set_bb_num(x.second.TotalSizeInBytes);
+    FunctionInfo->set_f_name(x.second.FunctionName);
     // DEBUG_WITH_TYPE("binbench", dbgs() << "FID: " << x.first << " " << get<1>(x.second) << " " << get<0>(x.second) << "\n");
   }
 

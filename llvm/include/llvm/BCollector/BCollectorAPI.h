@@ -25,7 +25,9 @@ public:
   // Information about all machine basic blocks.
   MBBCONTAINER MachineBasicBlocks;
 
-  mutable std::map<std::string, std::tuple<unsigned, std::string>> MachineFunctions;
+  //mutable std::map<std::string, std::tuple<unsigned, std::string>> MachineFunctions;
+
+  MFCONTAINER MachineFunctions;
   mutable std::map<std::string, bool> canMBBFallThrough;
   mutable std::map<unsigned, unsigned> MachineFunctionSizes;
   mutable std::list<std::string> MBBLayoutOrder;
@@ -121,15 +123,16 @@ public:
   mutable unsigned assemBBLNo = 0;
   mutable unsigned specialCntPriorToFunc = 0;
 
-  void updateFuncDetails(std::string id, std::string funcname, unsigned size) const {
-    if (MachineFunctions.count(id) == 0) {
-      MachineFunctions[id] = std::make_tuple(size, funcname); 
-    }
-    std::get<0>(MachineFunctions[id]) = size;
-    std::get<1>(MachineFunctions[id]) = funcname;
+  void updateFuncDetails(std::string id, std::string funcname, unsigned size) {
+    // if (MachineFunctions.count(id) == 0) {
+    //   MachineFunctions[id].TotalSizeInBytes = size; 
+    //   MachineFunctions[id].FunctionName = funcname;
+    // }
+    MachineFunctions[id].TotalSizeInBytes = size; 
+    MachineFunctions[id].FunctionName = funcname;
   }
 
-  std::map<std::string, std::tuple<unsigned, std::string>> getMFs() const {return MachineFunctions;}
+  MFCONTAINER getMFs() const {return MachineFunctions;}
 
 
   void setFunctionid(std::string id) {
