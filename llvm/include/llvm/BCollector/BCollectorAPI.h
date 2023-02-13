@@ -146,7 +146,7 @@ public:
 
   // BBlockCollector
   void updateByteCounter(MBBIDTYPE &id, unsigned emittedBytes, unsigned numFixups, \
-                         bool isAlign, bool isInline) const {
+                         bool isAlign, bool isInline) {
 
     MachineBasicBlocks[id].TotalSizeInBytes += emittedBytes; // Acutal size in MBB
     MachineBasicBlocks[id].NumArgs = nargs; // Acutal size in MBB
@@ -159,11 +159,11 @@ public:
     if (isInline)
       MachineBasicBlocks[id].TotalSizeInBytes -= emittedBytes;
   }
-  void setSuccs(std::string id, const std::vector<std::string> &succs) const {
+  void setSuccs(std::string id, const std::set<std::string> &succs) {
     MachineBasicBlocks[id].Successors = succs;
   }
 
-  void setPreds(std::string id, const std::vector<std::string> &preds) const {
+  void setPreds(std::string id, const std::set<std::string> &preds) {
     MachineBasicBlocks[id].Predecessors = preds;
   }
   BasicBlockCollector() {}

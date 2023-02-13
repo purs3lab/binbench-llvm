@@ -16,26 +16,26 @@
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/shuffleInfo.pb.h"
 
-#include <vector>
+#include <set>
 
 using namespace llvm;
 
 void BasicBlockCollector::performCollection(const MachineInstr *MI, MCInst *Inst) {
-    std::vector<std::string> Preds;
-    std::vector<std::string> Succs;
+    std::set<std::string> Preds;
+    std::set<std::string> Succs;
     auto succs = MI->getParent()->successors();
     for (auto succ = succs.begin(); succ != succs.end(); succ++) {
         unsigned SMBBID = (*succ)->getNumber();
         unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
         std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-        Succs.push_back(SID);
+        Succs.insert(SID);
     }
     auto preds = MI->getParent()->predecessors();
     for (auto pred = preds.begin(); pred != preds.end(); pred++) {
         unsigned PMBBID = (*pred)->getNumber();
         unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
         std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-        Preds.push_back(PID);
+        Preds.insert(PID);
     }
     const MachineBasicBlock *MBBa = MI->getParent();
     unsigned MBBID = MBBa->getNumber();
@@ -107,8 +107,8 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
       std::string prevID, canFallThrough;
       unsigned MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs;
       std::set<std::string> countedMBBs;
-      std::vector<std::string> preds;
-      std::vector<std::string> succs;
+      std::set<std::string> preds;
+      std::set<std::string> succs;
 
       // Per each fragment in a .text section
       for (MCFragment &MCF : Sec) {
@@ -122,7 +122,7 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
           for (std::string ID : MCF.getAllMBBs()) {
             DEBUG_WITH_TYPE("binbench", dbgs() << "Found a fragment with MBBs" << "\n");
             if (ID.length() == 0 &&
-                std::get<0>(MAI->getBC()->MachineBasicBlocks[ID]) > 0) {
+                MAI->getBC()->MachineBasicBlocks[ID].TotalSizeInBytes > 0) {
               ID = "999_999";
               // llvm::dbgs()
               //     << "[CCR-Error] MCAssembler(updateReorderInfoValues) - "
@@ -134,7 +134,12 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
             if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
               bool isStartMF = false; // check if the new MF begins
               std::tie(MFID, MBBID) = BCollector::separateID(ID);
-              std::tie(MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs, tmpSN, preds, succs) = MAI->getBC()->MachineBasicBlocks[ID];
+
+              MBBSize = MAI->getBC()->MachineBasicBlocks[ID].TotalSizeInBytes;
+              MBBOffset = MAI->getBC()->MachineBasicBlocks[ID].Offset;
+              numFixups = MAI->getBC()->MachineBasicBlocks[ID].NumFixUps;
+              alignSize = MAI->getBC()->MachineBasicBlocks[ID].Alignments;
+              MBBType = MAI->getBC()->MachineBasicBlocks[ID].BBType;
 
               if (tmpSN.length() > 0) continue;
               MAI->getBC()->MBBLayoutOrder.push_back(ID);
@@ -163,7 +168,7 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
               DEBUG_WITH_TYPE("binbench", dbgs() << "Section: " << sectionName << "\t");
 
 
-              std::get<1>(MAI->getBC()->MachineBasicBlocks[ID]) = totalOffset; 
+              MAI->getBC()->MachineBasicBlocks[ID].Offset = totalOffset; 
               prevMBB += MBBSize - alignSize;
               totalOffset += MBBSize - alignSize;
               prevMBBSize = MBBSize - alignSize;
@@ -171,12 +176,12 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
               totalAlignSize += alignSize;
               countedMBBs.insert(ID);
               MAI->getBC()->MachineFunctionSizes[MFID] += MBBSize;
-              std::get<6>(MAI->getBC()->MachineBasicBlocks[ID]) = sectionName;
+              MAI->getBC()->MachineBasicBlocks[ID].SectionName = sectionName;
               canFallThrough = MAI->getBC()->canMBBFallThrough[ID] ? "*":"";
 
               if (MFID > prevMFID) {
                 isStartMF = true;
-                std::get<4>(MAI->getBC()->MachineBasicBlocks[prevID]) = 1; // Type = End of the function
+                MAI->getBC()->MachineBasicBlocks[prevID].BBType = END; // Type = End of the function
               }
 
               unsigned layoutID = MCF.getLayoutOrder();
@@ -198,14 +203,27 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
           MCRelaxableFragment &MCRF = static_cast<MCRelaxableFragment&>(MCF);
           std::string ID = MCRF.getInst().getParentID();
 
-          if (ID.length() == 0 && std::get<0>(MAI->getBC()->MachineBasicBlocks[ID]) > 0)
+          if (ID.length() == 0 && MAI->getBC()->MachineBasicBlocks[ID].TotalSizeInBytes > 0)
             ID = "999_999";
           // If yet the ID has not been showed up along with getAllMBBs(), 
           // it would be an independent RF that does not belong to any DF
           if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
             bool isStartMF = false;
             std::tie(MFID, MBBID) = BCollector::separateID(ID);
-            std::tie(MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs, tmpSN, preds, succs) = MAI->getBC()->MachineBasicBlocks[ID];
+            // std::tie(MBBSize, MBBOffset, numFixups, alignSize, MBBType,
+            // nargs, tmpSN, preds, succs) =
+            // MAI->getBC()->MachineBasicBlocks[ID];
+
+            MBBSize = MAI->getBC()->MachineBasicBlocks[ID].TotalSizeInBytes;
+            MBBOffset = MAI->getBC()->MachineBasicBlocks[ID].Offset;
+            numFixups = MAI->getBC()->MachineBasicBlocks[ID].NumFixUps;
+            alignSize = MAI->getBC()->MachineBasicBlocks[ID].Alignments;
+            MBBType = MAI->getBC()->MachineBasicBlocks[ID].BBType;
+            nargs = MAI->getBC()->MachineBasicBlocks[ID].NumArgs;
+            tmpSN = MAI->getBC()->MachineBasicBlocks[ID].SectionName;
+            preds = MAI->getBC()->MachineBasicBlocks[ID].Predecessors;
+            succs = MAI->getBC()->MachineBasicBlocks[ID].Successors;
+
 
             if (tmpSN.length() > 0) continue;
             MAI->getBC()->MBBLayoutOrder.push_back(ID);

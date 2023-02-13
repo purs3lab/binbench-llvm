@@ -25,7 +25,7 @@
 
 #include <tuple>    // Koo Akul
 #include <string>
-#include <vector>
+#include <set>
 namespace llvm {
 
 class MCExpr;
@@ -202,20 +202,20 @@ class MCInst {
   mutable unsigned FunctionSize = 0;
   mutable std::string FunctionID;
   mutable std::string FunctionName;
-  mutable std::vector<std::string> succs;
-  mutable std::vector<std::string> preds;
+  mutable std::set<std::string> succs;
+  mutable std::set<std::string> preds;
 
 public:
   MCInst() = default;
 
-  void setSuccs(std::string id, std::vector<std::string> Succs) const {
+  void setSuccs(std::string id, std::set<std::string> Succs) const {
     succs = Succs; 
   }
-  void setPreds(std::string id, std::vector<std::string> Preds) const {
+  void setPreds(std::string id, std::set<std::string> Preds) const {
     preds = Preds; 
   }
-  std::vector<std::string> getSuccs() const {return succs;}
-  std::vector<std::string> getPreds() const {return preds;}
+  std::set<std::string> getSuccs() const {return succs;}
+  std::set<std::string> getPreds() const {return preds;}
   void setNArgs(unsigned nargs) const { nArgs = nargs; }
   void setFunctionName(std::string funcname) const { FunctionName = funcname; }
   std::string getFunctionName() const {return FunctionName; }

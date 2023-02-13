@@ -201,8 +201,8 @@ private:
 } // end anonymous namespace
 
 MCInst &setMetaData(const MachineInstr *MI, MCInst *Inst) {
-  std::vector<std::string> Preds;
-  std::vector<std::string> Succs;
+  std::set<std::string> Preds;
+  std::set<std::string> Succs;
   // LLVM_DEBUG(dbgs() << "Successors: ");
   auto succs = MI->getParent()->successors();
   for (auto succ = succs.begin(); succ != succs.end(); succ++) {
@@ -210,7 +210,7 @@ MCInst &setMetaData(const MachineInstr *MI, MCInst *Inst) {
     unsigned SMBBID = (*succ)->getNumber();
     unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
     std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-    Succs.push_back(SID);
+    Succs.insert(SID);
   }
   // LLVM_DEBUG(dbgs() << "\n");
   // LLVM_DEBUG(dbgs() << "Predecessors: ");
@@ -220,7 +220,7 @@ MCInst &setMetaData(const MachineInstr *MI, MCInst *Inst) {
     unsigned PMBBID = (*pred)->getNumber();
     unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
     std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-    Preds.push_back(PID);
+    Preds.insert(PID);
   }
   // LLVM_DEBUG(dbgs() << "\n");
   const MachineBasicBlock *MBBa = MI->getParent();

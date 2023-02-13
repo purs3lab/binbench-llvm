@@ -722,8 +722,8 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   unsigned funcsize = Inst.getFunctionSize();
   std::string FunctionID = Inst.getFunctionID();
   std::string FunctionName = Inst.getFunctionName();
-  std::vector<std::string> succs = Inst.getSuccs();
-  std::vector<std::string> preds = Inst.getPreds();
+  std::set<std::string> succs = Inst.getSuccs();
+  std::set<std::string> preds = Inst.getPreds();
   DEBUG_WITH_TYPE("binbench", dbgs() << "Parent ID in ELFStreamer " << ID << "\n");
   DEBUG_WITH_TYPE("binbench", dbgs() << "NArgs ELFStreamer " << nargs << "\n");
   // Koo: Here combines the emitted data as MCDataFragment
@@ -761,7 +761,17 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   MAI->getBC()->setPreds(ID, preds);
   unsigned size, offset, fixups, alignments, type, Nargs;
   std::string sectionName;
-  std::tie(size, offset, fixups, alignments, type, Nargs, sectionName, preds, succs) = MAI->MachineBasicBlocks[ID];
+  // std::tie(size, offset, fixups, alignments, type, Nargs, sectionName, preds,
+  // succs) = MAI->MachineBasicBlocks[ID];
+  size = MAI->getBC()->MachineBasicBlocks[ID].TotalSizeInBytes;
+  offset = MAI->getBC()->MachineBasicBlocks[ID].Offset;
+  fixups = MAI->getBC()->MachineBasicBlocks[ID].NumFixUps;
+  alignments = MAI->getBC()->MachineBasicBlocks[ID].Alignments;
+  type = MAI->getBC()->MachineBasicBlocks[ID].BBType;
+  Nargs = MAI->getBC()->MachineBasicBlocks[ID].NumArgs;
+  sectionName = MAI->getBC()->MachineBasicBlocks[ID].SectionName;
+  preds = MAI->getBC()->MachineBasicBlocks[ID].Predecessors;
+  succs = MAI->getBC()->MachineBasicBlocks[ID].Successors;
 
   MAI->getBC()->latestParentID = ID;
   MAI->getBC()->nargs = nargs;

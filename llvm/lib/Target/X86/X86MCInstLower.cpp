@@ -2699,8 +2699,8 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
                     << " MBB:" << MI->getParent()->getNumber()
                     << " MF:" << MI->getMF()->getName() << "\n");
 
-  std::vector<std::string> Preds;
-  std::vector<std::string> Succs;
+  std::set<std::string> Preds;
+  std::set<std::string> Succs;
   unsigned op = TmpInst.getOpcode();
   LLVM_DEBUG(dbgs() << "Successors: ");
   auto succs = MI->getParent()->successors();
@@ -2709,7 +2709,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
     unsigned SMBBID = (*succ)->getNumber();
     unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
     std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
-    Succs.push_back(SID);
+    Succs.insert(SID);
   }
   LLVM_DEBUG(dbgs() << "\n");
   LLVM_DEBUG(dbgs() << "Predecessors: ");
@@ -2719,7 +2719,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
     unsigned PMBBID = (*pred)->getNumber();
     unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
     std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
-    Preds.push_back(PID);
+    Preds.insert(PID);
   }
   LLVM_DEBUG(dbgs() << "\n");
   const MachineBasicBlock *MBB = MI->getParent();
