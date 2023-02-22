@@ -42,8 +42,6 @@ void BasicBlockCollector::performCollection(const MachineInstr *MI,
   unsigned MBBID = MBBa->getNumber();
   unsigned MFID = MBBa->getParent()->getFunctionNumber();
   unsigned funcsize = MBBa->getParent()->size();
-  const MachineFunction *MF = MBBa->getParent();
-  // const StringRef FunctionName = MF->;
   std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
 
   Inst->setParentID(ID);
@@ -86,7 +84,6 @@ void BCollector::dumpFixups(
     }
   }
 }
-
 // Akul FIXME: Move this to BCollector
 // Koo: Final value updates for the entire layout of both MFs and MBBs
 void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
@@ -104,10 +101,10 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
     std::string tmpSN, sectionName = ELFSec.getSectionName().str();
     if (sectionName.find(".text") == 0) {
       unsigned totalOffset = 0, totalFixups = 0, totalAlignSize = 0,
-               fragOff = 0, prevMBB = 0, prevMBBSize = 0;
+               prevMBB = 0;
       int MFID, MBBID, prevMFID = -1;
       std::string prevID, canFallThrough;
-      unsigned MBBSize, MBBOffset, numFixups, alignSize, MBBType, nargs;
+      unsigned MBBSize, numFixups, alignSize;
       std::set<std::string> countedMBBs;
       std::set<std::string> preds;
       std::set<std::string> succs;
@@ -119,7 +116,6 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
         // with no instruction - just skip it
         if (isa<MCDataFragment>(MCF) && MCF.hasInstructions()) {
           totalOffset = MCF.getOffset();
-          fragOff = totalOffset;
 
           // Update the MBB offset and MF Size for all collected MBBs in the MF
           for (std::string ID : MCF.getAllMBBs()) {
@@ -129,14 +125,12 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
             }
 
             if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
-              bool isStartMF = false; // check if the new MF begins
               std::tie(MFID, MBBID) = BCollector::separateID(ID);
 
               MBBSize = MAI->getBC()->MachineBasicBlocks[ID].TotalSizeInBytes;
-              MBBOffset = MAI->getBC()->MachineBasicBlocks[ID].Offset;
               numFixups = MAI->getBC()->MachineBasicBlocks[ID].NumFixUps;
               alignSize = MAI->getBC()->MachineBasicBlocks[ID].Alignments;
-              MBBType = MAI->getBC()->MachineBasicBlocks[ID].BBType;
+              // MBBType = MAI->getBC()->MachineBasicBlocks[ID].BBType;
 
               if (tmpSN.length() > 0)
                 continue;
@@ -153,7 +147,6 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
               }
               if (!MAI->isSeenFuncs(MFID)) {
                 prevMBB = 0;
-                prevMBBSize = 0;
                 MAI->getBC()->updateSeenFuncs(MFID);
               }
               // Update the MBB offset, MF Size and section name accordingly
@@ -161,7 +154,6 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
               MAI->getBC()->MachineBasicBlocks[ID].Offset = totalOffset;
               prevMBB += MBBSize - alignSize;
               totalOffset += MBBSize - alignSize;
-              prevMBBSize = MBBSize - alignSize;
               totalFixups += numFixups;
               totalAlignSize += alignSize;
               countedMBBs.insert(ID);
@@ -170,12 +162,9 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
               canFallThrough = MAI->getBC()->canMBBFallThrough[ID] ? "*" : "";
 
               if (MFID > prevMFID) {
-                isStartMF = true;
                 MAI->getBC()->MachineBasicBlocks[prevID].BBType =
                     MBBINFOTYPE::END; // Type = End of the function
               }
-
-              unsigned layoutID = MCF.getLayoutOrder();
 
               prevMFID = MFID;
               prevID = ID;
@@ -196,18 +185,13 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
           // If yet the ID has not been showed up along with getAllMBBs(),
           // it would be an independent RF that does not belong to any DF
           if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
-            bool isStartMF = false;
             std::tie(MFID, MBBID) = BCollector::separateID(ID);
 
             MBBSize = MAI->getBC()->MachineBasicBlocks[ID].TotalSizeInBytes;
-            MBBOffset = MAI->getBC()->MachineBasicBlocks[ID].Offset;
             numFixups = MAI->getBC()->MachineBasicBlocks[ID].NumFixUps;
             alignSize = MAI->getBC()->MachineBasicBlocks[ID].Alignments;
-            MBBType = MAI->getBC()->MachineBasicBlocks[ID].BBType;
             nargs = MAI->getBC()->MachineBasicBlocks[ID].NumArgs;
             tmpSN = MAI->getBC()->MachineBasicBlocks[ID].SectionName;
-            preds = MAI->getBC()->MachineBasicBlocks[ID].Predecessors;
-            succs = MAI->getBC()->MachineBasicBlocks[ID].Successors;
 
             if (tmpSN.length() > 0)
               continue;
@@ -216,7 +200,6 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
 
             if (!MAI->getBC()->isSeenFuncs(MFID)) {
               prevMBB = 0;
-              prevMBBSize = 0;
               MAI->getBC()->updateSeenFuncs(MFID);
             }
             // Update the MBB offset, MF Size and section name accordingly
@@ -224,21 +207,16 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
             MAI->getBC()->MachineBasicBlocks[ID].Offset = totalOffset;
             prevMBB += MBBSize - alignSize;
             totalOffset += MBBSize - alignSize;
-            prevMBBSize = MBBSize - alignSize;
             totalFixups += numFixups;
             totalAlignSize += alignSize;
             countedMBBs.insert(ID);
             MAI->getBC()->MachineFunctionSizes[MFID] += MBBSize;
             MAI->getBC()->MachineBasicBlocks[ID].SectionName = sectionName;
-            canFallThrough = MAI->getBC()->canMBBFallThrough[ID] ? "*" : "";
 
             if (MFID > prevMFID) {
-              isStartMF = true;
               // Type = End of the function
               MAI->getBC()->MachineBasicBlocks[ID].BBType = MBBINFOTYPE::END;
             }
-
-            unsigned layoutID = MCF.getLayoutOrder();
 
             prevMFID = MFID;
             prevID = ID;
@@ -352,7 +330,7 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
   // Set the layout of both Machine Functions and Machine Basic Blocks with
   // protobuf definition
   std::string sectionName;
-  unsigned MBBSize, MBBoffset, numFixups, alignSize, MBBtype, nargs;
+  unsigned MBBSize;
   unsigned objSz = 0, numFuncs = 0, numBBs = 0;
   int MFID, MBBID, prevMFID = 0;
   std::vector<std::string> preds;
@@ -403,12 +381,10 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
   MFCONTAINER &MFs = MAI->getBC()->getMFs();
   for (auto const &x : MFs) {
     ShuffleInfo::ReorderInfo_FunctionInfo *FunctionInfo = ri->add_func();
-    // TODO: Add check for empty ID
     FunctionInfo->set_f_id(x.first);
     FunctionInfo->set_bb_num(x.second.TotalSizeInBytes);
     FunctionInfo->set_f_name(x.second.FunctionName);
-    // DEBUG_WITH_TYPE("binbench", dbgs() << "FID: " << x.first << " " <<
-    // get<1>(x.second) << " " << get<0>(x.second) << "\n");
+
   }
 
   ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo = ri->add_fixup();
