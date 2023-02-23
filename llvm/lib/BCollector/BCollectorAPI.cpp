@@ -90,8 +90,7 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
   const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
   const MCObjectFileInfo *MOFI =
       Layout.getAssembler().getContext().getObjectFileInfo();
-  std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>>
-      jumpTables = MOFI->getJumpTableTargets();
+  JTTYPEWITHID jumpTables = MOFI->getJumpTableTargets();
 
   // Deal with MFs and MBBs in a ELF code section (.text) only
   for (MCSection &Sec : Layout.getAssembler()) {
@@ -100,137 +99,146 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
 
     std::string tmpSN, sectionName = ELFSec.getSectionName().str();
     if (sectionName.find(".text") == 0) {
-      unsigned totalOffset = 0, totalFixups = 0, totalAlignSize = 0,
-               prevMBB = 0;
-      int MFID, MBBID, prevMFID = -1;
-      std::string prevID, canFallThrough;
-      unsigned MBBSize, numFixups, alignSize;
-      std::set<std::string> countedMBBs;
-      std::set<std::string> preds;
-      std::set<std::string> succs;
 
       // Per each fragment in a .text section
-      for (MCFragment &MCF : Sec) {
-        // Here MCDataFragment has combined with the following
-        // MCRelaxableFragment or MCAlignFragment Corner case: MCDataFragment
-        // with no instruction - just skip it
-        if (isa<MCDataFragment>(MCF) && MCF.hasInstructions()) {
-          totalOffset = MCF.getOffset();
+      processFragment(Sec, Layout, MAI, MOFI, ELFSec);      
 
-          // Update the MBB offset and MF Size for all collected MBBs in the MF
-          for (std::string ID : MCF.getAllMBBs()) {
-            if (ID.length() == 0 &&
-                MAI->getBC()->MachineBasicBlocks[ID].TotalSizeInBytes > 0) {
-              ID = "999_999";
-            }
-
-            if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
-              std::tie(MFID, MBBID) = BCollector::separateID(ID);
-
-              MBBSize = MAI->getBC()->MachineBasicBlocks[ID].TotalSizeInBytes;
-              numFixups = MAI->getBC()->MachineBasicBlocks[ID].NumFixUps;
-              alignSize = MAI->getBC()->MachineBasicBlocks[ID].Alignments;
-              // MBBType = MAI->getBC()->MachineBasicBlocks[ID].BBType;
-
-              if (tmpSN.length() > 0)
-                continue;
-              MAI->getBC()->MBBLayoutOrder.push_back(ID);
-
-              // Handle a corner case: see handleDirectEmitDirectives() in
-              // AsmParser.cpp
-              if (MAI->getBC()->specialCntPriorToFunc > 0) {
-                MAI->getBC()->updateByteCounter(
-                    ID, MAI->getBC()->specialCntPriorToFunc, /*numFixups=*/0,
-                    /*isAlign=*/false, /*isInline=*/false);
-                MBBSize += MAI->getBC()->specialCntPriorToFunc;
-                MAI->getBC()->specialCntPriorToFunc = 0;
-              }
-              if (!MAI->isSeenFuncs(MFID)) {
-                prevMBB = 0;
-                MAI->getBC()->updateSeenFuncs(MFID);
-              }
-              // Update the MBB offset, MF Size and section name accordingly
-
-              MAI->getBC()->MachineBasicBlocks[ID].Offset = totalOffset;
-              prevMBB += MBBSize - alignSize;
-              totalOffset += MBBSize - alignSize;
-              totalFixups += numFixups;
-              totalAlignSize += alignSize;
-              countedMBBs.insert(ID);
-              MAI->getBC()->MachineFunctionSizes[MFID] += MBBSize;
-              MAI->getBC()->MachineBasicBlocks[ID].SectionName = sectionName;
-              canFallThrough = MAI->getBC()->canMBBFallThrough[ID] ? "*" : "";
-
-              if (MFID > prevMFID) {
-                MAI->getBC()->MachineBasicBlocks[prevID].BBType =
-                    MBBINFOTYPE::END; // Type = End of the function
-              }
-
-              prevMFID = MFID;
-              prevID = ID;
-            }
-          }
-        }
-
-        // Check out MCRelaxableFragments, which have not combined with any
-        // MCDataFragment It happens when there are consecutive
-        // MCRelaxableFragment (i.e., switch/case)
-        if (isa<MCRelaxableFragment>(MCF) && MCF.hasInstructions()) {
-          MCRelaxableFragment &MCRF = static_cast<MCRelaxableFragment &>(MCF);
-          std::string ID = MCRF.getInst().getParentID();
-
-          if (ID.length() == 0 &&
-              MAI->getBC()->MachineBasicBlocks[ID].TotalSizeInBytes > 0)
-            ID = "999_999";
-          // If yet the ID has not been showed up along with getAllMBBs(),
-          // it would be an independent RF that does not belong to any DF
-          if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
-            std::tie(MFID, MBBID) = BCollector::separateID(ID);
-
-            MBBSize = MAI->getBC()->MachineBasicBlocks[ID].TotalSizeInBytes;
-            numFixups = MAI->getBC()->MachineBasicBlocks[ID].NumFixUps;
-            alignSize = MAI->getBC()->MachineBasicBlocks[ID].Alignments;
-            nargs = MAI->getBC()->MachineBasicBlocks[ID].NumArgs;
-            tmpSN = MAI->getBC()->MachineBasicBlocks[ID].SectionName;
-
-            if (tmpSN.length() > 0)
-              continue;
-
-            MAI->getBC()->MBBLayoutOrder.push_back(ID);
-
-            if (!MAI->getBC()->isSeenFuncs(MFID)) {
-              prevMBB = 0;
-              MAI->getBC()->updateSeenFuncs(MFID);
-            }
-            // Update the MBB offset, MF Size and section name accordingly
-            // std::get<1>(MAI->MachineBasicBlocks[ID]) += (fragOff + prevMBB);
-            MAI->getBC()->MachineBasicBlocks[ID].Offset = totalOffset;
-            prevMBB += MBBSize - alignSize;
-            totalOffset += MBBSize - alignSize;
-            totalFixups += numFixups;
-            totalAlignSize += alignSize;
-            countedMBBs.insert(ID);
-            MAI->getBC()->MachineFunctionSizes[MFID] += MBBSize;
-            MAI->getBC()->MachineBasicBlocks[ID].SectionName = sectionName;
-
-            if (MFID > prevMFID) {
-              // Type = End of the function
-              MAI->getBC()->MachineBasicBlocks[ID].BBType = MBBINFOTYPE::END;
-            }
-
-            prevMFID = MFID;
-            prevID = ID;
-          }
-        }
-      }
-
-      // The last ID Type is always the end of the object
-      MAI->getBC()->MachineBasicBlocks[prevID].BBType =
-          MBBINFOTYPE::ENDOFOBJECT;
     }
   }
 
   // Dump if there is any CFI-generated JT
+  dumpJT(jumpTables, MAI);
+}
+
+void processFragment(MCSection &Sec, const MCAsmLayout &Layout,
+                     const MCAsmInfo *MAI, const MCObjectFileInfo *MOFI, MCSectionELF &ELFSec) {
+  unsigned totalOffset = 0, totalFixups = 0, totalAlignSize = 0, prevMBB = 0;
+  int MFID, MBBID, prevMFID = -1;
+  std::string prevID, canFallThrough;
+  unsigned MBBSize, numFixups, alignSize;
+  std::set<std::string> countedMBBs;
+  std::set<std::string> preds;
+  std::set<std::string> succs;
+  std::string tmpSN, sectionName = ELFSec.getSectionName().str();
+  for (MCFragment &MCF : Sec) {
+    // processFragment(MCF, Layout, MAI, MOFI, totalOffset, totalFixups)
+    // Here MCDataFragment has combined with the following
+    // MCRelaxableFragment or MCAlignFragment Corner case: MCDataFragment
+    // with no instruction - just skip it
+    if (isa<MCDataFragment>(MCF) && MCF.hasInstructions()) {
+      totalOffset = MCF.getOffset();
+
+      // Update the MBB offset and MF Size for all collected MBBs in the MF
+      for (std::string ID : MCF.getAllMBBs()) {
+        if (ID.length() == 0 &&
+            MAI->getBC()->MachineBasicBlocks[ID].TotalSizeInBytes > 0) {
+          ID = "999_999";
+        }
+
+        if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
+          std::tie(MFID, MBBID) = MAI->getBC()->separateID(ID);
+
+          MBBSize = MAI->getBC()->MachineBasicBlocks[ID].TotalSizeInBytes;
+          numFixups = MAI->getBC()->MachineBasicBlocks[ID].NumFixUps;
+          alignSize = MAI->getBC()->MachineBasicBlocks[ID].Alignments;
+          // MBBType = MAI->getBC()->MachineBasicBlocks[ID].BBType;
+
+          if (tmpSN.length() > 0)
+            continue;
+          MAI->getBC()->MBBLayoutOrder.push_back(ID);
+
+          // Handle a corner case: see handleDirectEmitDirectives() in
+          // AsmParser.cpp
+          if (MAI->getBC()->specialCntPriorToFunc > 0) {
+            MAI->getBC()->updateByteCounter(
+                ID, MAI->getBC()->specialCntPriorToFunc, /*numFixups=*/0,
+                /*isAlign=*/false, /*isInline=*/false);
+            MBBSize += MAI->getBC()->specialCntPriorToFunc;
+            MAI->getBC()->specialCntPriorToFunc = 0;
+          }
+          if (!MAI->isSeenFuncs(MFID)) {
+            prevMBB = 0;
+            MAI->getBC()->updateSeenFuncs(MFID);
+          }
+          // Update the MBB offset, MF Size and section name accordingly
+
+          MAI->getBC()->MachineBasicBlocks[ID].Offset = totalOffset;
+          prevMBB += MBBSize - alignSize;
+          totalOffset += MBBSize - alignSize;
+          totalFixups += numFixups;
+          totalAlignSize += alignSize;
+          countedMBBs.insert(ID);
+          MAI->getBC()->MachineFunctionSizes[MFID] += MBBSize;
+          MAI->getBC()->MachineBasicBlocks[ID].SectionName = sectionName;
+          canFallThrough = MAI->getBC()->canMBBFallThrough[ID] ? "*" : "";
+
+          if (MFID > prevMFID) {
+            MAI->getBC()->MachineBasicBlocks[prevID].BBType =
+                MBBINFOTYPE::END; // Type = End of the function
+          }
+
+          prevMFID = MFID;
+          prevID = ID;
+        }
+      }
+    }
+
+    // Check out MCRelaxableFragments, which have not combined with any
+    // MCDataFragment It happens when there are consecutive
+    // MCRelaxableFragment (i.e., switch/case)
+    if (isa<MCRelaxableFragment>(MCF) && MCF.hasInstructions()) {
+      MCRelaxableFragment &MCRF = static_cast<MCRelaxableFragment &>(MCF);
+      std::string ID = MCRF.getInst().getParentID();
+
+      if (ID.length() == 0 &&
+          MAI->getBC()->MachineBasicBlocks[ID].TotalSizeInBytes > 0)
+        ID = "999_999";
+      // If yet the ID has not been showed up along with getAllMBBs(),
+      // it would be an independent RF that does not belong to any DF
+      if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
+        std::tie(MFID, MBBID) = MAI->getBC()->separateID(ID);
+
+        MBBSize = MAI->getBC()->MachineBasicBlocks[ID].TotalSizeInBytes;
+        numFixups = MAI->getBC()->MachineBasicBlocks[ID].NumFixUps;
+        alignSize = MAI->getBC()->MachineBasicBlocks[ID].Alignments;
+        tmpSN = MAI->getBC()->MachineBasicBlocks[ID].SectionName;
+
+        if (tmpSN.length() > 0)
+          continue;
+
+        MAI->getBC()->MBBLayoutOrder.push_back(ID);
+
+        if (!MAI->getBC()->isSeenFuncs(MFID)) {
+          prevMBB = 0;
+          MAI->getBC()->updateSeenFuncs(MFID);
+        }
+        // Update the MBB offset, MF Size and section name accordingly
+        // std::get<1>(MAI->MachineBasicBlocks[ID]) += (fragOff + prevMBB);
+        MAI->getBC()->MachineBasicBlocks[ID].Offset = totalOffset;
+        prevMBB += MBBSize - alignSize;
+        totalOffset += MBBSize - alignSize;
+        totalFixups += numFixups;
+        totalAlignSize += alignSize;
+        countedMBBs.insert(ID);
+        MAI->getBC()->MachineFunctionSizes[MFID] += MBBSize;
+        MAI->getBC()->MachineBasicBlocks[ID].SectionName = sectionName;
+
+        if (MFID > prevMFID) {
+          // Type = End of the function
+          MAI->getBC()->MachineBasicBlocks[ID].BBType = MBBINFOTYPE::END;
+        }
+
+        prevMFID = MFID;
+        prevID = ID;
+      }
+    }
+  }
+  // The last ID Type is always the end of the object
+  MAI->getBC()->MachineBasicBlocks[prevID].BBType =
+      MBBINFOTYPE::ENDOFOBJECT;
+}
+
+void BCollector::dumpJT(JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI) {
   if (jumpTables.size() > 0) {
     DEBUG_WITH_TYPE("binbench", dbgs() << "\n<Jump Tables Summary>\n");
     unsigned totalEntries = 0;
@@ -239,7 +247,7 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
       unsigned entryKind, entrySize;
       std::list<std::string> JTEntries;
 
-      std::tie(MFID, JTI) = BCollector::separateID(it->first);
+      std::tie(MFID, JTI) = MAI->getBC()->BCollector::separateID(it->first);
       std::tie(entryKind, entrySize, JTEntries) = it->second;
 
       DEBUG_WITH_TYPE("binbench", dbgs() << "[JT@Function#" << MFID << "_"
@@ -268,6 +276,7 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
                                        << totalEntries << "\n");
   }
 }
+
 
 // Akul FIXME: Move this to BCollector
 void BCollector::setFixups(

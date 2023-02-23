@@ -6,8 +6,10 @@
 #include "llvm/BCollector/BCollectorUtils.h"
 #include "llvm/CodeGen/MachineBasicBlock.h"
 #include "llvm/CodeGen/MachineInstr.h"
+#include "llvm/MC/MCObjectFileInfo.h"
 #include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCInst.h"
+#include "llvm/MC/MCSectionELF.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/shuffleInfo.pb.h"
@@ -138,16 +140,16 @@ public:
   mutable unsigned specialCntPriorToFunc = 0;
 
   void updateFuncDetails(std::string id, std::string funcname, unsigned size) {
-    // if (MachineFunctions.count(id) == 0) {
-    //   MachineFunctions[id].TotalSizeInBytes = size;
-    //   MachineFunctions[id].FunctionName = funcname;
-    // }
     MachineFunctions[id].TotalSizeInBytes = size;
     MachineFunctions[id].FunctionName = funcname;
   }
 
   MFCONTAINER &getMFs() { return MachineFunctions; }
 
+  void dumpJT(JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI);
+
+  void processFragment(MCSection &Sec, const MCAsmLayout &Layout,
+                       const MCAsmInfo *MAI, const MCObjectFileInfo *MOFI, MCSectionELF &ELFSec);
   void setFunctionid(std::string id) { latestFunctionID = id; }
   void setFixupInfo(ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo, const MCAsmInfo *MAI);
   explicit BCollector();

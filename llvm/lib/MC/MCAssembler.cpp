@@ -854,7 +854,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
     std::string sectionName = ELFSec.getSectionName().str();
     if (sectionName.find(".text") == 0) {
       LLVM_DEBUG(dbgs() << "Basic Blocks in .text: " <<"\n");
-      const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
+      // const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
       // BC->updateMetadata(MAI);
       for (MCFragment &MCF : Sec) {
         if (isa<MCDataFragment>(MCF) && MCF.hasInstructions()) {

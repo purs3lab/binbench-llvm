@@ -15,6 +15,8 @@ typedef enum MachineBasicBlocksInfoType { NOTEND = 0, END = 1,
 typedef std::string MBBIDTYPE;
 typedef std::string MFIDTYPE;
 
+typedef std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> JTTYPEWITHID;
+
 // Class that contains information about Machine Functions
 class BMachineFunctionInfo {
 public:
