@@ -7,6 +7,20 @@
 #ifndef LLVM_BCOLLECTORTYPES_H
 #define LLVM_BCOLLECTORTYPES_H
 
+#include "llvm/BCollector/BCollectorUtils.h"
+#include "llvm/CodeGen/MachineBasicBlock.h"
+#include "llvm/CodeGen/MachineInstr.h"
+#include "llvm/CodeGen/MachineFunction.h"
+#include "llvm/MC/MCObjectFileInfo.h"
+#include "llvm/MC/MCAsmLayout.h"
+#include "llvm/MC/MCContext.h"
+// #include "llvm/MC/MCAsmInfo.h"
+#include "llvm/MC/MCInst.h"
+#include "llvm/MC/MCSectionELF.h"
+#include "llvm/Support/Debug.h"
+#include "llvm/Support/ErrorHandling.h"
+#include "llvm/Support/shuffleInfo.pb.h"
+
 namespace llvm {
 // Type of Machine Basic Block
 typedef enum MachineBasicBlocksInfoType { NOTEND = 0, END = 1,

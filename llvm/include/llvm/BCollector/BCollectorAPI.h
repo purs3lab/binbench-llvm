@@ -2,19 +2,23 @@
 #ifndef LLVM_BCOLLECTOR_H
 #define LLVM_BCOLLECTOR_H
 
-#include "llvm/BCollector/BCollectorTypes.h"
 #include "llvm/BCollector/BCollectorUtils.h"
 #include "llvm/CodeGen/MachineBasicBlock.h"
+#include "llvm/CodeGen/MachineFunction.h"
 #include "llvm/CodeGen/MachineInstr.h"
-#include "llvm/MC/MCObjectFileInfo.h"
-#include "llvm/MC/MCAsmInfo.h"
+// #include "llvm/MC/MCAsmInfo.h"
+#include "llvm/MC/MCAsmLayout.h"
+#include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCInst.h"
+#include "llvm/MC/MCObjectFileInfo.h"
 #include "llvm/MC/MCSectionELF.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/shuffleInfo.pb.h"
 
+#include "llvm/BCollector/BCollectorTypes.h"
 #include <iomanip>
+#include <string>
 
 namespace llvm {
 
@@ -149,12 +153,14 @@ public:
   void dumpJT(JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI);
 
   void processFragment(MCSection &Sec, const MCAsmLayout &Layout,
-                       const MCAsmInfo *MAI, const MCObjectFileInfo *MOFI, MCSectionELF &ELFSec);
+                       const MCAsmInfo *MAI, const MCObjectFileInfo *MOFI,
+                       MCSectionELF &ELFSec);
   void setFunctionid(std::string id) { latestFunctionID = id; }
-  void setFixupInfo(ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo, const MCAsmInfo *MAI);
+  void setFixupInfo(ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo,
+                    const MCAsmInfo *MAI);
   explicit BCollector();
   virtual ~BCollector() {}
-  };
+};
 
 class BasicBlockCollector : public BCollector {
 public:

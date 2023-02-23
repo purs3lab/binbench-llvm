@@ -1,21 +1,21 @@
 
 
-// #include "llvm/MC/BCollectorAPI.h"
+#include "llvm/BCollector/BCollectorAPI.h"
 
+#include "llvm/BCollector/BCollectorTypes.h"
+#include "llvm/BCollector/BCollectorUtils.h"
 #include "llvm/CodeGen/MachineBasicBlock.h"
-#include "llvm/CodeGen/MachineFunction.h"
 #include "llvm/CodeGen/MachineInstr.h"
-
-#include "llvm/MC/MCAsmInfo.h"
+#include "llvm/CodeGen/MachineFunction.h"
+#include "llvm/MC/MCObjectFileInfo.h"
 #include "llvm/MC/MCAsmLayout.h"
 #include "llvm/MC/MCContext.h"
+#include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCInst.h"
-#include "llvm/MC/MCObjectFileInfo.h"
 #include "llvm/MC/MCSectionELF.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/shuffleInfo.pb.h"
-
 #include <set>
 
 using namespace llvm;
@@ -110,7 +110,7 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
   dumpJT(jumpTables, MAI);
 }
 
-void processFragment(MCSection &Sec, const MCAsmLayout &Layout,
+void BCollector::processFragment(MCSection &Sec, const MCAsmLayout &Layout,
                      const MCAsmInfo *MAI, const MCObjectFileInfo *MOFI, MCSectionELF &ELFSec) {
   unsigned totalOffset = 0, totalFixups = 0, totalAlignSize = 0, prevMBB = 0;
   int MFID, MBBID, prevMFID = -1;
