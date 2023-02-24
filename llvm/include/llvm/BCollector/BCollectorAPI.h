@@ -22,6 +22,9 @@
 
 namespace llvm {
 
+/**
+ * This class provides a common interface for all backend collectors.
+ */
 class BCollector {
 public:
   BCollectorUtils *utils;
@@ -191,6 +194,19 @@ public:
   }
   BasicBlockCollector() {}
   virtual ~BasicBlockCollector() {}
+};
+
+class FunctionCollector : public BCollector {
+public:
+  virtual void performCollection(const MachineInstr *MI, MCInst *Inst);
+
+  // FunctionCollector
+  void updateByteCounter(MFIDTYPE &id, unsigned emittedBytes,
+                         unsigned numFixups, bool isAlign, bool isInline) {
+                          // TODO
+  }
+  FunctionCollector() {}
+  virtual ~FunctionCollector() {}
 };
 
 } // namespace llvm

@@ -1141,7 +1141,8 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
 //      writeObject()@ELFObjectWriter.cpp
 std::string MCAssembler::WriteRandInfo(const MCAsmLayout &Layout) const {
   ShuffleInfo::ReorderInfo reorder_info;
-  // BC->serializeReorderInfo(&reorder_info, Layout);
+  const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
+  MAI->getBC()->serializeReorderInfo(&reorder_info, Layout);
   std::string randContents;
 
   if (!reorder_info.SerializeToString(&randContents)) {
