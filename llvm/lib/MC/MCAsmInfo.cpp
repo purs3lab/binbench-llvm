@@ -41,6 +41,7 @@ cl::opt<cl::boolOrDefault> UseLEB128Directives(
 
 MCAsmInfo::MCAsmInfo() {
   BC = new BasicBlockCollector();
+  FC = new FunctionCollector();
   SeparatorString = ";";
   CommentString = "#";
   LabelSuffix = ":";

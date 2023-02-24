@@ -557,13 +557,6 @@ public:
   /// Get the code pointer size in bytes.
   unsigned getCodePointerSize() const { return CodePointerSize; }
 
-  bool updateMetadata() const {
-    bool success = false;
-    // collect all the bookkeeping information and send it to the BCollector
-    // where should this function be called? 
-    return success;
-  }
-
   // Akul : Porting essential stuctures that hold metadata before printing
   // Here we skip changes made for supporting inline assembly.
   // To what extent do we want to support inline assembly? 
@@ -573,6 +566,7 @@ public:
   //    - The type field represents when the block is the end of MF or Object where MBB = 0, MF = 1, and Obj = 2
   //    - The sectionOrdinal field is for C++ only; it tells current BBL belongs to which section!
   BasicBlockCollector *BC;
+  FunctionCollector *FC;
   mutable std::map<
       std::string,
       std::tuple<unsigned, unsigned, unsigned, unsigned, unsigned, unsigned,
@@ -591,6 +585,7 @@ public:
   mutable std::vector<unsigned> SeenFunctionIDs;
 
   BasicBlockCollector *getBC() const { return BC; }
+  FunctionCollector *getFC() const { return FC; }
 
   void updateSeenFuncs(unsigned funcID) const {
     if (std::find(SeenFunctionIDs.begin(), SeenFunctionIDs.end(), funcID) ==

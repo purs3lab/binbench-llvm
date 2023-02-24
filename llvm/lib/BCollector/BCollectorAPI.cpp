@@ -387,7 +387,7 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
 
   // Set the fixup information (.text, .rodata, .data, .data.rel.ro and
   // .init_array)
-  MFCONTAINER &MFs = MAI->getBC()->getMFs();
+  MFCONTAINER &MFs = MAI->getFC()->getMFs();
   for (auto const &x : MFs) {
     ShuffleInfo::ReorderInfo_FunctionInfo *FunctionInfo = ri->add_func();
     FunctionInfo->set_f_id(x.first);

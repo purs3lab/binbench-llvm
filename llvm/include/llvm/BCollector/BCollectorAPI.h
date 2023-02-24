@@ -146,12 +146,6 @@ public:
   mutable unsigned assemBBLNo = 0;
   mutable unsigned specialCntPriorToFunc = 0;
 
-  void updateFuncDetails(std::string id, std::string funcname, unsigned size) {
-    MachineFunctions[id].TotalSizeInBytes = size;
-    MachineFunctions[id].FunctionName = funcname;
-  }
-
-  MFCONTAINER &getMFs() { return MachineFunctions; }
 
   void dumpJT(JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI);
 
@@ -198,13 +192,14 @@ public:
 
 class FunctionCollector : public BCollector {
 public:
-  virtual void performCollection(const MachineInstr *MI, MCInst *Inst);
 
-  // FunctionCollector
-  void updateByteCounter(MFIDTYPE &id, unsigned emittedBytes,
-                         unsigned numFixups, bool isAlign, bool isInline) {
-                          // TODO
+  void updateFuncDetails(std::string id, std::string funcname, unsigned size) {
+    MachineFunctions[id].TotalSizeInBytes = size;
+    MachineFunctions[id].FunctionName = funcname;
   }
+
+  MFCONTAINER &getMFs() { return MachineFunctions; }
+
   FunctionCollector() {}
   virtual ~FunctionCollector() {}
 };

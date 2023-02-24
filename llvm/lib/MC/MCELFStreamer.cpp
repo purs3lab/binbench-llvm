@@ -755,7 +755,7 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   DF->setNArgs(nargs);
   DF->addMachineBasicBlockTag(ID);
   MAI->getBC()->updateByteCounter(ID, EmittedBytes, numFixups, /*isAlign=*/ false, /*isInline=*/ false);
-  MAI->getBC()->updateFuncDetails(FunctionID, FunctionName, funcsize);
+  MAI->getFC()->updateFuncDetails(FunctionID, FunctionName, funcsize);
 
   MAI->getBC()->setSuccs(ID, succs);
   MAI->getBC()->setPreds(ID, preds);
