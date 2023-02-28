@@ -754,10 +754,34 @@ class ReorderInfo_FunctionInfo PROTOBUF_FINAL :
   // accessors -------------------------------------------------------
 
   enum : int {
+    kArgsizesFieldNumber = 5,
     kFIdFieldNumber = 1,
     kFNameFieldNumber = 2,
     kBbNumFieldNumber = 3,
+    kNargsFieldNumber = 4,
   };
+  // repeated uint64 argsizes = 5;
+  int argsizes_size() const;
+  private:
+  int _internal_argsizes_size() const;
+  public:
+  void clear_argsizes();
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_argsizes(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+      _internal_argsizes() const;
+  void _internal_add_argsizes(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+      _internal_mutable_argsizes();
+  public:
+  ::PROTOBUF_NAMESPACE_ID::uint64 argsizes(int index) const;
+  void set_argsizes(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value);
+  void add_argsizes(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+      argsizes() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+      mutable_argsizes();
+
   // optional string f_id = 1;
   bool has_f_id() const;
   private:
@@ -811,6 +835,19 @@ class ReorderInfo_FunctionInfo PROTOBUF_FINAL :
   void _internal_set_bb_num(::PROTOBUF_NAMESPACE_ID::uint64 value);
   public:
 
+  // optional uint64 nargs = 4;
+  bool has_nargs() const;
+  private:
+  bool _internal_has_nargs() const;
+  public:
+  void clear_nargs();
+  ::PROTOBUF_NAMESPACE_ID::uint64 nargs() const;
+  void set_nargs(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_nargs() const;
+  void _internal_set_nargs(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
   // @@protoc_insertion_point(class_scope:ShuffleInfo.ReorderInfo.FunctionInfo)
  private:
   class _Internal;
@@ -820,9 +857,11 @@ class ReorderInfo_FunctionInfo PROTOBUF_FINAL :
   typedef void DestructorSkippable_;
   ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 > argsizes_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr f_id_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr f_name_;
   ::PROTOBUF_NAMESPACE_ID::uint64 bb_num_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 nargs_;
   friend struct ::TableStruct_shuffleInfo_2eproto;
 };
 // -------------------------------------------------------------------
@@ -2527,6 +2566,81 @@ inline void ReorderInfo_FunctionInfo::_internal_set_bb_num(::PROTOBUF_NAMESPACE_
 inline void ReorderInfo_FunctionInfo::set_bb_num(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   _internal_set_bb_num(value);
   // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.FunctionInfo.bb_num)
+}
+
+// optional uint64 nargs = 4;
+inline bool ReorderInfo_FunctionInfo::_internal_has_nargs() const {
+  bool value = (_has_bits_[0] & 0x00000008u) != 0;
+  return value;
+}
+inline bool ReorderInfo_FunctionInfo::has_nargs() const {
+  return _internal_has_nargs();
+}
+inline void ReorderInfo_FunctionInfo::clear_nargs() {
+  nargs_ = PROTOBUF_ULONGLONG(0);
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ReorderInfo_FunctionInfo::_internal_nargs() const {
+  return nargs_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ReorderInfo_FunctionInfo::nargs() const {
+  // @@protoc_insertion_point(field_get:ShuffleInfo.ReorderInfo.FunctionInfo.nargs)
+  return _internal_nargs();
+}
+inline void ReorderInfo_FunctionInfo::_internal_set_nargs(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _has_bits_[0] |= 0x00000008u;
+  nargs_ = value;
+}
+inline void ReorderInfo_FunctionInfo::set_nargs(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_nargs(value);
+  // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.FunctionInfo.nargs)
+}
+
+// repeated uint64 argsizes = 5;
+inline int ReorderInfo_FunctionInfo::_internal_argsizes_size() const {
+  return argsizes_.size();
+}
+inline int ReorderInfo_FunctionInfo::argsizes_size() const {
+  return _internal_argsizes_size();
+}
+inline void ReorderInfo_FunctionInfo::clear_argsizes() {
+  argsizes_.Clear();
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ReorderInfo_FunctionInfo::_internal_argsizes(int index) const {
+  return argsizes_.Get(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ReorderInfo_FunctionInfo::argsizes(int index) const {
+  // @@protoc_insertion_point(field_get:ShuffleInfo.ReorderInfo.FunctionInfo.argsizes)
+  return _internal_argsizes(index);
+}
+inline void ReorderInfo_FunctionInfo::set_argsizes(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  argsizes_.Set(index, value);
+  // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.FunctionInfo.argsizes)
+}
+inline void ReorderInfo_FunctionInfo::_internal_add_argsizes(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  argsizes_.Add(value);
+}
+inline void ReorderInfo_FunctionInfo::add_argsizes(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_add_argsizes(value);
+  // @@protoc_insertion_point(field_add:ShuffleInfo.ReorderInfo.FunctionInfo.argsizes)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+ReorderInfo_FunctionInfo::_internal_argsizes() const {
+  return argsizes_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+ReorderInfo_FunctionInfo::argsizes() const {
+  // @@protoc_insertion_point(field_list:ShuffleInfo.ReorderInfo.FunctionInfo.argsizes)
+  return _internal_argsizes();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+ReorderInfo_FunctionInfo::_internal_mutable_argsizes() {
+  return &argsizes_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+ReorderInfo_FunctionInfo::mutable_argsizes() {
+  // @@protoc_insertion_point(field_mutable_list:ShuffleInfo.ReorderInfo.FunctionInfo.argsizes)
+  return _internal_mutable_argsizes();
 }
 
 // -------------------------------------------------------------------

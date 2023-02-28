@@ -36,6 +36,7 @@ public:
   // MachineFunctions;
 
   MFCONTAINER MachineFunctions;
+  mutable std::map<std::string, std::string> NametoMFID;
   mutable std::map<std::string, bool> canMBBFallThrough;
   mutable std::map<unsigned, unsigned> MachineFunctionSizes;
   mutable std::list<std::string> MBBLayoutOrder;
@@ -196,9 +197,21 @@ public:
   void updateFuncDetails(std::string id, std::string funcname, unsigned size) {
     MachineFunctions[id].TotalSizeInBytes = size;
     MachineFunctions[id].FunctionName = funcname;
+    MachineFunctions[id].ID = id;
+    NametoMFID[funcname] = id;
+  }
+
+  void updateArgDetails(std::string funcname, unsigned numArgs) {
+    MachineFunctions[NametoMFID[funcname]].NumArgs = numArgs;
   }
 
   MFCONTAINER &getMFs() { return MachineFunctions; }
+
+  void setNumArgs(std::string funcname, unsigned numArgs) { 
+    nargs = numArgs; 
+    DEBUG_WITH_TYPE("binbench", dbgs() << "NumArgs: " << nargs << "\n");
+    DEBUG_WITH_TYPE("binbench", dbgs() << "funcname: " << funcname << "\n");
+  }
 
   FunctionCollector() {}
   virtual ~FunctionCollector() {}

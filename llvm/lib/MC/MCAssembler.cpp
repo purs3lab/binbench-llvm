@@ -806,7 +806,7 @@ void MCAssembler::writeSectionData(raw_ostream &OS, const MCSection *Sec,
          OS.tell() - Start == Layout.getSectionAddressSize(Sec));
 }
 // Akul: This function is called from MCAssembler::writeSectionData()
-// Move it to BCollector?
+// Move it to BCollectorUtils? Or leave it here? Does it matter?
 std::tuple<MCValue, uint64_t, bool, bool>
 MCAssembler::handleFixup(const MCAsmLayout &Layout, MCFragment &F,
                          const MCFixup &Fixup) {
@@ -838,9 +838,6 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
       dump(); });
   // LLVM_DEBUG(dbgs() << "BasicBlock Info:" << "\n");
   // Koo - Collect what we need once layout has been finalized
-  // Akul FIXME: This code can't be moved, hence create a function for the
-  // Maybe transfer metadate to the BCollector object here?
-  // following instrumentation, is it even needed though? 
   const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
   const MCObjectFileInfo *MOFI = Layout.getAssembler().getContext().getObjectFileInfo();
   bool isNewTextSection = false, isNewRodataSection = false;
@@ -848,6 +845,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
   unsigned textSecCtr = 0, rodataSecCtr = 0, dataSecCtr = 0, dataRelSecCtr = 0, initSecCtr = 0;
   unsigned prevLayoutOrder;
 
+  // Akul FIXME: looks like test code, get rid of it?
   for (MCSection &Sec : Layout.getAssembler()) {
     MCSectionELF &ELFSec = reinterpret_cast<MCSectionELF &>(Sec);
     // MCSection &ELFSec = Sec;
@@ -1134,7 +1132,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
   }
 }
 
-// Akul FIXME: move this function to BCollector.cpp
+// Akul: this cannot be moved has to be left here, see comment below
 // Koo: Serialize reorder_info data with Google's protocol buffer format,
 // calling by
 //      ELFObjectWriter::writeSectionData() from

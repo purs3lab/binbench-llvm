@@ -136,6 +136,7 @@ protected:
   mutable std::string FunctionName;
   mutable std::vector<std::string> succs;
   mutable std::vector<std::string> preds;
+  mutable std::vector<unsigned> argsizes;
 
 
 public:
@@ -237,6 +238,8 @@ public:
   std::vector<std::string> getSuccs() const {return succs;}
   std::vector<std::string> getPreds() const {return preds;}
   void setNArgs(unsigned nargs) const { nArgs = nargs; }
+  void addArgSize(unsigned argsize) const { argsizes.push_back(argsize); }
+  std::vector<unsigned> getArgSizes() const { return argsizes; }
   void setFunctionName(std::string funcname) const { FunctionName = funcname; }
   std::string getFunctionName() const {return FunctionName; }
   std::string getParentID() const { return parentID; }

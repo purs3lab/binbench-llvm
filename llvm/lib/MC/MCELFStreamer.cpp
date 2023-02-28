@@ -724,8 +724,12 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   std::string FunctionName = Inst.getFunctionName();
   std::set<std::string> succs = Inst.getSuccs();
   std::set<std::string> preds = Inst.getPreds();
+  std::vector<unsigned> argSizes = MSI->getArgSizes();
   DEBUG_WITH_TYPE("binbench", dbgs() << "Parent ID in ELFStreamer " << ID << "\n");
   DEBUG_WITH_TYPE("binbench", dbgs() << "NArgs ELFStreamer " << nargs << "\n");
+  for (auto &argSize : argSizes) {
+    DEBUG_WITH_TYPE("binbench", dbgs() << "ArgSize ELFStreamer " << argSize << "\n");
+  }
   // Koo: Here combines the emitted data as MCDataFragment
   //      addMachineBasicBlockTag() keeps track of the IDs that identifies (MF+MBB) pair
   //      MCRelaxableFragment will be generating in MCObjectStreamer::EmitInstToFragment()
@@ -756,7 +760,7 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   DF->addMachineBasicBlockTag(ID);
   MAI->getBC()->updateByteCounter(ID, EmittedBytes, numFixups, /*isAlign=*/ false, /*isInline=*/ false);
   MAI->getFC()->updateFuncDetails(FunctionID, FunctionName, funcsize);
-
+  // Akul: Should this be through DF?
   MAI->getBC()->setSuccs(ID, succs);
   MAI->getBC()->setPreds(ID, preds);
   unsigned size, offset, fixups, alignments, type, Nargs;

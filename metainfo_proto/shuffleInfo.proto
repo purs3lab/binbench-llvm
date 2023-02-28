@@ -41,6 +41,8 @@ message ReorderInfo {
     optional string f_id = 1;
     optional string f_name = 2;
     optional uint64 bb_num = 3;
+    optional uint64 nargs = 4;
+    repeated uint64 argsizes = 5;
   }
 
   // Fixup info in ELF from LLVM

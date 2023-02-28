@@ -804,8 +804,10 @@ void DwarfUnit::constructTypeDIE(DIE &Buffer, const DIDerivedType *DTy) {
 }
 
 void DwarfUnit::constructSubprogramArguments(DIE &Buffer, DITypeRefArray Args) {
+  // Akul 
   for (unsigned i = 1, N = Args.size(); i < N; ++i) {
     const DIType *Ty = Args[i];
+    TM.getMCSubtargetInfo()->addArgSize(Ty->getSizeInBits());
     if (!Ty) {
       assert(i == N-1 && "Unspecified parameter must be the last argument");
       createAndAddDIE(dwarf::DW_TAG_unspecified_parameters, Buffer);
@@ -1242,6 +1244,8 @@ void DwarfUnit::applySubprogramAttributes(const DISubprogram *SP, DIE &SPDie,
   bool SkipSPSourceLocation = SkipSPAttributes &&
                               !CUNode->getDebugInfoForProfiling();
   if (!SkipSPSourceLocation)
+    // Akul follow execution
+
     if (applySubprogramDefinitionAttributes(SP, SPDie, SkipSPAttributes))
       return;
 
@@ -1284,8 +1288,13 @@ void DwarfUnit::applySubprogramAttributes(const DISubprogram *SP, DIE &SPDie,
   // return type.
   // TODO: add instrumention here instead
   auto MSI = TM.getMCSubtargetInfo();
+  auto MAI = TM.getMCAsmInfo();
   unsigned nargs = Args.size();
   MSI->setNArgs(nargs);
+  auto funcName = SP->getName();
+  // auto funcID = SP->getFunction()->getFunction()->getFunctionNumber();
+  MAI->getFC()->setNumArgs(funcName.str(), nargs);
+  MAI->getFC()->updateArgDetails(funcName.str(), nargs);
   if (Args.size())
     if (auto Ty = Args[0])
       addType(SPDie, Ty);

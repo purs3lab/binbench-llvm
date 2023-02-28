@@ -43,10 +43,11 @@ void BasicBlockCollector::performCollection(const MachineInstr *MI,
   unsigned MFID = MBBa->getParent()->getFunctionNumber();
   unsigned funcsize = MBBa->getParent()->size();
   std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+  std::string funcname = MBBa->getParent()->getName().str();
 
   Inst->setParentID(ID);
   Inst->setFunctionID(std::to_string(MFID));
-  Inst->setFunctionName(ID);
+  Inst->setFunctionName(funcname);
   Inst->setFunctionSize(funcsize);
   Inst->setSuccs(ID, Succs);
   Inst->setPreds(ID, Preds);
@@ -393,6 +394,7 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
     FunctionInfo->set_f_id(x.first);
     FunctionInfo->set_bb_num(x.second.TotalSizeInBytes);
     FunctionInfo->set_f_name(x.second.FunctionName);
+    FunctionInfo->set_nargs(x.second.NumArgs);
 
   }
 

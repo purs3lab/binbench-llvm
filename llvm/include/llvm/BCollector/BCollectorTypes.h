@@ -14,7 +14,6 @@
 #include "llvm/MC/MCObjectFileInfo.h"
 #include "llvm/MC/MCAsmLayout.h"
 #include "llvm/MC/MCContext.h"
-// #include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCInst.h"
 #include "llvm/MC/MCSectionELF.h"
 #include "llvm/Support/Debug.h"
@@ -37,6 +36,10 @@ public:
   unsigned TotalSizeInBytes;
 
   std::string FunctionName;
+  std::string ID;
+
+  unsigned NumArgs;
+  std::vector<unsigned> ArgSizesInBits; 
 
   BMachineFunctionInfo() {
     TotalSizeInBytes = 0;
