@@ -45,6 +45,10 @@ void BasicBlockCollector::performCollection(const MachineInstr *MI,
   std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
   std::string funcname = MBBa->getParent()->getName().str();
 
+  // funcname should be unique
+  if (funcname.length() == 0)
+    funcname = "func_" + std::to_string(MFID);
+
   Inst->setParentID(ID);
   Inst->setFunctionID(std::to_string(MFID));
   Inst->setFunctionName(funcname);

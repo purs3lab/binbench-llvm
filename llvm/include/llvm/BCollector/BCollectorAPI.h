@@ -202,6 +202,14 @@ public:
   }
 
   void updateArgDetails(std::string funcname, unsigned numArgs) {
+
+    // check if name is in the map
+    if (NametoMFID.find(funcname) == NametoMFID.end()) {
+      DEBUG_WITH_TYPE("binbench", dbgs() << "Function not found: " << funcname
+                                         << "\n");
+      return;
+    }
+
     MachineFunctions[NametoMFID[funcname]].NumArgs = numArgs;
   }
 

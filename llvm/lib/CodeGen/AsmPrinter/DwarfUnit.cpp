@@ -807,7 +807,7 @@ void DwarfUnit::constructSubprogramArguments(DIE &Buffer, DITypeRefArray Args) {
   // Akul 
   for (unsigned i = 1, N = Args.size(); i < N; ++i) {
     const DIType *Ty = Args[i];
-    TM.getMCSubtargetInfo()->addArgSize(Ty->getSizeInBits());
+    // TM.getMCSubtargetInfo()->addArgSize(Ty->getSizeInBits());
     if (!Ty) {
       assert(i == N-1 && "Unspecified parameter must be the last argument");
       createAndAddDIE(dwarf::DW_TAG_unspecified_parameters, Buffer);
@@ -1291,10 +1291,15 @@ void DwarfUnit::applySubprogramAttributes(const DISubprogram *SP, DIE &SPDie,
   auto MAI = TM.getMCAsmInfo();
   unsigned nargs = Args.size();
   MSI->setNArgs(nargs);
-  auto funcName = SP->getName();
+  auto funcName = SP->getName().str();
+
+  // funcName must be unique
+  if (funcName.length() == 0)
+    funcName = "func_" + std::to_string(SP->getLine());
+
   // auto funcID = SP->getFunction()->getFunction()->getFunctionNumber();
-  MAI->getFC()->setNumArgs(funcName.str(), nargs);
-  MAI->getFC()->updateArgDetails(funcName.str(), nargs);
+  // MAI->getFC()->setNumArgs(funcName, nargs);
+  MAI->getFC()->updateArgDetails(funcName, nargs);
   if (Args.size())
     if (auto Ty = Args[0])
       addType(SPDie, Ty);
