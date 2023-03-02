@@ -1307,6 +1307,8 @@ void DwarfUnit::applySubprogramAttributes(const DISubprogram *SP, DIE &SPDie,
 
   for (int i = 0; i < nargs; i++) {
     auto arg = Args[i];
+    if (arg == nullptr)
+      continue;
     auto argSize = arg->getSizeInBits();
     MAI->getFC()->addArgSizes(funcName, argSize);
   }
