@@ -38,7 +38,7 @@ public:
   std::string FunctionName;
   std::string ID;
 
-  unsigned NumArgs;
+  int NumArgs;
   std::vector<unsigned> ArgSizesInBits; 
 
   BMachineFunctionInfo() {

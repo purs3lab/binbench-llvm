@@ -1289,8 +1289,11 @@ void DwarfUnit::applySubprogramAttributes(const DISubprogram *SP, DIE &SPDie,
   // TODO: add instrumention here instead
   auto MSI = TM.getMCSubtargetInfo();
   auto MAI = TM.getMCAsmInfo();
-  unsigned nargs = Args.size();
-  MSI->setNArgs(nargs);
+  int nargs = Args.size();
+
+  if (nargs < 0)
+    nargs = -1;
+  // MSI->setNArgs(nargs);
   auto funcName = SP->getName().str();
 
   // funcName must be unique
@@ -1300,6 +1303,14 @@ void DwarfUnit::applySubprogramAttributes(const DISubprogram *SP, DIE &SPDie,
   // auto funcID = SP->getFunction()->getFunction()->getFunctionNumber();
   // MAI->getFC()->setNumArgs(funcName, nargs);
   MAI->getFC()->updateArgDetails(funcName, nargs);
+
+
+  for (int i = 0; i < nargs; i++) {
+    auto arg = Args[i];
+    auto argSize = arg->getSizeInBits();
+    MAI->getFC()->addArgSizes(funcName, argSize);
+  }
+
   if (Args.size())
     if (auto Ty = Args[0])
       addType(SPDie, Ty);

@@ -191,6 +191,8 @@ public:
   virtual ~BasicBlockCollector() {}
 };
 
+// A lot of the stuff here comes from DWRAF
+// -gdwarf flag is absolutely necessary!
 class FunctionCollector : public BCollector {
 public:
 
@@ -201,7 +203,7 @@ public:
     NametoMFID[funcname] = id;
   }
 
-  void updateArgDetails(std::string funcname, unsigned numArgs) {
+  void updateArgDetails(std::string funcname, int numArgs) {
 
     // check if name is in the map
     if (NametoMFID.find(funcname) == NametoMFID.end()) {
@@ -209,7 +211,8 @@ public:
                                          << "\n");
       return;
     }
-
+    DEBUG_WITH_TYPE("binbench", dbgs() << "Function has numArgs: " << numArgs
+                                        << "\n");
     MachineFunctions[NametoMFID[funcname]].NumArgs = numArgs;
   }
 
@@ -219,6 +222,11 @@ public:
     nargs = numArgs; 
     DEBUG_WITH_TYPE("binbench", dbgs() << "NumArgs: " << nargs << "\n");
     DEBUG_WITH_TYPE("binbench", dbgs() << "funcname: " << funcname << "\n");
+  }
+
+  void addArgSizes(std::string funcname, unsigned argsize) {
+    DEBUG_WITH_TYPE("binbench", dbgs() << "For Func " << funcname << "ArgSize: " << argsize << "\n");
+    MachineFunctions[NametoMFID[funcname]].ArgSizesInBits.push_back(argsize);
   }
 
   FunctionCollector() {}

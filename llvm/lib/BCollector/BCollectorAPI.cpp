@@ -399,7 +399,10 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
     FunctionInfo->set_bb_num(x.second.TotalSizeInBytes);
     FunctionInfo->set_f_name(x.second.FunctionName);
     FunctionInfo->set_nargs(x.second.NumArgs);
-
+    auto argSizes = x.second.ArgSizesInBits;
+    for (auto const &argSize : argSizes) {
+      FunctionInfo->add_argsizes(argSize);
+    }
   }
 
   ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo = ri->add_fixup();
