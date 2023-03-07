@@ -8,10 +8,12 @@
 
 namespace llvm {
 
+/// @brief Utility class for BCollector
 class BCollectorUtils {
 
     public:
 
+    /// @brief Hexlify for dubugging 
     template<typename T> static
     std::string hexlify(T i) {
         std::stringbuf buf;

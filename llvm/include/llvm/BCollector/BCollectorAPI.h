@@ -27,45 +27,43 @@ namespace llvm {
  */
 class BCollector {
 public:
-  BCollectorUtils *utils;
+  BCollectorUtils *utils; ///< Utility class for BCollector
 
-  // Information about all machine basic blocks.
-  MBBCONTAINER MachineBasicBlocks;
+  MBBCONTAINER MachineBasicBlocks; ///< Information about all machine basic blocks.
 
-  // mutable std::map<std::string, std::tuple<unsigned, std::string>>
-  // MachineFunctions;
 
-  MFCONTAINER MachineFunctions;
-  mutable std::map<std::string, std::string> NametoMFID;
-  mutable std::map<std::string, bool> canMBBFallThrough;
-  mutable std::map<unsigned, unsigned> MachineFunctionSizes;
-  mutable std::list<std::string> MBBLayoutOrder;
+  MFCONTAINER MachineFunctions; ///< Information about all machine functions.
+  mutable std::map<std::string, std::string> NametoMFID; ///< Map from function name to function ID.
+  mutable std::map<std::string, bool> canMBBFallThrough; ///< Map from MBB ID to whether it can fall through to the next MBB.
+  mutable std::map<unsigned, unsigned> MachineFunctionSizes; ///< Map from Machine Function ID to its size.
+  mutable std::list<std::string> MBBLayoutOrder; ///< List of MBB IDs in the order they appear in the binary.
 
-  mutable std::vector<unsigned> SeenFunctionIDs;
+  mutable std::vector<unsigned> SeenFunctionIDs; ///< List of function IDs that have been seen.
 
-  // virtual void performCollection() = 0;
 
   const char *fixupLookupSections[5] = {
       ".text", ".rodata", ".data", ".data.rel.ro", ".init_array",
-  };
+  }; ///< List of sections that can have fixups.
 
-  void dumpFixups(
-      std::list<std::tuple<unsigned, unsigned, bool, std::string, std::string,
-                           bool, std::string, unsigned, unsigned>>
-          Fixups,
+  /// @brief Dump collected Fixup information. This is used for debugging.
+  void dumpFixups(FIXUPTYPE Fixups,
       std::string kind, bool isDebug);
 
+  /// @brief Updates the ReorderInfo object with the collected metadata.
+  /// @param Layout The MCAsmLayout object that contains required metadata.
   void updateReorderInfoValues(const MCAsmLayout &Layout);
+
+  /// @brief get basic block id and machine function id separated
   std::tuple<int, int> separateID(std::string ID) {
     return std::make_tuple(std::stoi(ID.substr(0, ID.find("_"))),
                            std::stoi(ID.substr(ID.find("_") + 1, ID.length())));
   }
 
-  void setFixups(
-      std::list<std::tuple<unsigned, unsigned, bool, std::string, std::string,
-                           bool, std::string, unsigned, unsigned>>
-          Fixups,
+  /// @brief Set Fixup information for a given section. Users need not use this.
+  void setFixups(FIXUPTYPE Fixups,
       ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo, std::string secName);
+
+  /// @brief get the section id for a given section name.
   int getFixupSectionId(std::string secName) {
     for (size_t i = 0;
          i < sizeof(fixupLookupSections) / sizeof(*fixupLookupSections); ++i)
@@ -74,7 +72,7 @@ public:
     return -1;
   }
 
-  // Akul FIXME: Move this to BCollector
+  /// @brief Get the FixupTuple object for a given section.
   ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple *
   getFixupTuple(ShuffleInfo::ReorderInfo_FixupInfo *FI, std::string secName) {
     switch (getFixupSectionId(secName)) {
@@ -94,77 +92,91 @@ public:
     }
   }
 
-  // TODO: Overload these in derived classes?
+  /// @brief Deprecated
   void getMetadata() { llvm_unreachable("getMetadata() is not implemented"); }
 
+  /// @brief Deprecated
   void setMetadata() { llvm_unreachable("setMetadata() is not implemented"); }
 
+  /// @brief Deprecated
   void printMetadata() {
     llvm_unreachable("printMetadata() is not implemented");
   }
 
+  /// @brief Serialize the collected metadata into a protobuf object.
+  /// @param ri The ReorderInfo object to be serialized.
+  /// @param Layout Required to update the ReorderInfo object.
   void serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
                             const MCAsmLayout &Layout);
 
+  /// @brief Add seen function ID to the list.
   void updateSeenFuncs(unsigned funcID) const {
     if (std::find(SeenFunctionIDs.begin(), SeenFunctionIDs.end(), funcID) ==
         SeenFunctionIDs.end())
       SeenFunctionIDs.push_back(funcID);
   }
 
+  /// @brief Check if we have already seen this function ID.
   bool isSeenFuncs(unsigned funcID) const {
     if (std::find(SeenFunctionIDs.begin(), SeenFunctionIDs.end(), funcID) ==
         SeenFunctionIDs.end())
       return false;
     return true;
   }
+  /**
+   * @name Section Fixup information
+  */
+  ///@{
+  /** Fixup information in each section. */
+  mutable FIXUPTYPE FixupsText, FixupsRodata, FixupsData, FixupsDataRel, FixupsInitArray; 
+  ///@}
 
-  // (b) Fixups (list)
-  //    * <offset, size, isRela, parentID, SymbolRefFixupName, isNewSection,
-  //    secName, numJTEntries, JTEntrySz>
-  //    - The last two elements are jump table information for FixupsText only,
-  //      which allows for updating the jump table entries (relative values)
-  //      with pic/pie-enabled.
-  mutable std::list<
-      std::tuple<unsigned, unsigned, bool, std::string, std::string, bool,
-                 std::string, unsigned, unsigned>>
-      FixupsText, FixupsRodata, FixupsData, FixupsDataRel, FixupsInitArray;
-  //    - FixupsEhframe, FixupsExceptTable; (Not needed any more as a randomizer
-  //    directly handles them later on)
-  //    - Keep track of the latest ID when parent ID is unavailable
-  mutable std::string latestParentID;
-  mutable std::string latestFunctionID;
-  mutable unsigned nargs;
+  mutable std::string latestParentID; ///< The latest parent ID.
+  mutable std::string latestFunctionID; ///< The latest function ID.
+  mutable unsigned nargs; ///< The number of arguments for the latest function.
 
-  // (c) Others
-  //     The following method helps full-assembly file (*.s) identify functions
-  //     and basic blocks that inherently lacks their boundaries because neither
-  //     MF nor MBB has been constructed.
-  mutable bool isAssemFile = false;
-  mutable bool hasInlineAssembly = false;
-  mutable std::string prevOpcode;
-  mutable unsigned assemFuncNo = 0xffffffff;
-  mutable unsigned assemBBLNo = 0;
-  mutable unsigned specialCntPriorToFunc = 0;
+  mutable bool isAssemFile = false; ///< Is the current file assembly?
+  mutable bool hasInlineAssembly = false; ///< Does the current function have inline assembly?
+  mutable std::string prevOpcode; ///< The previous opcode encounted in collection.
+  mutable unsigned assemFuncNo = 0xffffffff; ///< The function number for the current assembly function.
+  mutable unsigned assemBBLNo = 0; ///< The basic block number for the current assembly basic block.
+  mutable unsigned specialCntPriorToFunc = 0; ///< Unused and deprecated?
 
 
+  /// Dump the collected jump table information.
   void dumpJT(JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI);
 
+  /// Process a fragment and collect fixup information.
   void processFragment(MCSection &Sec, const MCAsmLayout &Layout,
                        const MCAsmInfo *MAI, const MCObjectFileInfo *MOFI,
                        MCSectionELF &ELFSec);
+
+        
+  /// @brief Set the latest parent ID.
   void setFunctionid(std::string id) { latestFunctionID = id; }
+
+  /// @brief Set the Fixup info from each section
   void setFixupInfo(ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo,
                     const MCAsmInfo *MAI);
   explicit BCollector();
   virtual ~BCollector() {}
 };
 
+/// @brief Collects basic block information.
 class BasicBlockCollector : public BCollector {
 public:
+  /// Collects the basic block information. Includes things like:
+  /// ID, size, alignment, fixups, successors, predecessors.
+  /// @param MI The Machine Intruction from which metadata is to be collected.
+  /// @param Inst The MC Layer instruction object into which the collected info is embedded into.
   virtual void performCollection(const MachineInstr *MI, MCInst *Inst);
 
-  // BBlockCollector
+  /// Updates the sizes and fixup info of basic blocks.
+  /// @param id The ID of the basic block to be updated.
+  /// @param emittedBytes The number of bytes that need to be updated.
+  /// @param numFixups The number of fixups that need to be updated.
+  /// @param isAlign Is the update due to an alignment?
+  /// @param isInline Is the update due to an inline assembly? unused.
   void updateByteCounter(MBBIDTYPE &id, unsigned emittedBytes,
                          unsigned numFixups, bool isAlign, bool isInline) {
 
@@ -180,10 +192,17 @@ public:
     if (isInline)
       MachineBasicBlocks[id].TotalSizeInBytes -= emittedBytes;
   }
+
+  /// @brief  Sets the successors of a basic block.
+  /// @param id The ID of the basic block to be updated.
+  /// @param succs Successor IDs of the basic block.
   void setSuccs(std::string id, const std::set<std::string> &succs) {
     MachineBasicBlocks[id].Successors = succs;
   }
 
+  /// @brief Sets the predecessors of a basic block.
+  /// @param id  The ID of the basic block to be updated.
+  /// @param preds  Predecessor IDs of the basic block.
   void setPreds(std::string id, const std::set<std::string> &preds) {
     MachineBasicBlocks[id].Predecessors = preds;
   }
@@ -193,9 +212,12 @@ public:
 
 // A lot of the stuff here comes from DWRAF
 // -gdwarf flag is absolutely necessary!
+/// @brief  Collects the function information.
 class FunctionCollector : public BCollector {
 public:
 
+  /// @brief  Collects the function information. Includes things like: 
+  /// ID, function name, arguments (if any)
   void updateFuncDetails(std::string id, std::string funcname, unsigned size) {
     MachineFunctions[id].TotalSizeInBytes = size;
     MachineFunctions[id].FunctionName = funcname;
@@ -203,6 +225,9 @@ public:
     NametoMFID[funcname] = id;
   }
 
+  /// @brief Update the argument details of a function
+  /// @param funcname Name of the function to be updated
+  /// @param numArgs Number of arguments observed
   void updateArgDetails(std::string funcname, int numArgs) {
 
     // check if name is in the map
@@ -216,14 +241,19 @@ public:
     MachineFunctions[NametoMFID[funcname]].NumArgs = numArgs;
   }
 
+  /// @brief Get collected function metadata object.
   MFCONTAINER &getMFs() { return MachineFunctions; }
 
+  /// @brief To set the number of arguments for a function internally and for debugging.
   void setNumArgs(std::string funcname, unsigned numArgs) { 
     nargs = numArgs; 
     DEBUG_WITH_TYPE("binbench", dbgs() << "NumArgs: " << nargs << "\n");
     DEBUG_WITH_TYPE("binbench", dbgs() << "funcname: " << funcname << "\n");
   }
 
+  /// @brief Update the argument sizes of a function
+  /// @param funcname Name of the function to be updated
+  /// @param argsize The size of the argument in bits
   void addArgSizes(std::string funcname, unsigned argsize) {
     DEBUG_WITH_TYPE("binbench", dbgs() << "For Func " << funcname << "ArgSize: " << argsize << "\n");
     MachineFunctions[NametoMFID[funcname]].ArgSizesInBits.push_back(argsize);

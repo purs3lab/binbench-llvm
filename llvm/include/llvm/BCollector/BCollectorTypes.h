@@ -21,25 +21,36 @@
 #include "llvm/Support/shuffleInfo.pb.h"
 
 namespace llvm {
-// Type of Machine Basic Block
+
+/// Type of Machine Basic Block
 typedef enum MachineBasicBlocksInfoType { NOTEND = 0, END = 1,
                                           ENDOFOBJECT = 2 } MBBINFOTYPE;
 
+/// @brief machine basic block ID
 typedef std::string MBBIDTYPE;
+/// @brief machine function ID
 typedef std::string MFIDTYPE;
 
+/// @brief Jump Table Type: <JumpTableID, <JumpTableSize, <JumpTableEntries>>>
 typedef std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> JTTYPEWITHID;
 
-// Class that contains information about Machine Functions
+/// @brief Fixup List Type: <offset, size, isRela, parentID, SymbolRefFixupName, isNewSection,
+///    secName, numJTEntries, JTEntrySz>
+typedef std::list<std::tuple<unsigned, unsigned, bool, std::string, std::string,
+                           bool, std::string, unsigned, unsigned>> FIXUPTYPE;
+
+
+/// Class that contains information about Machine Functions.
 class BMachineFunctionInfo {
 public:
-  unsigned TotalSizeInBytes;
 
-  std::string FunctionName;
-  std::string ID;
+  unsigned TotalSizeInBytes; ///< Total size of the function in bytes.
 
-  int NumArgs;
-  std::vector<unsigned> ArgSizesInBits; 
+  std::string FunctionName; ///< Name of the function.
+  std::string ID; ///< Machine Function ID
+
+  int NumArgs; ///< Number of arguments to the function.
+  std::vector<unsigned> ArgSizesInBits;  ///< list of the sizes of the arguments in bits.
 
   BMachineFunctionInfo() {
     TotalSizeInBytes = 0;
@@ -49,28 +60,28 @@ public:
   }
 };
 
+/// @brief Container for BMachineFunctionInfo.
 typedef std::map<MFIDTYPE, BMachineFunctionInfo> MFCONTAINER;
 
-// Class that contains information about BasicBlocks
-
+/// Class that contains information about BasicBlocks.
 class MachineBasicBlocksInfo {
+
 public:
-  unsigned TotalSizeInBytes;
-  unsigned Offset;
-  unsigned NumArgs;
-  unsigned NumFixUps;
-  unsigned Alignments;
 
-  // what is the type of this basic block.
-  MBBINFOTYPE BBType;
+  unsigned TotalSizeInBytes; ///< Total size of the basic block in bytes.
+  unsigned Offset; ///< Offset of the basic block in the object file.
+  unsigned NumArgs; ///< Deprecated, to be removed.
+  unsigned NumFixUps; ///< Number of fixups in the basic block.
+  unsigned Alignments; ///< Alignment of the basic block.
 
+  MBBINFOTYPE BBType; ///< Type can be NOTEND, END or ENDOFOBJECT.
+
+  /// @brief Name of the section in which this basic block is present.
   std::string SectionName;
 
-  // Set of ids of predecessors of this basic blocks.
-  std::set<std::string> Predecessors;
+  std::set<std::string> Predecessors; ///< Set of ids of predecessors of this basic blocks.
 
-  // Set of ids of sucessesors of this basic block.
-  std::set<std::string> Successors;
+  std::set<std::string> Successors; ///< Set of ids of sucessesors of this basic block.
 
   MachineBasicBlocksInfo() {
     TotalSizeInBytes = Offset = NumArgs = NumFixUps = 0;
@@ -86,6 +97,7 @@ public:
   }
 };
 
+/// @brief Container for MachineBasicBlocksInfo.
 typedef std::map<MBBIDTYPE, MachineBasicBlocksInfo> MBBCONTAINER;
 } // namespace llvm
 
