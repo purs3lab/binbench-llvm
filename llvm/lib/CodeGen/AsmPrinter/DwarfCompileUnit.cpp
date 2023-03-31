@@ -32,6 +32,7 @@
 #include "llvm/MC/MCSymbol.h"
 #include "llvm/MC/MCSymbolWasm.h"
 #include "llvm/MC/MachineLocation.h"
+#include "llvm/MC/MCAsmInfo.h"
 #include "llvm/Target/TargetLoweringObjectFile.h"
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Target/TargetOptions.h"
@@ -722,6 +723,7 @@ DIE *DwarfCompileUnit::constructLabelDIE(DbgLabel &DL,
   return LabelDie;
 }
 
+// Akul: Intercept local variable DIEs and add them to the metadata
 DIE *DwarfCompileUnit::constructVariableDIEImpl(const DbgVariable &DV,
                                                 bool Abstract) {
   // Define variable debug information entry.
@@ -863,6 +865,21 @@ DIE *DwarfCompileUnit::constructVariableDIEImpl(const DbgVariable &DV,
     auto *TRI = Asm->MF->getSubtarget().getRegisterInfo();
     SmallVector<uint64_t, 8> Ops;
     TRI->getOffsetOpcodes(Offset, Ops);
+    // Handle non basic type variables differently.
+    auto MAI = TM.getMCAsmInfo();
+    auto func_name = Asm->MF->getFunction().getName().str();
+
+    auto VarType = DV.getVariable()->getType()->getName().str();
+
+    if(VarType == "") {
+      VarType = "undef";
+    }
+    
+    DEBUG_WITH_TYPE("binbench", dbgs() << DV.getVariable()->getName() << " Type: " 
+                                      << VarType << " Size: "
+                                        << DV.getVariable()->getType()->getSizeInBits() << " Offset: " << Offset.getFixed() << "\n");
+    
+    MAI->getFC()->addLocalVariable(func_name, DV.getVariable()->getName().str(), VarType, Offset.getFixed(), DV.getVariable()->getType()->getSizeInBits());
 
     // According to
     // https://docs.nvidia.com/cuda/archive/10.0/ptx-writers-guide-to-interoperability/index.html#cuda-specific-dwarf

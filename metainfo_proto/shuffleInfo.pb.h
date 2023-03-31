@@ -755,6 +755,10 @@ class ReorderInfo_FunctionInfo PROTOBUF_FINAL :
 
   enum : int {
     kArgsizesFieldNumber = 5,
+    kLocalVarNamesFieldNumber = 6,
+    kLocalVarOffsetsFieldNumber = 7,
+    kLocalVarTypesFieldNumber = 8,
+    kLocalVarSizesFieldNumber = 9,
     kFIdFieldNumber = 1,
     kFNameFieldNumber = 2,
     kBbNumFieldNumber = 3,
@@ -781,6 +785,98 @@ class ReorderInfo_FunctionInfo PROTOBUF_FINAL :
       argsizes() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
       mutable_argsizes();
+
+  // repeated string local_var_names = 6;
+  int local_var_names_size() const;
+  private:
+  int _internal_local_var_names_size() const;
+  public:
+  void clear_local_var_names();
+  const std::string& local_var_names(int index) const;
+  std::string* mutable_local_var_names(int index);
+  void set_local_var_names(int index, const std::string& value);
+  void set_local_var_names(int index, std::string&& value);
+  void set_local_var_names(int index, const char* value);
+  void set_local_var_names(int index, const char* value, size_t size);
+  std::string* add_local_var_names();
+  void add_local_var_names(const std::string& value);
+  void add_local_var_names(std::string&& value);
+  void add_local_var_names(const char* value);
+  void add_local_var_names(const char* value, size_t size);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& local_var_names() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_local_var_names();
+  private:
+  const std::string& _internal_local_var_names(int index) const;
+  std::string* _internal_add_local_var_names();
+  public:
+
+  // repeated int64 local_var_offsets = 7;
+  int local_var_offsets_size() const;
+  private:
+  int _internal_local_var_offsets_size() const;
+  public:
+  void clear_local_var_offsets();
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_local_var_offsets(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int64 >&
+      _internal_local_var_offsets() const;
+  void _internal_add_local_var_offsets(::PROTOBUF_NAMESPACE_ID::int64 value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int64 >*
+      _internal_mutable_local_var_offsets();
+  public:
+  ::PROTOBUF_NAMESPACE_ID::int64 local_var_offsets(int index) const;
+  void set_local_var_offsets(int index, ::PROTOBUF_NAMESPACE_ID::int64 value);
+  void add_local_var_offsets(::PROTOBUF_NAMESPACE_ID::int64 value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int64 >&
+      local_var_offsets() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int64 >*
+      mutable_local_var_offsets();
+
+  // repeated string local_var_types = 8;
+  int local_var_types_size() const;
+  private:
+  int _internal_local_var_types_size() const;
+  public:
+  void clear_local_var_types();
+  const std::string& local_var_types(int index) const;
+  std::string* mutable_local_var_types(int index);
+  void set_local_var_types(int index, const std::string& value);
+  void set_local_var_types(int index, std::string&& value);
+  void set_local_var_types(int index, const char* value);
+  void set_local_var_types(int index, const char* value, size_t size);
+  std::string* add_local_var_types();
+  void add_local_var_types(const std::string& value);
+  void add_local_var_types(std::string&& value);
+  void add_local_var_types(const char* value);
+  void add_local_var_types(const char* value, size_t size);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& local_var_types() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_local_var_types();
+  private:
+  const std::string& _internal_local_var_types(int index) const;
+  std::string* _internal_add_local_var_types();
+  public:
+
+  // repeated uint64 local_var_sizes = 9;
+  int local_var_sizes_size() const;
+  private:
+  int _internal_local_var_sizes_size() const;
+  public:
+  void clear_local_var_sizes();
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_local_var_sizes(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+      _internal_local_var_sizes() const;
+  void _internal_add_local_var_sizes(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+      _internal_mutable_local_var_sizes();
+  public:
+  ::PROTOBUF_NAMESPACE_ID::uint64 local_var_sizes(int index) const;
+  void set_local_var_sizes(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value);
+  void add_local_var_sizes(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+      local_var_sizes() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+      mutable_local_var_sizes();
 
   // optional string f_id = 1;
   bool has_f_id() const;
@@ -858,6 +954,10 @@ class ReorderInfo_FunctionInfo PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 > argsizes_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> local_var_names_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int64 > local_var_offsets_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> local_var_types_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 > local_var_sizes_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr f_id_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr f_name_;
   ::PROTOBUF_NAMESPACE_ID::uint64 bb_num_;
@@ -2641,6 +2741,248 @@ inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >
 ReorderInfo_FunctionInfo::mutable_argsizes() {
   // @@protoc_insertion_point(field_mutable_list:ShuffleInfo.ReorderInfo.FunctionInfo.argsizes)
   return _internal_mutable_argsizes();
+}
+
+// repeated string local_var_names = 6;
+inline int ReorderInfo_FunctionInfo::_internal_local_var_names_size() const {
+  return local_var_names_.size();
+}
+inline int ReorderInfo_FunctionInfo::local_var_names_size() const {
+  return _internal_local_var_names_size();
+}
+inline void ReorderInfo_FunctionInfo::clear_local_var_names() {
+  local_var_names_.Clear();
+}
+inline std::string* ReorderInfo_FunctionInfo::add_local_var_names() {
+  // @@protoc_insertion_point(field_add_mutable:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_names)
+  return _internal_add_local_var_names();
+}
+inline const std::string& ReorderInfo_FunctionInfo::_internal_local_var_names(int index) const {
+  return local_var_names_.Get(index);
+}
+inline const std::string& ReorderInfo_FunctionInfo::local_var_names(int index) const {
+  // @@protoc_insertion_point(field_get:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_names)
+  return _internal_local_var_names(index);
+}
+inline std::string* ReorderInfo_FunctionInfo::mutable_local_var_names(int index) {
+  // @@protoc_insertion_point(field_mutable:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_names)
+  return local_var_names_.Mutable(index);
+}
+inline void ReorderInfo_FunctionInfo::set_local_var_names(int index, const std::string& value) {
+  // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_names)
+  local_var_names_.Mutable(index)->assign(value);
+}
+inline void ReorderInfo_FunctionInfo::set_local_var_names(int index, std::string&& value) {
+  // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_names)
+  local_var_names_.Mutable(index)->assign(std::move(value));
+}
+inline void ReorderInfo_FunctionInfo::set_local_var_names(int index, const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  local_var_names_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_names)
+}
+inline void ReorderInfo_FunctionInfo::set_local_var_names(int index, const char* value, size_t size) {
+  local_var_names_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_names)
+}
+inline std::string* ReorderInfo_FunctionInfo::_internal_add_local_var_names() {
+  return local_var_names_.Add();
+}
+inline void ReorderInfo_FunctionInfo::add_local_var_names(const std::string& value) {
+  local_var_names_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_names)
+}
+inline void ReorderInfo_FunctionInfo::add_local_var_names(std::string&& value) {
+  local_var_names_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_names)
+}
+inline void ReorderInfo_FunctionInfo::add_local_var_names(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  local_var_names_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_names)
+}
+inline void ReorderInfo_FunctionInfo::add_local_var_names(const char* value, size_t size) {
+  local_var_names_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_names)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>&
+ReorderInfo_FunctionInfo::local_var_names() const {
+  // @@protoc_insertion_point(field_list:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_names)
+  return local_var_names_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>*
+ReorderInfo_FunctionInfo::mutable_local_var_names() {
+  // @@protoc_insertion_point(field_mutable_list:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_names)
+  return &local_var_names_;
+}
+
+// repeated int64 local_var_offsets = 7;
+inline int ReorderInfo_FunctionInfo::_internal_local_var_offsets_size() const {
+  return local_var_offsets_.size();
+}
+inline int ReorderInfo_FunctionInfo::local_var_offsets_size() const {
+  return _internal_local_var_offsets_size();
+}
+inline void ReorderInfo_FunctionInfo::clear_local_var_offsets() {
+  local_var_offsets_.Clear();
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 ReorderInfo_FunctionInfo::_internal_local_var_offsets(int index) const {
+  return local_var_offsets_.Get(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 ReorderInfo_FunctionInfo::local_var_offsets(int index) const {
+  // @@protoc_insertion_point(field_get:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_offsets)
+  return _internal_local_var_offsets(index);
+}
+inline void ReorderInfo_FunctionInfo::set_local_var_offsets(int index, ::PROTOBUF_NAMESPACE_ID::int64 value) {
+  local_var_offsets_.Set(index, value);
+  // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_offsets)
+}
+inline void ReorderInfo_FunctionInfo::_internal_add_local_var_offsets(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  local_var_offsets_.Add(value);
+}
+inline void ReorderInfo_FunctionInfo::add_local_var_offsets(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_add_local_var_offsets(value);
+  // @@protoc_insertion_point(field_add:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_offsets)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int64 >&
+ReorderInfo_FunctionInfo::_internal_local_var_offsets() const {
+  return local_var_offsets_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int64 >&
+ReorderInfo_FunctionInfo::local_var_offsets() const {
+  // @@protoc_insertion_point(field_list:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_offsets)
+  return _internal_local_var_offsets();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int64 >*
+ReorderInfo_FunctionInfo::_internal_mutable_local_var_offsets() {
+  return &local_var_offsets_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int64 >*
+ReorderInfo_FunctionInfo::mutable_local_var_offsets() {
+  // @@protoc_insertion_point(field_mutable_list:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_offsets)
+  return _internal_mutable_local_var_offsets();
+}
+
+// repeated string local_var_types = 8;
+inline int ReorderInfo_FunctionInfo::_internal_local_var_types_size() const {
+  return local_var_types_.size();
+}
+inline int ReorderInfo_FunctionInfo::local_var_types_size() const {
+  return _internal_local_var_types_size();
+}
+inline void ReorderInfo_FunctionInfo::clear_local_var_types() {
+  local_var_types_.Clear();
+}
+inline std::string* ReorderInfo_FunctionInfo::add_local_var_types() {
+  // @@protoc_insertion_point(field_add_mutable:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_types)
+  return _internal_add_local_var_types();
+}
+inline const std::string& ReorderInfo_FunctionInfo::_internal_local_var_types(int index) const {
+  return local_var_types_.Get(index);
+}
+inline const std::string& ReorderInfo_FunctionInfo::local_var_types(int index) const {
+  // @@protoc_insertion_point(field_get:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_types)
+  return _internal_local_var_types(index);
+}
+inline std::string* ReorderInfo_FunctionInfo::mutable_local_var_types(int index) {
+  // @@protoc_insertion_point(field_mutable:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_types)
+  return local_var_types_.Mutable(index);
+}
+inline void ReorderInfo_FunctionInfo::set_local_var_types(int index, const std::string& value) {
+  // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_types)
+  local_var_types_.Mutable(index)->assign(value);
+}
+inline void ReorderInfo_FunctionInfo::set_local_var_types(int index, std::string&& value) {
+  // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_types)
+  local_var_types_.Mutable(index)->assign(std::move(value));
+}
+inline void ReorderInfo_FunctionInfo::set_local_var_types(int index, const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  local_var_types_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_types)
+}
+inline void ReorderInfo_FunctionInfo::set_local_var_types(int index, const char* value, size_t size) {
+  local_var_types_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_types)
+}
+inline std::string* ReorderInfo_FunctionInfo::_internal_add_local_var_types() {
+  return local_var_types_.Add();
+}
+inline void ReorderInfo_FunctionInfo::add_local_var_types(const std::string& value) {
+  local_var_types_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_types)
+}
+inline void ReorderInfo_FunctionInfo::add_local_var_types(std::string&& value) {
+  local_var_types_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_types)
+}
+inline void ReorderInfo_FunctionInfo::add_local_var_types(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  local_var_types_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_types)
+}
+inline void ReorderInfo_FunctionInfo::add_local_var_types(const char* value, size_t size) {
+  local_var_types_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_types)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>&
+ReorderInfo_FunctionInfo::local_var_types() const {
+  // @@protoc_insertion_point(field_list:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_types)
+  return local_var_types_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>*
+ReorderInfo_FunctionInfo::mutable_local_var_types() {
+  // @@protoc_insertion_point(field_mutable_list:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_types)
+  return &local_var_types_;
+}
+
+// repeated uint64 local_var_sizes = 9;
+inline int ReorderInfo_FunctionInfo::_internal_local_var_sizes_size() const {
+  return local_var_sizes_.size();
+}
+inline int ReorderInfo_FunctionInfo::local_var_sizes_size() const {
+  return _internal_local_var_sizes_size();
+}
+inline void ReorderInfo_FunctionInfo::clear_local_var_sizes() {
+  local_var_sizes_.Clear();
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ReorderInfo_FunctionInfo::_internal_local_var_sizes(int index) const {
+  return local_var_sizes_.Get(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ReorderInfo_FunctionInfo::local_var_sizes(int index) const {
+  // @@protoc_insertion_point(field_get:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_sizes)
+  return _internal_local_var_sizes(index);
+}
+inline void ReorderInfo_FunctionInfo::set_local_var_sizes(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  local_var_sizes_.Set(index, value);
+  // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_sizes)
+}
+inline void ReorderInfo_FunctionInfo::_internal_add_local_var_sizes(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  local_var_sizes_.Add(value);
+}
+inline void ReorderInfo_FunctionInfo::add_local_var_sizes(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_add_local_var_sizes(value);
+  // @@protoc_insertion_point(field_add:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_sizes)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+ReorderInfo_FunctionInfo::_internal_local_var_sizes() const {
+  return local_var_sizes_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+ReorderInfo_FunctionInfo::local_var_sizes() const {
+  // @@protoc_insertion_point(field_list:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_sizes)
+  return _internal_local_var_sizes();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+ReorderInfo_FunctionInfo::_internal_mutable_local_var_sizes() {
+  return &local_var_sizes_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+ReorderInfo_FunctionInfo::mutable_local_var_sizes() {
+  // @@protoc_insertion_point(field_mutable_list:ShuffleInfo.ReorderInfo.FunctionInfo.local_var_sizes)
+  return _internal_mutable_local_var_sizes();
 }
 
 // -------------------------------------------------------------------

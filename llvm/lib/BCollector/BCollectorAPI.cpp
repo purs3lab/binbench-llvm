@@ -403,6 +403,13 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
     for (auto const &argSize : argSizes) {
       FunctionInfo->add_argsizes(argSize);
     }
+    auto localVars = x.second.LocalVars;
+    for (auto const &localVar : localVars) {
+      FunctionInfo->add_local_var_names(localVar.first);
+      FunctionInfo->add_local_var_types(std::get<0>(localVar.second));
+      FunctionInfo->add_local_var_offsets(std::get<1>(localVar.second));
+      FunctionInfo->add_local_var_sizes(std::get<2>(localVar.second));
+    }
   }
 
   ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo = ri->add_fixup();

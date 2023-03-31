@@ -241,6 +241,10 @@ public:
     MachineFunctions[NametoMFID[funcname]].NumArgs = numArgs;
   }
 
+  void addLocalVariable(std::string funcname, std::string varname, std::string type, int Offset, unsigned size) {
+    MachineFunctions[NametoMFID[funcname]].LocalVars[varname] = std::make_tuple(type, Offset, size);
+  }
+
   /// @brief Get collected function metadata object.
   MFCONTAINER &getMFs() { return MachineFunctions; }
 

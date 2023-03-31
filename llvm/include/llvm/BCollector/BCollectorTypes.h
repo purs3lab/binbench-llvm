@@ -51,6 +51,7 @@ public:
 
   int NumArgs; ///< Number of arguments to the function.
   std::vector<unsigned> ArgSizesInBits;  ///< list of the sizes of the arguments in bits.
+  std::map<std::string, std::tuple<std::string, int, unsigned>> LocalVars; ///< Map of local variables to their type, offset and sizes in bits.
 
   BMachineFunctionInfo() {
     TotalSizeInBytes = 0;

@@ -43,6 +43,10 @@ message ReorderInfo {
     optional uint64 bb_num = 3;
     optional uint64 nargs = 4;
     repeated uint64 argsizes = 5;
+    repeated string local_var_names = 6;
+    repeated int64 local_var_offsets = 7;
+    repeated string local_var_types = 8;
+    repeated uint64 local_var_sizes = 9;
   }
 
   // Fixup info in ELF from LLVM
