@@ -4588,9 +4588,9 @@ MachineBasicBlock *MipsTargetLowering::emitPseudoSELECT(MachineInstr &MI,
                                                         MachineBasicBlock *BB,
                                                         bool isFPCmp,
                                                         unsigned Opc) const {
-  assert(!(Subtarget.hasMips4() || Subtarget.hasMips32()) &&
-         "Subtarget already supports SELECT nodes with the use of"
-         "conditional-move instructions.");
+  // assert(!(Subtarget.hasMips4() || Subtarget.hasMips32()) &&
+  //        "Subtarget already supports SELECT nodes with the use of"
+  //        "conditional-move instructions.");
 
   const TargetInstrInfo *TII =
       Subtarget.getInstrInfo();
