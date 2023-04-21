@@ -981,9 +981,10 @@ void DwarfUnit::constructTypeDIE(DIE &Buffer, const DICompositeType *CTy) {
     // inside C++ composite types to point to the base class with the vtable.
     // Rust uses DW_AT_containing_type to link a vtable to the type
     // for which it was created.
-    if (auto *ContainingType = CTy->getVTableHolder())
+    if (auto *ContainingType = CTy->getVTableHolder()) {
       addDIEEntry(Buffer, dwarf::DW_AT_containing_type,
                   *getOrCreateTypeDIE(ContainingType));
+    }
 
     if (CTy->isObjcClassComplete())
       addFlag(Buffer, dwarf::DW_AT_APPLE_objc_complete_type);
@@ -1324,6 +1325,12 @@ void DwarfUnit::applySubprogramAttributes(const DISubprogram *SP, DIE &SPDie,
       DIELoc *Block = getDIELoc();
       addUInt(*Block, dwarf::DW_FORM_data1, dwarf::DW_OP_constu);
       addUInt(*Block, dwarf::DW_FORM_udata, SP->getVirtualIndex());
+      // // TODO: intercept vtable info here
+      DEBUG_WITH_TYPE("binbench",
+                      dbgs() << "3. Found vtable address for function " << funcName
+                             << " vtable address: " << VK
+                             << " virtuality index is : " << SP->getVirtualIndex() 
+                             << " Containing Class : " << SP->getContainingType()->getName() << " \n");
       addBlock(SPDie, dwarf::DW_AT_vtable_elem_location, Block);
     }
     ContainingTypeMap.insert(std::make_pair(&SPDie, SP->getContainingType()));

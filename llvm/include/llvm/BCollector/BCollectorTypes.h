@@ -53,12 +53,25 @@ public:
   std::vector<unsigned> ArgSizesInBits;  ///< list of the sizes of the arguments in bits.
   std::map<std::string, std::tuple<std::string, int, unsigned>> LocalVars; ///< Map of local variables to their type, offset and sizes in bits.
 
+  std::map<std::string, std::list<unsigned>> vTables; ///< Map of vtables to their entries.
+
   BMachineFunctionInfo() {
     TotalSizeInBytes = 0;
     FunctionName = "";
   }
   virtual ~BMachineFunctionInfo() {
   }
+};
+
+// TODO: currently unused, add to the base class
+class BClassInfo {
+  public:
+
+  std::string ClassName; ///< Name of the class.
+
+  std::map<std::string, std::list<unsigned>> vTables; ///< Map of vtables to their entries.
+
+
 };
 
 /// @brief Container for BMachineFunctionInfo.

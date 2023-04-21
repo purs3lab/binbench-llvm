@@ -33,6 +33,8 @@ public:
 
 
   MFCONTAINER MachineFunctions; ///< Information about all machine functions.
+
+  std::map<std::string, std::list<unsigned>> vTables; ///< Map of vtables to their entries.
   mutable std::map<std::string, std::string> NametoMFID; ///< Map from function name to function ID.
   mutable std::map<std::string, bool> canMBBFallThrough; ///< Map from MBB ID to whether it can fall through to the next MBB.
   mutable std::map<unsigned, unsigned> MachineFunctionSizes; ///< Map from Machine Function ID to its size.
@@ -208,6 +210,14 @@ public:
   }
   BasicBlockCollector() {}
   virtual ~BasicBlockCollector() {}
+};
+
+
+class ClassCollector : public BCollector {
+  public:
+  void addVTable(std::string classname, std::list<unsigned> vtable_entries) {
+    vTables[classname] = vtable_entries;
+  }
 };
 
 // A lot of the stuff here comes from DWRAF
