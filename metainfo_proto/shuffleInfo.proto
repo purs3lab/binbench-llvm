@@ -49,6 +49,11 @@ message ReorderInfo {
     repeated uint64 local_var_sizes = 9;
   }
 
+  message ClassInfo {
+      repeated string ventry_name = 1;
+      repeated uint64 ventry_offsets = 2;
+  }
+
   // Fixup info in ELF from LLVM
   message FixupInfo {
     message FixupTuple {
@@ -77,5 +82,6 @@ message ReorderInfo {
   repeated FunctionInfo func = 5;
   repeated LayoutInfo layout = 2;
   repeated FixupInfo fixup = 3;
+  repeated ClassInfo class = 6;
   optional SourceInfo source = 4;
 }

@@ -1330,7 +1330,8 @@ void DwarfUnit::applySubprogramAttributes(const DISubprogram *SP, DIE &SPDie,
                       dbgs() << "3. Found vtable address for function " << funcName
                              << " vtable address: " << VK
                              << " virtuality index is : " << SP->getVirtualIndex() 
-                             << " Containing Class : " << SP->getContainingType()->getName() << " \n");
+                             << " Containing Class : " << SP->getContainingType()->getName() 
+                             << "Address: " << SP->getName()<< " \n");
       addBlock(SPDie, dwarf::DW_AT_vtable_elem_location, Block);
     }
     ContainingTypeMap.insert(std::make_pair(&SPDie, SP->getContainingType()));

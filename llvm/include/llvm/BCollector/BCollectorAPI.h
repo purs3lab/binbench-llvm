@@ -6,6 +6,7 @@
 #include "llvm/CodeGen/MachineBasicBlock.h"
 #include "llvm/CodeGen/MachineFunction.h"
 #include "llvm/CodeGen/MachineInstr.h"
+#include "llvm/IR/DebugInfoMetadata.h"
 // #include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCAsmLayout.h"
 #include "llvm/MC/MCContext.h"
@@ -235,6 +236,56 @@ public:
     NametoMFID[funcname] = id;
   }
 
+  std::string getDICompositeTypeKind(const DICompositeType *CompositeType) {
+      std::string type_name = "";
+      if (CompositeType) {
+          unsigned tag = CompositeType->getTag();
+
+          std::cout << "DICompositeType kind: ";
+          switch (tag) {
+              case dwarf::DW_TAG_array_type:
+                  // std::cout << "Array";
+                  type_name = "Array";
+                  break;
+              case dwarf::DW_TAG_structure_type:
+                  // std::cout << "Structure";
+                  type_name = "Structure";
+                  break;
+              case dwarf::DW_TAG_union_type:
+                  // std::cout << "Union";
+                  type_name = "Union";
+                  break;
+              case dwarf::DW_TAG_enumeration_type:
+                  // std::cout << "Enumeration";
+                  type_name = "Enum";
+                  break;
+              case dwarf::DW_TAG_class_type:
+                  // std::cout << "Class";
+                  type_name = "Class";
+                  break;
+              default:
+                  // std::cout << "Unknown (" << tag << ")";
+                  type_name = tag;
+          }
+      } else {
+          type_name = "Invalid";
+      }
+      return type_name;
+  }
+
+  std::string checkDIType(const DIType *TheDIType) {
+      std::string type_name = "";
+      if (const DIBasicType *BasicType = dyn_cast<DIBasicType>(TheDIType)) {
+          // TheDIType is a DIBasicType, and BasicType is of type DIBasicType*
+          type_name = BasicType->getName().str();
+      } else if (const DICompositeType *CompositeType = dyn_cast<DICompositeType>(TheDIType)) {
+          // TheDIType is a DICompositeType, and CompositeType is of type DICompositeType*
+          type_name = getDICompositeTypeKind(CompositeType);
+      } else {
+          // TheDIType is neither a DIBasicType nor a DICompositeType
+      }
+      return type_name;
+  }
   /// @brief Update the argument details of a function
   /// @param funcname Name of the function to be updated
   /// @param numArgs Number of arguments observed

@@ -871,8 +871,9 @@ DIE *DwarfCompileUnit::constructVariableDIEImpl(const DbgVariable &DV,
 
     auto VarType = DV.getVariable()->getType()->getName().str();
 
+
     if(VarType == "") {
-      VarType = "undef";
+        VarType = MAI->getFC()->checkDIType(DV.getVariable()->getType());
     }
     
     DEBUG_WITH_TYPE("binbench", dbgs() << DV.getVariable()->getName() << " Type: " 
