@@ -113,6 +113,7 @@
 #include "llvm/Target/TargetLoweringObjectFile.h"
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Target/TargetOptions.h"
+#include "llvm/Analysis/CallGraph.h"
 #include <algorithm>
 #include <cassert>
 #include <cinttypes>
@@ -1465,6 +1466,28 @@ void AsmPrinter::emitFunctionBody() {
   bool HasAnyRealCode = false;
   int NumInstsInFunction = 0;
 
+
+  Function &F = MF->getFunction();
+
+  // Get the parent module.
+  Module *M = F.getParent();
+
+
+  CallGraph CG(*M);
+
+  // Iterate over the functions in the call graph.
+  for (auto &FunctionNode : CG) {
+      if (auto *Function = FunctionNode.second->getFunction()) {
+          errs() << "Function: " << Function->getName() << "\n";
+          for (auto &CallRecord : *FunctionNode.second) {
+              CallGraphNode *CalleeNode = CallRecord.second;
+              if (auto *Callee = CalleeNode->getFunction()) {
+                  llvm::errs() << "  Calls: " << Callee->getName() << "\n";
+              }
+          }
+      }
+  }
+
   bool CanDoExtraAnalysis = ORE->allowExtraAnalysis(DEBUG_TYPE);
   for (auto &MBB : *MF) {
     // Print a label for the basic block.
@@ -1778,7 +1801,7 @@ void AsmPrinter::emitFunctionBody() {
   // Switch to the original section in case basic block sections was used.
   OutStreamer->switchSection(MF->getSection());
 
-  const Function &F = MF->getFunction();
+  // const Function &F = MF->getFunction();
   for (const auto &BB : F) {
     if (!BB.hasAddressTaken())
       continue;
