@@ -1,12 +1,14 @@
 #ifndef LOOPTYPECOLLECTOR_H
 #define LOOPTYPECOLLECTOR_H
 
+#include "BingeFrontEndCollector.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/ASTContext.h"
 
 namespace clang {
 
-class LoopTypeCollector : public RecursiveASTVisitor<LoopTypeCollector> {
+class LoopTypeCollector : public BingeFrontEndCollector,
+                          public RecursiveASTVisitor<LoopTypeCollector> {
 public:
   explicit LoopTypeCollector(ASTContext *Context) : Context(Context) {}
 
@@ -16,8 +18,6 @@ public:
 private:
   ASTContext *Context;
   FunctionDecl *currentFD = nullptr;
-
-  void addNodeInfo(const std::string &funcName, Stmt *s, const std::string &nodeType);
 };
 
 }  // namespace clang

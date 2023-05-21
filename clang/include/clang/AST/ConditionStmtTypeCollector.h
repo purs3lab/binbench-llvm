@@ -5,16 +5,18 @@
 #ifndef LLVM_CONDITIONSTMTTYPECOLLECTOR_H
 #define LLVM_CONDITIONSTMTTYPECOLLECTOR_H
 
-#include "clang/AST/ASTContext.h"  // Include ASTContext
 #include "BingeFrontEndCollector.h"
+#include "RecursiveASTVisitor.h"
+#include "clang/AST/ASTContext.h" // Include ASTContext
 
 namespace clang {
 
-class ConditionStmtTypeCollector : public BingeFrontEndCollector {
+class ConditionStmtTypeCollector : public BingeFrontEndCollector,
+                                   public RecursiveASTVisitor<ConditionStmtTypeCollector> {
 public:
   ConditionStmtTypeCollector(ASTContext &Context) : Context(Context) {} // Add a constructor that takes an ASTContext
 
-  bool VisitStmt(Stmt *s) override;
+  bool VisitStmt(Stmt *s);
   bool TraverseFunctionDecl(FunctionDecl *FD);
 private:
   ASTContext &Context;  // Store a reference to the ASTContext

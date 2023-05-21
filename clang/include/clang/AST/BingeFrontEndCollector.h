@@ -16,9 +16,6 @@ class BingeFrontEndCollector {
 public:
   virtual ~BingeFrontEndCollector() {}
 
-  // Abstract method that needs to be implemented in child classes.
-  virtual bool VisitStmt(Stmt *s) = 0;
-
 protected:
   void addNodeInfo(const std::string &Type, Stmt *p, const std::string &I);
   void addNodeInfo(const std::string &Type, Stmt *p, const std::set<Stmt *> &ISet);

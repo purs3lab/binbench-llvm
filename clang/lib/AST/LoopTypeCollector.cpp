@@ -1,4 +1,6 @@
 #include "clang/AST/LoopTypeCollector.h"
+#include "clang/Basic/SourceManager.h" // Include this line at the top
+
 using namespace clang;
 
 bool LoopTypeCollector::TraverseFunctionDecl(FunctionDecl *FD) {
@@ -8,12 +10,35 @@ bool LoopTypeCollector::TraverseFunctionDecl(FunctionDecl *FD) {
 
 bool LoopTypeCollector::VisitStmt(Stmt *s) {
   std::string funcName = currentFD->getNameInfo().getName().getAsString();
-  if (isa<ForStmt>(s)) {
-    addNodeInfo(funcName, s, "For");
-  } else if (isa<WhileStmt>(s)) {
-    addNodeInfo(funcName, s, "While");
-  } else if (isa<DoStmt>(s)) {
-    addNodeInfo(funcName, s, "Do-While");
+
+  // Obtain filename (module name)
+  auto &SM = currentFD->getASTContext().getSourceManager();
+  std::string fileName = SM.getFilename(currentFD->getBeginLoc()).str();
+
+  std::string loopCollectorKey = "LoopCollector@" + fileName + "@" + funcName;
+
+  std::set<Stmt *> stmtSet;
+
+  if (isa<ForStmt>(s) || isa<WhileStmt>(s) || isa<DoStmt>(s)) {
+    for (Stmt *childStmt : s->children()) {
+      stmtSet.insert(childStmt);
+    }
   }
+
+  //addNodeInfo(loopCollectorKey, s, stmtSet);
+
+  std::string stmtType;
+  if (isa<ForStmt>(s)) {
+    stmtType = "For";
+  } else if (isa<WhileStmt>(s)) {
+    stmtType = "While";
+  } else if (isa<DoStmt>(s)) {
+    stmtType = "Do-While";
+  }
+
+  if (!stmtType.empty()) {
+    addNodeInfo(loopCollectorKey, s, stmtType);
+  }
+
   return true;
 }
