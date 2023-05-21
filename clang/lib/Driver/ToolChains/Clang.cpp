@@ -5106,6 +5106,11 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
                    options::OPT_fdelete_null_pointer_checks, false))
     CmdArgs.push_back("-fno-delete-null-pointer-checks");
 
+  if (Args.hasFlag(options::OPT_BinBenchCollector,
+                   options::OPT_no_BinBenchCollector, false)) {
+    CmdArgs.push_back("-fbinbench-collector");
+  }
+
   // LLVM Code Generator Options.
 
   for (const Arg *A : Args.filtered(options::OPT_frewrite_map_file_EQ)) {

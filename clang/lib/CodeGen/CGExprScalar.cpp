@@ -25,6 +25,7 @@
 #include "clang/AST/Expr.h"
 #include "clang/AST/RecordLayout.h"
 #include "clang/AST/StmtVisitor.h"
+#include "clang/AST/BingeFrontEndCollector.h"
 #include "clang/Basic/CodeGenOptions.h"
 #include "clang/Basic/TargetInfo.h"
 #include "llvm/ADT/APFixedPoint.h"
@@ -289,7 +290,10 @@ public:
   Value *EmitLoadOfLValue(const Expr *E) {
     Value *V = EmitLoadOfLValue(EmitCheckedLValue(E, CodeGenFunction::TCK_Load),
                                 E->getExprLoc());
-
+    // If this expression is an interesting Stmt, add it to our map
+    if (BingeFrontEndCollector::isStmtCollectedAsBingeSrcInfo(E)) {
+      BingeFrontEndCollector::addValueStmtInfo(V, E);
+    }
     EmitLValueAlignmentAssumption(E, V);
     return V;
   }
@@ -1593,7 +1597,12 @@ Value *ScalarExprEmitter::VisitExpr(Expr *E) {
   CGF.ErrorUnsupported(E, "scalar expression");
   if (E->getType()->isVoidType())
     return nullptr;
-  return llvm::UndefValue::get(CGF.ConvertType(E->getType()));
+  auto retVal = llvm::UndefValue::get(CGF.ConvertType(E->getType()));
+  // If this expression is an interesting Stmt, add it to our map
+  if (BingeFrontEndCollector::isStmtCollectedAsBingeSrcInfo(E)) {
+    BingeFrontEndCollector::addValueStmtInfo(retVal, E);
+  }
+  return retVal;
 }
 
 Value *
@@ -4870,8 +4879,14 @@ Value *CodeGenFunction::EmitScalarExpr(const Expr *E, bool IgnoreResultAssign) {
   assert(E && hasScalarEvaluationKind(E->getType()) &&
          "Invalid scalar expression to emit");
 
-  return ScalarExprEmitter(*this, IgnoreResultAssign)
+  llvm::Value* retVal = ScalarExprEmitter(*this, IgnoreResultAssign)
       .Visit(const_cast<Expr *>(E));
+
+  // If this expression is an interesting Stmt, add it to our map
+  if (BingeFrontEndCollector::isStmtCollectedAsBingeSrcInfo(E)) {
+    BingeFrontEndCollector::addValueStmtInfo(retVal, E);
+  }
+  return retVal;
 }
 
 /// Emit a conversion from the specified type to the specified destination type,

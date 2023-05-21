@@ -19,6 +19,7 @@
 #include "clang/AST/Expr.h"
 #include "clang/AST/Stmt.h"
 #include "clang/AST/StmtVisitor.h"
+#include "clang/AST/BingeFrontEndCollector.h"
 #include "clang/Basic/Builtins.h"
 #include "clang/Basic/DiagnosticSema.h"
 #include "clang/Basic/PrettyStackTrace.h"

@@ -17,16 +17,6 @@ bool LoopTypeCollector::VisitStmt(Stmt *s) {
 
   std::string loopCollectorKey = "LoopCollector@" + fileName + "@" + funcName;
 
-  std::set<Stmt *> stmtSet;
-
-  if (isa<ForStmt>(s) || isa<WhileStmt>(s) || isa<DoStmt>(s)) {
-    for (Stmt *childStmt : s->children()) {
-      stmtSet.insert(childStmt);
-    }
-  }
-
-  //addNodeInfo(loopCollectorKey, s, stmtSet);
-
   std::string stmtType;
   if (isa<ForStmt>(s)) {
     stmtType = "For";

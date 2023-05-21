@@ -41,6 +41,7 @@
 #include "llvm/IR/ValueHandle.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Transforms/Utils/SanitizerStats.h"
+#include <unordered_map>
 
 namespace llvm {
 class BasicBlock;

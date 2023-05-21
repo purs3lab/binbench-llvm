@@ -3029,6 +3029,8 @@ def stack_usage_file : Separate<["-"], "stack-usage-file">,
   Flags<[CC1Option, NoDriverOption]>,
   HelpText<"Filename (or -) to write stack usage output to">,
   MarshallingInfoString<CodeGenOpts<"StackUsageOutput">>;
+def BinBenchCollector : Flag<["-"], "BinBenchCollector">, HelpText<"Enable BinBenchCollector">;
+def no_BinBenchCollector : Flag<["-"], "no-BinBenchCollector">, HelpText<"Disable BinBenchCollector">;
 
 defm unique_basic_block_section_names : BoolFOption<"unique-basic-block-section-names",
   CodeGenOpts<"UniqueBasicBlockSectionNames">, DefaultFalse,

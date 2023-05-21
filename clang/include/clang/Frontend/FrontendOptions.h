@@ -66,6 +66,9 @@ enum ActionKind {
   /// Emit a .ll file.
   EmitLLVM,
 
+  /// Emit Front-end information for BinBench
+  BenchPress,
+  
   /// Generate LLVM IR, but do not emit anything.
   EmitLLVMOnly,
 
