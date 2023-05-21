@@ -17,16 +17,6 @@ bool ConditionStmtTypeCollector::VisitStmt(Stmt *s) {
 
   std::string conditionCollectorKey = "ConditionCollector@" + fileName + "@" + funcName;
 
- // std::set<Stmt *> stmtSet;
-
-//  if (isa<IfStmt>(s) || isa<SwitchStmt>(s) || isa<GotoStmt>(s) || isa<ConditionalOperator>(s)) {
-//    for (Stmt *childStmt : s->children()) {
-//      stmtSet.insert(childStmt);
-//    }
-//  }
-
-  //addNodeInfo(conditionCollectorKey, s, stmtSet);
-
   std::string stmtType;
   if (isa<IfStmt>(s)) {
     stmtType = "If";

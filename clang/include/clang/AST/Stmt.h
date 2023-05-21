@@ -69,7 +69,6 @@ class VarDecl;
 ///
 class alignas(void *) Stmt {
 public:
-  bool IsBinBenchTracked = false;
   enum StmtClass {
     NoStmtClass = 0,
 #define STMT(CLASS, PARENT) CLASS##Class,
