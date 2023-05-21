@@ -31,6 +31,7 @@ add_clang_library(clangAST
   ASTTypeTraits.cpp
   AttrDocTable.cpp
   AttrImpl.cpp
+  BingeFrontEndCollector.cpp
   Comment.cpp
   CommentBriefParser.cpp
   CommentCommandTraits.cpp
@@ -39,6 +40,7 @@ add_clang_library(clangAST
   CommentSema.cpp
   ComparisonCategories.cpp
   ComputeDependence.cpp
+  ConditionStmtTypeCollector.cpp
   CXXInheritance.cpp
   DataCollection.cpp
   Decl.cpp
@@ -86,6 +88,7 @@ add_clang_library(clangAST
   ItaniumCXXABI.cpp
   ItaniumMangle.cpp
   JSONNodeDumper.cpp
+  LoopTypeCollector.cpp
   Mangle.cpp
   MicrosoftCXXABI.cpp
   MicrosoftMangle.cpp
