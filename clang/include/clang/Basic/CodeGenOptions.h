@@ -212,7 +212,7 @@ public:
     unsigned LinkFlags = 0;
   };
 
-   /// The files specified here are linked in to the module before optimizations.
+  /// The files specified here are linked in to the module before optimizations.
   std::vector<BitcodeFileToLink> LinkBitcodeFiles;
 
   /// The user provided name for the "main file", if non-empty. This is useful
