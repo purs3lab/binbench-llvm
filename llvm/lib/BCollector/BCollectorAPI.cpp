@@ -412,6 +412,18 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
     }
   }
 
+  auto CallGraphInfo = MAI->getFC()->getCG();
+
+  for (auto const &x : CallGraphInfo) {
+      ShuffleInfo::ReorderInfo_CallGraphInfo *CGInfo = ri->add_func_cg();
+      CGInfo->set_f_name(x.first);
+      DEBUG_WITH_TYPE("binbench", dbgs() << "Func found in CG "<< x.first << "\n");
+      for(auto const &successor : x.second) {
+          CGInfo->add_succs(successor);
+          DEBUG_WITH_TYPE("binbench", dbgs() << "Succs "<< successor << "\n");
+      }
+  }
+
   ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo = ri->add_fixup();
   setFixupInfo(fixupInfo, MAI);
 }

@@ -1,11 +1,12 @@
 // This file defines the buffer protocol of the shuffleInfo for reordering.
-// The following command automatically generates both the declaration 
+// The following command automatically generates both the declaration
 // and the implementation of shuffleInfo class.
 //    $ protoc --cpp_out=$DST_DIR shuffleInfo.proto       # C++
 //    $ protoc --python_out=$DST_DIR shuffleInfo.proto    # Python
 // The following command generates the shared object.
-//    $ c++ -fPIC -shared shuffleInfo.pb.cc -o shuffleInfo.so `pkg-config --cflags --libs protobuf`
-// Revised: 4/22/18
+//    $ c++ -fPIC -shared shuffleInfo.pb.cc -o shuffleInfo.so `pkg-config
+//    --cflags --libs protobuf`
+// Revised: 5/22/23
 
 syntax = "proto2";
 package ShuffleInfo;
@@ -22,9 +23,10 @@ message ReorderInfo {
   // Code layout Info (.text) from LLVM
   // Embeded info ([#func|#fixup]/obj, [#bbk|#fixup]/func, objSz/ea, funcSz/ea)
   message LayoutInfo {
-    optional uint64 bb_size = 1;          // UPDATE AT LINKTIME WITH OBJ ALIGNMENTs
-                                          // All alignments between fn/bbl are included here
-    optional uint64 type = 2;             // Represents the end of [OBJ|FUN|BBL]
+    optional uint64 bb_size =
+        1;                    // UPDATE AT LINKTIME WITH OBJ ALIGNMENTs
+                              // All alignments between fn/bbl are included here
+    optional uint64 type = 2; // Represents the end of [OBJ|FUN|BBL]
     optional uint64 offset = 6;
     optional uint32 nargs = 9;
     optional string bb_id = 10;
@@ -32,9 +34,12 @@ message ReorderInfo {
     repeated string preds = 12;
     optional uint32 num_fixups = 3;
     optional bool bb_fallthrough = 4;
-    optional string section_name = 5;     // section identifier for c++ mutiple sections
+    optional string section_name =
+        5; // section identifier for c++ mutiple sections
     optional uint32 padding_size = 7;
-    optional uint32 assemble_type = 8 [default = 0]; // assemble type: 0(normal basic block type), 1(contains inline assemble code)
+    optional uint32 assemble_type = 8
+        [ default = 0 ]; // assemble type: 0(normal basic block type),
+                         // 1(contains inline assemble code)
   }
 
   message FunctionInfo {
@@ -50,21 +55,27 @@ message ReorderInfo {
   }
 
   message ClassInfo {
-      repeated string ventry_name = 1;
-      repeated uint64 ventry_offsets = 2;
+    repeated string ventry_name = 1;
+    repeated uint64 ventry_offsets = 2;
+  }
+  message CallGraphInfo {
+    optional string f_name = 1;
+    repeated string succs = 2;
+    repeated string preds = 3;
   }
 
   // Fixup info in ELF from LLVM
   message FixupInfo {
     message FixupTuple {
-      required uint32 offset = 1;         // UPDATE AT LINKTIME WHEN COMBINING SECTIONS
+      required uint32 offset = 1; // UPDATE AT LINKTIME WHEN COMBINING SECTIONS
       required uint32 deref_sz = 2;
-      required bool   is_rela = 3;
-      optional uint32 type = 4;           // c2c, c2d, d2c, d2d = (0-3)
-      optional string section_name = 5;   // section identifier for c++ mutiple sections
-                                          // fixup has a jump table (.rodata) for pic/pie use
+      required bool is_rela = 3;
+      optional uint32 type = 4; // c2c, c2d, d2c, d2d = (0-3)
+      optional string section_name =
+          5; // section identifier for c++ mutiple sections
+             // fixup has a jump table (.rodata) for pic/pie use
       optional uint32 num_jt_entries = 6; // number of the jump table entries
-      optional uint32 jt_entry_sz = 7;    // size of each jump table entry in byte
+      optional uint32 jt_entry_sz = 7; // size of each jump table entry in byte
     }
     repeated FixupTuple text = 1;
     repeated FixupTuple rodata = 2;
@@ -72,10 +83,11 @@ message ReorderInfo {
     repeated FixupTuple datarel = 4;
     repeated FixupTuple initarray = 5;
   }
-  
-  // Source info [generalSource(=0) | hasInlineAssembly(=1) | standaloneAssembly(=2)]
+
+  // Source info [generalSource(=0) | hasInlineAssembly(=1) |
+  // standaloneAssembly(=2)]
   message SourceInfo {
-    repeated uint32 src_type = 1;         // the src_type placeholder for linker
+    repeated uint32 src_type = 1; // the src_type placeholder for linker
   }
 
   optional BinaryInfo bin = 1;
@@ -83,5 +95,6 @@ message ReorderInfo {
   repeated LayoutInfo layout = 2;
   repeated FixupInfo fixup = 3;
   repeated ClassInfo class = 6;
+  repeated CallGraphInfo func_cg = 7;
   optional SourceInfo source = 4;
 }
