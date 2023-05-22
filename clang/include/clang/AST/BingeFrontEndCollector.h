@@ -19,7 +19,6 @@ public:
   virtual ~BingeFrontEndCollector() {}
   static bool isStmtCollectedAsBingeSrcInfo(const Stmt* S);
   static void addValueStmtInfo(llvm::Value* val, const Stmt* stmt);
-protected:
   void addNodeInfo(const std::string &Type, Stmt *p, const std::string &I);
   void addNodeInfo(const std::string &Type, Stmt *p, const std::set<Stmt *> &ISet);
 
