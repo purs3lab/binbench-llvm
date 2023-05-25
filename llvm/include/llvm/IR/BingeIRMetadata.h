@@ -8,13 +8,13 @@
 
 namespace llvm {
 
-class BingeIRMetadata : public DebugInfo {
+class BingeIRMetadata : public DebugInfoFinder , public DISubprogram{
 public:
   std::map<std::string, std::map<Value*, std::set<Value*>>> BingeIRInfo;
   std::map<std::string, std::map<Value*, std::string>> BingeIRSrcInfo;
 
   void addIRInfo(std::string &infoType, Value *src, std::set<Value*> &dst);
-  MDNode* GenBingeMd(Function *F) override;
+  MDNode* GenBingeMd(Function *F);
 private:
   std::string decodeFileName(const std::string &key);
   std::string decodeFuncName(const std::string &key);

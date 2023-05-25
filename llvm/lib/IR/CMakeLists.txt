@@ -6,6 +6,7 @@ add_llvm_component_library(LLVMCore
   AutoUpgrade.cpp
   BasicBlock.cpp
   BuiltinGCs.cpp
+  BingeIRMetadata.cpp
   Comdat.cpp
   ConstantFold.cpp
   ConstantRange.cpp
