@@ -35,6 +35,7 @@
 #include "clang/Frontend/FrontendDiagnostic.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/Frontend/OpenMP/OMPIRBuilder.h"
+#include "llvm/IR/BingeIRMetadata.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/Dominators.h"
 #include "llvm/IR/FPEnv.h"
@@ -916,6 +917,10 @@ void CodeGenFunction::StartFunction(GlobalDecl GD, QualType RetTy,
              (getLangOpts().HIP && getLangOpts().CUDAIsDevice))) {
     // Add metadata for a kernel function.
     EmitKernelMetadata(FD, Fn);
+  }
+  llvm::MDNode *Node = BingeIRMetadata::GenBingeMd(CurFn);
+  if (Node) {
+    CurFn->setMetadata("BingeIRSrcInfo", Node);
   }
 
   // If we are checking function types, emit a function type signature as
