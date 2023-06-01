@@ -1333,7 +1333,8 @@ void DwarfUnit::applySubprogramAttributes(const DISubprogram *SP, DIE &SPDie,
                              << " Containing Class : " << SP->getContainingType()->getName() 
                              << "Address: " << SP->getName()<< " \n");
 
-      MAI->getFC()->addVTableEntry(SP->getContainingType()->getName().str(), SP->getName().str());
+      MAI->getFC()->addVTableEntry(SP->getContainingType()->getName().str()
+              ,SP->getLinkageName().str());
       addBlock(SPDie, dwarf::DW_AT_vtable_elem_location, Block);
     }
     ContainingTypeMap.insert(std::make_pair(&SPDie, SP->getContainingType()));
