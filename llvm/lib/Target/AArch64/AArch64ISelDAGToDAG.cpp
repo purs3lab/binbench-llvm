@@ -52,7 +52,14 @@ public:
 
   bool runOnMachineFunction(MachineFunction &MF) override {
     Subtarget = &MF.getSubtarget<AArch64Subtarget>();
-    return SelectionDAGISel::runOnMachineFunction(MF);
+    auto temp = SelectionDAGISel::runOnMachineFunction(MF);
+
+    
+    //ztt add refer to X86ISelDAGToDAG.cpp L181
+     MachineJumpTableInfo *MJTI = MF.getJumpTableInfo();
+     if (MJTI)
+       MF.RecordMachineJumpTableInfo(MJTI);
+     return temp;
   }
 
   void Select(SDNode *Node) override;

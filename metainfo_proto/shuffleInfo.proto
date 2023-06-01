@@ -55,8 +55,8 @@ message ReorderInfo {
   }
 
   message ClassInfo {
-    repeated string ventry_name = 1;
-    repeated uint64 ventry_offsets = 2;
+    optional string vtable_name = 1;
+    repeated string ventry = 2;
   }
   message CallGraphInfo {
     optional string f_name = 1;
@@ -94,7 +94,7 @@ message ReorderInfo {
   repeated FunctionInfo func = 5;
   repeated LayoutInfo layout = 2;
   repeated FixupInfo fixup = 3;
-  repeated ClassInfo class = 6;
+  repeated ClassInfo class_proto = 6;
   repeated CallGraphInfo func_cg = 7;
   optional SourceInfo source = 4;
 }

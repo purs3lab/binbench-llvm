@@ -1023,7 +1023,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
         // Koo: Collect fixups here (ELF format only)
         if (true) {
           unsigned offset = fragOffset + Fixup.getOffset();
-          unsigned derefSize = 5;
+          unsigned derefSize = 0;
               // getBackend().getFixupKindLog2Size(Fixup.getKind()); XXXAKUL
           unsigned jtEntryKind = 0, jtEntrySize = 0, numJTEntries = 0;
           std::map<std::string,
@@ -1051,7 +1051,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
                   JTs[Fixup.getSymbolRefFixupName()];
               numJTEntries = JTEs.size();
             }
-            MAI->FixupsText.push_back(std::make_tuple(
+            MAI->getBC()->FixupsText.push_back(std::make_tuple(
                 offset, derefSize, IsPCRel, fixupParentID, SymbolRefFixupName,
                 isNewTextSection, secName, numJTEntries, jtEntrySize));
           }
@@ -1067,7 +1067,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
                 rodataSecCtr++;
               prevLayoutOrder = layoutOrder;
             }
-            MAI->FixupsRodata.push_back(std::make_tuple(
+            MAI->getBC()->FixupsRodata.push_back(std::make_tuple(
                 offset, derefSize, IsPCRel, fixupParentID, SymbolRefFixupName,
                 isNewRodataSection, secName, numJTEntries, jtEntrySize));
           }
@@ -1087,7 +1087,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
                   dataRelSecCtr++;
                 prevLayoutOrder = layoutOrder;
               }
-              MAI->FixupsDataRel.push_back(std::make_tuple(
+              MAI->getBC()->FixupsDataRel.push_back(std::make_tuple(
                   offset, derefSize, IsPCRel, fixupParentID, SymbolRefFixupName,
                   isNewDataRelSection, secName, numJTEntries, jtEntrySize));
             }
@@ -1103,7 +1103,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
                   dataSecCtr++;
                 prevLayoutOrder = layoutOrder;
               }
-              MAI->FixupsData.push_back(std::make_tuple(
+              MAI->getBC()->FixupsData.push_back(std::make_tuple(
                   offset, derefSize, IsPCRel, fixupParentID, SymbolRefFixupName,
                   isNewDataSection, secName, numJTEntries, jtEntrySize));
             }
@@ -1120,7 +1120,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
                 initSecCtr++;
               prevLayoutOrder = layoutOrder;
             }
-            MAI->FixupsInitArray.push_back(std::make_tuple(
+            MAI->getBC()->FixupsInitArray.push_back(std::make_tuple(
                 offset, derefSize, IsPCRel, fixupParentID, SymbolRefFixupName,
                 isNewInitSection, secName, numJTEntries, jtEntrySize));
           }

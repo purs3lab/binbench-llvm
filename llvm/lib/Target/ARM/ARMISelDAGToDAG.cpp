@@ -64,6 +64,9 @@ public:
     // Reset the subtarget each time through.
     Subtarget = &MF.getSubtarget<ARMSubtarget>();
     SelectionDAGISel::runOnMachineFunction(MF);
+    MachineJumpTableInfo *MJTI = MF.getJumpTableInfo();
+    if (MJTI)
+      MF.RecordMachineJumpTableInfo(MJTI);
     return true;
   }
 

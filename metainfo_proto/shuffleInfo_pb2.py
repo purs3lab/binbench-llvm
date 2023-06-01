@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto2',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x11shuffleInfo.proto\x12\x0bShuffleInfo\"\x87\x0c\n\x0bReorderInfo\x12\x30\n\x03\x62in\x18\x01 \x01(\x0b\x32#.ShuffleInfo.ReorderInfo.BinaryInfo\x12\x33\n\x04\x66unc\x18\x05 \x03(\x0b\x32%.ShuffleInfo.ReorderInfo.FunctionInfo\x12\x33\n\x06layout\x18\x02 \x03(\x0b\x32#.ShuffleInfo.ReorderInfo.LayoutInfo\x12\x31\n\x05\x66ixup\x18\x03 \x03(\x0b\x32\".ShuffleInfo.ReorderInfo.FixupInfo\x12\x31\n\x05\x63lass\x18\x06 \x03(\x0b\x32\".ShuffleInfo.ReorderInfo.ClassInfo\x12\x37\n\x07\x66unc_cg\x18\x07 \x03(\x0b\x32&.ShuffleInfo.ReorderInfo.CallGraphInfo\x12\x33\n\x06source\x18\x04 \x01(\x0b\x32#.ShuffleInfo.ReorderInfo.SourceInfo\x1a\x61\n\nBinaryInfo\x12\x17\n\x0frand_obj_offset\x18\x01 \x01(\r\x12\x18\n\x10main_addr_offset\x18\x02 \x01(\r\x12\x0e\n\x06obj_sz\x18\x03 \x01(\r\x12\x10\n\x08src_type\x18\x04 \x01(\r\x1a\xe9\x01\n\nLayoutInfo\x12\x0f\n\x07\x62\x62_size\x18\x01 \x01(\x04\x12\x0c\n\x04type\x18\x02 \x01(\x04\x12\x0e\n\x06offset\x18\x06 \x01(\x04\x12\r\n\x05nargs\x18\t \x01(\r\x12\r\n\x05\x62\x62_id\x18\n \x01(\t\x12\r\n\x05succs\x18\x0b \x03(\t\x12\r\n\x05preds\x18\x0c \x03(\t\x12\x12\n\nnum_fixups\x18\x03 \x01(\r\x12\x16\n\x0e\x62\x62_fallthrough\x18\x04 \x01(\x08\x12\x14\n\x0csection_name\x18\x05 \x01(\t\x12\x14\n\x0cpadding_size\x18\x07 \x01(\r\x12\x18\n\rassemble_type\x18\x08 \x01(\r:\x01\x30\x1a\xc3\x01\n\x0c\x46unctionInfo\x12\x0c\n\x04\x66_id\x18\x01 \x01(\t\x12\x0e\n\x06\x66_name\x18\x02 \x01(\t\x12\x0e\n\x06\x62\x62_num\x18\x03 \x01(\x04\x12\r\n\x05nargs\x18\x04 \x01(\x04\x12\x10\n\x08\x61rgsizes\x18\x05 \x03(\x04\x12\x17\n\x0flocal_var_names\x18\x06 \x03(\t\x12\x19\n\x11local_var_offsets\x18\x07 \x03(\x03\x12\x17\n\x0flocal_var_types\x18\x08 \x03(\t\x12\x17\n\x0flocal_var_sizes\x18\t \x03(\x04\x1a\x38\n\tClassInfo\x12\x13\n\x0bventry_name\x18\x01 \x03(\t\x12\x16\n\x0eventry_offsets\x18\x02 \x03(\x04\x1a=\n\rCallGraphInfo\x12\x0e\n\x06\x66_name\x18\x01 \x01(\t\x12\r\n\x05succs\x18\x02 \x03(\t\x12\r\n\x05preds\x18\x03 \x03(\t\x1a\xd9\x03\n\tFixupInfo\x12;\n\x04text\x18\x01 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x12=\n\x06rodata\x18\x02 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x12;\n\x04\x64\x61ta\x18\x03 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x12>\n\x07\x64\x61tarel\x18\x04 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x12@\n\tinitarray\x18\x05 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x1a\x90\x01\n\nFixupTuple\x12\x0e\n\x06offset\x18\x01 \x02(\r\x12\x10\n\x08\x64\x65ref_sz\x18\x02 \x02(\r\x12\x0f\n\x07is_rela\x18\x03 \x02(\x08\x12\x0c\n\x04type\x18\x04 \x01(\r\x12\x14\n\x0csection_name\x18\x05 \x01(\t\x12\x16\n\x0enum_jt_entries\x18\x06 \x01(\r\x12\x13\n\x0bjt_entry_sz\x18\x07 \x01(\r\x1a\x1e\n\nSourceInfo\x12\x10\n\x08src_type\x18\x01 \x03(\r'
+  serialized_pb=b'\n\x11shuffleInfo.proto\x12\x0bShuffleInfo\"\x85\x0c\n\x0bReorderInfo\x12\x30\n\x03\x62in\x18\x01 \x01(\x0b\x32#.ShuffleInfo.ReorderInfo.BinaryInfo\x12\x33\n\x04\x66unc\x18\x05 \x03(\x0b\x32%.ShuffleInfo.ReorderInfo.FunctionInfo\x12\x33\n\x06layout\x18\x02 \x03(\x0b\x32#.ShuffleInfo.ReorderInfo.LayoutInfo\x12\x31\n\x05\x66ixup\x18\x03 \x03(\x0b\x32\".ShuffleInfo.ReorderInfo.FixupInfo\x12\x37\n\x0b\x63lass_proto\x18\x06 \x03(\x0b\x32\".ShuffleInfo.ReorderInfo.ClassInfo\x12\x37\n\x07\x66unc_cg\x18\x07 \x03(\x0b\x32&.ShuffleInfo.ReorderInfo.CallGraphInfo\x12\x33\n\x06source\x18\x04 \x01(\x0b\x32#.ShuffleInfo.ReorderInfo.SourceInfo\x1a\x61\n\nBinaryInfo\x12\x17\n\x0frand_obj_offset\x18\x01 \x01(\r\x12\x18\n\x10main_addr_offset\x18\x02 \x01(\r\x12\x0e\n\x06obj_sz\x18\x03 \x01(\r\x12\x10\n\x08src_type\x18\x04 \x01(\r\x1a\xe9\x01\n\nLayoutInfo\x12\x0f\n\x07\x62\x62_size\x18\x01 \x01(\x04\x12\x0c\n\x04type\x18\x02 \x01(\x04\x12\x0e\n\x06offset\x18\x06 \x01(\x04\x12\r\n\x05nargs\x18\t \x01(\r\x12\r\n\x05\x62\x62_id\x18\n \x01(\t\x12\r\n\x05succs\x18\x0b \x03(\t\x12\r\n\x05preds\x18\x0c \x03(\t\x12\x12\n\nnum_fixups\x18\x03 \x01(\r\x12\x16\n\x0e\x62\x62_fallthrough\x18\x04 \x01(\x08\x12\x14\n\x0csection_name\x18\x05 \x01(\t\x12\x14\n\x0cpadding_size\x18\x07 \x01(\r\x12\x18\n\rassemble_type\x18\x08 \x01(\r:\x01\x30\x1a\xc3\x01\n\x0c\x46unctionInfo\x12\x0c\n\x04\x66_id\x18\x01 \x01(\t\x12\x0e\n\x06\x66_name\x18\x02 \x01(\t\x12\x0e\n\x06\x62\x62_num\x18\x03 \x01(\x04\x12\r\n\x05nargs\x18\x04 \x01(\x04\x12\x10\n\x08\x61rgsizes\x18\x05 \x03(\x04\x12\x17\n\x0flocal_var_names\x18\x06 \x03(\t\x12\x19\n\x11local_var_offsets\x18\x07 \x03(\x03\x12\x17\n\x0flocal_var_types\x18\x08 \x03(\t\x12\x17\n\x0flocal_var_sizes\x18\t \x03(\x04\x1a\x30\n\tClassInfo\x12\x13\n\x0bvtable_name\x18\x01 \x01(\t\x12\x0e\n\x06ventry\x18\x02 \x03(\t\x1a=\n\rCallGraphInfo\x12\x0e\n\x06\x66_name\x18\x01 \x01(\t\x12\r\n\x05succs\x18\x02 \x03(\t\x12\r\n\x05preds\x18\x03 \x03(\t\x1a\xd9\x03\n\tFixupInfo\x12;\n\x04text\x18\x01 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x12=\n\x06rodata\x18\x02 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x12;\n\x04\x64\x61ta\x18\x03 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x12>\n\x07\x64\x61tarel\x18\x04 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x12@\n\tinitarray\x18\x05 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x1a\x90\x01\n\nFixupTuple\x12\x0e\n\x06offset\x18\x01 \x02(\r\x12\x10\n\x08\x64\x65ref_sz\x18\x02 \x02(\r\x12\x0f\n\x07is_rela\x18\x03 \x02(\x08\x12\x0c\n\x04type\x18\x04 \x01(\r\x12\x14\n\x0csection_name\x18\x05 \x01(\t\x12\x16\n\x0enum_jt_entries\x18\x06 \x01(\r\x12\x13\n\x0bjt_entry_sz\x18\x07 \x01(\r\x1a\x1e\n\nSourceInfo\x12\x10\n\x08src_type\x18\x01 \x03(\r'
 )
 
 
@@ -73,8 +73,8 @@ _REORDERINFO_BINARYINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=418,
-  serialized_end=515,
+  serialized_start=424,
+  serialized_end=521,
 )
 
 _REORDERINFO_LAYOUTINFO = _descriptor.Descriptor(
@@ -181,8 +181,8 @@ _REORDERINFO_LAYOUTINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=518,
-  serialized_end=751,
+  serialized_start=524,
+  serialized_end=757,
 )
 
 _REORDERINFO_FUNCTIONINFO = _descriptor.Descriptor(
@@ -268,8 +268,8 @@ _REORDERINFO_FUNCTIONINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=754,
-  serialized_end=949,
+  serialized_start=760,
+  serialized_end=955,
 )
 
 _REORDERINFO_CLASSINFO = _descriptor.Descriptor(
@@ -281,15 +281,15 @@ _REORDERINFO_CLASSINFO = _descriptor.Descriptor(
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='ventry_name', full_name='ShuffleInfo.ReorderInfo.ClassInfo.ventry_name', index=0,
-      number=1, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
+      name='vtable_name', full_name='ShuffleInfo.ReorderInfo.ClassInfo.vtable_name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='ventry_offsets', full_name='ShuffleInfo.ReorderInfo.ClassInfo.ventry_offsets', index=1,
-      number=2, type=4, cpp_type=4, label=3,
+      name='ventry', full_name='ShuffleInfo.ReorderInfo.ClassInfo.ventry', index=1,
+      number=2, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -306,8 +306,8 @@ _REORDERINFO_CLASSINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=951,
-  serialized_end=1007,
+  serialized_start=957,
+  serialized_end=1005,
 )
 
 _REORDERINFO_CALLGRAPHINFO = _descriptor.Descriptor(
@@ -351,8 +351,8 @@ _REORDERINFO_CALLGRAPHINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1009,
-  serialized_end=1070,
+  serialized_start=1007,
+  serialized_end=1068,
 )
 
 _REORDERINFO_FIXUPINFO_FIXUPTUPLE = _descriptor.Descriptor(
@@ -424,8 +424,8 @@ _REORDERINFO_FIXUPINFO_FIXUPTUPLE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1402,
-  serialized_end=1546,
+  serialized_start=1400,
+  serialized_end=1544,
 )
 
 _REORDERINFO_FIXUPINFO = _descriptor.Descriptor(
@@ -483,8 +483,8 @@ _REORDERINFO_FIXUPINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1073,
-  serialized_end=1546,
+  serialized_start=1071,
+  serialized_end=1544,
 )
 
 _REORDERINFO_SOURCEINFO = _descriptor.Descriptor(
@@ -514,8 +514,8 @@ _REORDERINFO_SOURCEINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1548,
-  serialized_end=1578,
+  serialized_start=1546,
+  serialized_end=1576,
 )
 
 _REORDERINFO = _descriptor.Descriptor(
@@ -555,7 +555,7 @@ _REORDERINFO = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='class', full_name='ShuffleInfo.ReorderInfo.class', index=4,
+      name='class_proto', full_name='ShuffleInfo.ReorderInfo.class_proto', index=4,
       number=6, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -588,7 +588,7 @@ _REORDERINFO = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=35,
-  serialized_end=1578,
+  serialized_end=1576,
 )
 
 _REORDERINFO_BINARYINFO.containing_type = _REORDERINFO
@@ -608,7 +608,7 @@ _REORDERINFO.fields_by_name['bin'].message_type = _REORDERINFO_BINARYINFO
 _REORDERINFO.fields_by_name['func'].message_type = _REORDERINFO_FUNCTIONINFO
 _REORDERINFO.fields_by_name['layout'].message_type = _REORDERINFO_LAYOUTINFO
 _REORDERINFO.fields_by_name['fixup'].message_type = _REORDERINFO_FIXUPINFO
-_REORDERINFO.fields_by_name['class'].message_type = _REORDERINFO_CLASSINFO
+_REORDERINFO.fields_by_name['class_proto'].message_type = _REORDERINFO_CLASSINFO
 _REORDERINFO.fields_by_name['func_cg'].message_type = _REORDERINFO_CALLGRAPHINFO
 _REORDERINFO.fields_by_name['source'].message_type = _REORDERINFO_SOURCEINFO
 DESCRIPTOR.message_types_by_name['ReorderInfo'] = _REORDERINFO

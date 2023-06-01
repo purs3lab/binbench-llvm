@@ -37,7 +37,7 @@ public:
 
   MFCONTAINER MachineFunctions; ///< Information about all machine functions.
 
-  std::map<std::string, std::list<unsigned>>
+  std::map<std::string, std::list<std::string>>
       vTables; ///< Map of vtables to their entries.
   mutable std::map<std::string, std::string>
       NametoMFID; ///< Map from function name to function ID.
@@ -73,6 +73,16 @@ public:
                            std::stoi(ID.substr(ID.find("_") + 1, ID.length())));
   }
 
+  std::string FixupParentID;
+  bool isJumpTableRef = false;
+  std::string SymbolRefFixupName;
+
+  std::string getFixupParentID() const { return FixupParentID; }
+  void setFixupParentID(std::string Value) { FixupParentID = Value; }
+  bool getIsJumpTableRef() const { return isJumpTableRef; }
+  void setIsJumpTableRef(bool V) { isJumpTableRef = V; }
+  std::string getSymbolRefFixupName() const { return SymbolRefFixupName; }
+  void setSymbolRefFixupName(std::string FN) { SymbolRefFixupName = FN; }
   /// @brief Set Fixup information for a given section. Users need not use this.
   void setFixups(FIXUPTYPE Fixups,
                  ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo,
@@ -231,7 +241,7 @@ public:
 
 class ClassCollector : public BCollector {
 public:
-  void addVTable(std::string classname, std::list<unsigned> vtable_entries) {
+  void addVTable(std::string classname, std::list<std::string> vtable_entries) {
     vTables[classname] = vtable_entries;
   }
 };
@@ -249,6 +259,8 @@ public:
     MachineFunctions[id].ID = id;
     NametoMFID[funcname] = id;
   }
+
+  auto getVT() {return vTables;}
 
   std::string getDICompositeTypeKind(const DICompositeType *CompositeType) {
     if (CompositeType == nullptr) {
@@ -285,8 +297,7 @@ public:
       // DICompositeType*
       type_name = getDICompositeTypeKind(CompositeType);
     } else {
-      type_name = "Unrecognized";
-      // TheDIType is neither a DIBasicType nor a DICompositeType
+      type_name = "Pointer";
     }
     return type_name;
   }
@@ -326,6 +337,19 @@ public:
             }
         }
     }
+
+  void addVTableEntry(std::string classname, std::string entry) {
+    auto it = vTables.find(classname);
+    if (it == vTables.end()) {
+        std::list<std::string> newList {entry};
+        vTables[classname] = newList;
+    } else {
+        auto &entries_list = vTables[classname];
+        if (std::find(entries_list.begin(), entries_list.end(), entry) == entries_list.end()) {
+            entries_list.push_back(entry);
+        }
+    }
+  }
 
 
   /// @brief Get collected function metadata object.

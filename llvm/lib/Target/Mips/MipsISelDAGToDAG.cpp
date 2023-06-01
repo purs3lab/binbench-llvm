@@ -59,6 +59,10 @@ bool MipsDAGToDAGISel::runOnMachineFunction(MachineFunction &MF) {
 
   processFunctionAfterISel(MF);
 
+  //ztt add refer to X86ISelDAGToDAG.cpp L181
+  MachineJumpTableInfo *MJTI = MF.getJumpTableInfo();
+  if (MJTI)
+    MF.RecordMachineJumpTableInfo(MJTI);
   return Ret;
 }
 

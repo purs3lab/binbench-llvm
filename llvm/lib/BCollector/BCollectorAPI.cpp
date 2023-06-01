@@ -424,6 +424,18 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
       }
   }
 
+  auto vTables = MAI->getFC()->getVT();
+
+  for (auto const &x: vTables) {
+    ShuffleInfo::ReorderInfo_ClassInfo *ClassInfo = ri->add_class_proto();
+
+    ClassInfo->set_vtable_name(x.first);
+    for (auto const &entry : x.second) {
+        ClassInfo->add_ventry(entry);
+    }
+
+  }
+
   ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo = ri->add_fixup();
   setFixupInfo(fixupInfo, MAI);
 }

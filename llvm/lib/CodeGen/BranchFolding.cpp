@@ -143,8 +143,8 @@ bool BranchFolderPass::runOnMachineFunction(MachineFunction &MF) {
   // Koo - The final JTInfo, which could be overriden
   //       For example lib/Target/X86/X86ISelDAGToDAG.cpp for x86
   MachineJumpTableInfo *MJTI = MF.getJumpTableInfo();
-  // if (MJTI)
-    // MF.RecordMachineJumpTableInfo(MJTI);
+   if (MJTI)
+     MF.RecordMachineJumpTableInfo(MJTI);
   return madeChange;                             
 }
 

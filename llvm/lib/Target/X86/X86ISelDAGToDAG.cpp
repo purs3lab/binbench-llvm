@@ -188,6 +188,11 @@ namespace {
              "OptForMinSize implies OptForSize");
 
       SelectionDAGISel::runOnMachineFunction(MF);
+
+      MachineJumpTableInfo *MJTI = MF.getJumpTableInfo();
+      if (MJTI)
+       MF.RecordMachineJumpTableInfo(MJTI);
+
       return true;
     }
 
