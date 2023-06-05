@@ -1026,13 +1026,10 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
           unsigned derefSize = 0;
               // getBackend().getFixupKindLog2Size(Fixup.getKind()); XXXAKUL
           unsigned jtEntryKind = 0, jtEntrySize = 0, numJTEntries = 0;
-          std::map<std::string,
-                   std::tuple<unsigned, unsigned, std::list<std::string>>>
-              JTs = MOFI->getJumpTableTargets();
+          std::map<std::string, std::shared_ptr<std::tuple<unsigned, unsigned, unsigned>>> JTs = MOFI->getJumpTableTargets();
           std::string fixupParentID = Fixup.getFixupParentID();
           std::string SymbolRefFixupName = Fixup.getSymbolRefFixupName();
-          std::list<std::string>
-              JTEs; // contains all target(MFID_MBBID) in the JT
+          unsigned JTEs; // contains all target(MFID_MBBID) in the JT
 
           // The following handles multiple sections in C++
           if (secName.find(".text") == 0) {
@@ -1048,8 +1045,8 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
             }
             if (Fixup.getIsJumpTableRef()) {
               std::tie(jtEntryKind, jtEntrySize, JTEs) =
-                  JTs[Fixup.getSymbolRefFixupName()];
-              numJTEntries = JTEs.size();
+                  *(JTs[Fixup.getSymbolRefFixupName()]);
+              numJTEntries = JTEs;
             }
             MAI->getBC()->FixupsText.push_back(std::make_tuple(
                 offset, derefSize, IsPCRel, fixupParentID, SymbolRefFixupName,

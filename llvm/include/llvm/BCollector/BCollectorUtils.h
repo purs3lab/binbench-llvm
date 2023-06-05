@@ -3,8 +3,9 @@
 
 #include "llvm/BCollector/BCollectorAPI.h"
 
-#include <string>
 #include <iomanip>
+#include <memory>
+#include <string>
 
 namespace llvm {
 

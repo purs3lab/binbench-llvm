@@ -387,6 +387,10 @@ void MachineFunction::RecordMachineJumpTableInfo(MachineJumpTableInfo *MJTI) {
         JTEntries.push_back(std::to_string(MFID) + "_" + std::to_string(MBBID));
       }
 
+      if (JTEntries.size() == 0) {
+        JTEntries.push_back("999_999");
+      }
+
       // Value: <(EntryKind, EntrySize, Entries[MFID_MBBID])>
       unsigned EntryKind = MJTI->getEntryKind();
       unsigned EntrySize = MJTI->getEntrySize(this->getDataLayout());

@@ -21,6 +21,8 @@
 #include <iomanip>
 #include <string>
 #include <algorithm>  // required for std::find
+#include <memory>
+
 
 
 namespace llvm {

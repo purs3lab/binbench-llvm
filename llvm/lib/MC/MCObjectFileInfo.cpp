@@ -24,6 +24,7 @@
 #include "llvm/MC/MCSectionWasm.h"
 #include "llvm/MC/MCSectionXCOFF.h"
 #include "llvm/Support/Casting.h"
+#include <memory>
 
 using namespace llvm;
 
@@ -54,6 +55,7 @@ static bool useCompactUnwind(const Triple &T) {
 void MCObjectFileInfo::initMachOMCObjectFileInfo(const Triple &T) {
   // MachO
   SupportsWeakOmittedEHFrame = false;
+
 
   EHFrameSection = Ctx->getMachOSection(
       "__TEXT", "__eh_frame",
@@ -1037,6 +1039,8 @@ void MCObjectFileInfo::initMCObjectFileInfo(MCContext &MCCtx, bool PIC,
                                             bool LargeCodeModel) {
   PositionIndependent = PIC;
   Ctx = &MCCtx;
+
+  JumpTableTargets->clear();
 
   // Common.
   CommDirectiveSupportsAlignment = true;

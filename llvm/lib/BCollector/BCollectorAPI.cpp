@@ -17,6 +17,8 @@
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/shuffleInfo.pb.h"
 #include <set>
+#include <memory>
+
 
 using namespace llvm;
 
@@ -250,30 +252,17 @@ void BCollector::dumpJT(JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI) {
     for (auto it = jumpTables.begin(); it != jumpTables.end(); ++it) {
       int JTI, MFID, MFID2, MBBID;
       unsigned entryKind, entrySize;
-      std::list<std::string> JTEntries;
+      unsigned JTEntries;
+       
 
       std::tie(MFID, JTI) = MAI->getBC()->BCollector::separateID(it->first);
-      std::tie(entryKind, entrySize, JTEntries) = it->second;
+      std::tie(entryKind, entrySize, JTEntries) = *(it->second);
 
       DEBUG_WITH_TYPE("binbench", dbgs() << "[JT@Function#" << MFID << "_"
                                          << JTI << "] "
                                          << "(Kind: " << entryKind << ", "
-                                         << JTEntries.size() << " Entries of "
+                                         << JTEntries << " Entries of "
                                          << entrySize << "B each)\n");
-
-      for (std::string JTE : JTEntries) {
-        std::tie(MFID2, MBBID) = BCollector::separateID(JTE);
-        totalEntries++;
-        if (MFID != MFID2)
-          errs() << "[CCR-Error] MCAssembler::updateReorderInfoValues - JT "
-                    "Entry points to the outside of MF! \n";
-        DEBUG_WITH_TYPE("binbench",
-                        dbgs()
-                            << "\t[" << JTE << "]\t"
-                            << BCollectorUtils::hexlify(
-                                   MAI->getBC()->MachineBasicBlocks[JTE].Offset)
-                            << "\n");
-      }
     }
 
     DEBUG_WITH_TYPE("binbench", dbgs() << "#JTs\t#Entries\n"
