@@ -11,7 +11,7 @@
 // demonstration and testing purposes.
 //
 //===----------------------------------------------------------------------===//
-
+#include "clang/AST/ConditionStmtTypeCollector.h"
 #include "clang/Basic/Stack.h"
 #include "clang/Basic/TargetOptions.h"
 #include "clang/CodeGen/ObjectFilePCHContainerOperations.h"
@@ -247,6 +247,8 @@ int cc1_main(ArrayRef<const char *> Argv, const char *Argv0, void *MainAddr) {
   // Execute the frontend actions.
   {
     llvm::TimeTraceScope TimeScope("ExecuteCompiler");
+    auto myAction = std::make_unique<ConditionStmtTypeFEAction>();
+    Success = Clang->ExecuteAction(*myAction);
     Success = ExecuteCompilerInvocation(Clang.get());
   }
 
