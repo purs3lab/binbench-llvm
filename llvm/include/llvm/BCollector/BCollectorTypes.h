@@ -32,7 +32,7 @@ typedef std::string MBBIDTYPE;
 typedef std::string MFIDTYPE;
 
 /// @brief Jump Table Type: <JumpTableID, <JumpTableSize, <JumpTableEntries>>>
-typedef std::map<std::string, std::shared_ptr<std::tuple<unsigned, unsigned, unsigned>>> JTTYPEWITHID;
+typedef std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> JTTYPEWITHID;
 
 /// @brief Fixup List Type: <offset, size, isRela, parentID, SymbolRefFixupName, isNewSection,
 ///    secName, numJTEntries, JTEntrySz>

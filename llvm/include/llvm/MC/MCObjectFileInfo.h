@@ -25,15 +25,11 @@
 #include <map>
 #include <string>
 #include <tuple>
-#include <memory>
 
 
 namespace llvm {
 class MCContext;
 class MCSection;
-
-
-#define MAX_JTARGETS 10000
 
 class MCObjectFileInfo {
 protected:
@@ -253,11 +249,6 @@ protected:
 public:
   void initMCObjectFileInfo(MCContext &MCCtx, bool PIC,
                             bool LargeCodeModel = false);
-  MCObjectFileInfo() {
-      JumpTableTargets = std::make_unique<std::map<std::string, std::shared_ptr<std::tuple<unsigned, unsigned, unsigned>>>>();
-      JumpTableTargets->clear();
-  }
-
   virtual ~MCObjectFileInfo();
   MCContext &getContext() const { return *Ctx; }
 
@@ -283,23 +274,14 @@ public:
 
   // Koo - Contains all JumpTables whose entries consist of the target MFs and MBBs
   //<MachineFunctionIdx_JumpTableIdx> - <(EntryKind, EntrySize, Entries[MFID_MBBID])>
-  mutable std::unique_ptr<std::map<std::string, std::shared_ptr<std::tuple<unsigned, unsigned, unsigned>>>> JumpTableTargets = nullptr;
+  mutable std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> JumpTableTargets;
 
+  std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> \
+        getJumpTableTargets() const { return JumpTableTargets; }
 
-
-  std::map<std::string, std::shared_ptr<std::tuple<unsigned, unsigned, unsigned>>> getJumpTableTargets() const { return *JumpTableTargets; }
-
-  void updateJumpTableTargets(std::string Key, unsigned EntryKind, unsigned EntrySize, std::list<std::string> JTEntries) const {
-      if ((JumpTableTargets == nullptr) || (JumpTableTargets->size() > MAX_JTARGETS)) {
-          JumpTableTargets = std::make_unique<std::map<std::string, std::shared_ptr<std::tuple<unsigned, unsigned, unsigned>>>>();
-          JumpTableTargets->clear();
-      }
-
-      if (JumpTableTargets->empty()) {
-          (*JumpTableTargets)["999_999"] = std::make_unique<std::tuple<unsigned, unsigned, unsigned>>(0, 0, 0);
-      }
-
-      (*JumpTableTargets)[Key] = std::make_unique<std::tuple<unsigned, unsigned, unsigned>>(EntryKind, EntrySize, JTEntries.size());
+  void updateJumpTableTargets(std::string Key, unsigned EntryKind, unsigned EntrySize, \
+                              std::list<std::string> JTEntries) const {
+    JumpTableTargets[Key] = std::make_tuple(EntryKind, EntrySize, JTEntries);
   }
 
 
