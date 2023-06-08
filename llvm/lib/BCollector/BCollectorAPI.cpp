@@ -1,5 +1,3 @@
-
-
 #include "llvm/BCollector/BCollectorAPI.h"
 
 #include "llvm/BCollector/BCollectorTypes.h"
@@ -57,7 +55,11 @@ void BasicBlockCollector::performCollection(const MachineInstr *MI,
   Inst->setPreds(ID, Preds);
 }
 
-BCollector::BCollector() { utils = new BCollectorUtils(); }
+BCollector::BCollector() { 
+    utils = new BCollectorUtils(); 
+    JumpTableTargets = std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>>();
+    JumpTableTargets.clear();
+}
 
 // Akul FIXME: Move this to BCollector
 // Koo: Dump all fixups if necessary
@@ -95,7 +97,7 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
   const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
   const MCObjectFileInfo *MOFI =
       Layout.getAssembler().getContext().getObjectFileInfo();
-  JTTYPEWITHID jumpTables = MOFI->getJumpTableTargets();
+  JTTYPEWITHID jumpTables = this->getJumpTableTargets();
 
   // Deal with MFs and MBBs in a ELF code section (.text) only
   for (MCSection &Sec : Layout.getAssembler()) {

@@ -54,6 +54,7 @@
 #include "llvm/IR/ModuleSlotTracker.h"
 #include "llvm/IR/Value.h"
 #include "llvm/MC/MCContext.h"
+#include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCSymbol.h"
 #include "llvm/MC/SectionKind.h"
 #include "llvm/Support/Casting.h"
@@ -366,7 +367,7 @@ void MachineFunction::RenumberBlocks(MachineBasicBlock *MBB) {
 //        b) MachineFunctionPass::BranchFolderPass::runOnMachineFunction()
 void MachineFunction::RecordMachineJumpTableInfo(MachineJumpTableInfo *MJTI) {
   const std::vector<MachineJumpTableEntry> &JT = MJTI->getJumpTables();
-
+  auto JTTs = Ctx.getAsmInfo()->getBC()->JumpTableTargets;
   if (!JT.empty()) {
     const MachineModuleInfo &MMI = this->getMMI();
     const MCObjectFileInfo* MOFI = MMI.getMCObjectFileInfo();
@@ -390,7 +391,7 @@ void MachineFunction::RecordMachineJumpTableInfo(MachineJumpTableInfo *MJTI) {
       // Value: <(EntryKind, EntrySize, Entries[MFID_MBBID])>
       unsigned EntryKind = MJTI->getEntryKind();
       unsigned EntrySize = MJTI->getEntrySize(this->getDataLayout());
-      MOFI->updateJumpTableTargets(MJTKey, EntryKind, EntrySize, JTEntries);
+      Ctx.getAsmInfo()->getBC()->updateJumpTableTargets(MJTKey, EntryKind, EntrySize, JTEntries);
     }
   }
 }

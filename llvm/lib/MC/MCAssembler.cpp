@@ -1028,7 +1028,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
           unsigned jtEntryKind = 0, jtEntrySize = 0, numJTEntries = 0;
           std::map<std::string,
                    std::tuple<unsigned, unsigned, std::list<std::string>>>
-              JTs = MOFI->getJumpTableTargets();
+              JTs = MAI->getBC()->getJumpTableTargets();
           std::string fixupParentID = Fixup.getFixupParentID();
           std::string SymbolRefFixupName = Fixup.getSymbolRefFixupName();
           std::list<std::string>

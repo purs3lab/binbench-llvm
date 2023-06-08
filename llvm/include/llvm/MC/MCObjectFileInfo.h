@@ -16,6 +16,7 @@
 #include "llvm/ADT/Optional.h"
 #include "llvm/ADT/Triple.h"
 #include "llvm/BinaryFormat/Swift.h"
+#include "llvm/MC/MCContext.h"
 #include "llvm/Support/VersionTuple.h"
 
 #include <array>
@@ -28,7 +29,7 @@
 
 
 namespace llvm {
-class MCContext;
+// class MCContext;
 class MCSection;
 
 class MCObjectFileInfo {
@@ -277,12 +278,11 @@ public:
   mutable std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> JumpTableTargets;
 
   std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> \
-        getJumpTableTargets() const { return JumpTableTargets; }
+        getJumpTableTargets() const; 
+
 
   void updateJumpTableTargets(std::string Key, unsigned EntryKind, unsigned EntrySize, \
-                              std::list<std::string> JTEntries) const {
-    JumpTableTargets[Key] = std::make_tuple(EntryKind, EntrySize, JTEntries);
-  }
+                              std::list<std::string> JTEntries) const; 
 
 
   virtual unsigned getTextSectionAlignment() const { return 4; }

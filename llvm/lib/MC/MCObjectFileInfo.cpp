@@ -26,6 +26,8 @@
 #include "llvm/Support/Casting.h"
 
 using namespace llvm;
+class MCAsmInfo;
+class MCContext;
 
 static bool useCompactUnwind(const Triple &T) {
   // Only on darwin.
@@ -547,6 +549,17 @@ void MCObjectFileInfo::initGOFFMCObjectFileInfo(const Triple &T) {
   PPA1Section =
       Ctx->getGOFFSection(".ppa1", SectionKind::getMetadata(), TextSection,
                           MCConstantExpr::create(GOFF::SK_PPA1, *Ctx));
+}
+
+
+std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> 
+MCObjectFileInfo::getJumpTableTargets() const { 
+    return Ctx->getAsmInfo()->getBC()->JumpTableTargets; 
+}
+
+void MCObjectFileInfo::updateJumpTableTargets(std::string Key, unsigned EntryKind, unsigned EntrySize, \
+        std::list<std::string> JTEntries) const {
+    Ctx->getAsmInfo()->getBC()->JumpTableTargets[Key] = std::make_tuple(EntryKind, EntrySize, JTEntries);
 }
 
 void MCObjectFileInfo::initCOFFMCObjectFileInfo(const Triple &T) {

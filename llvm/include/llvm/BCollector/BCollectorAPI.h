@@ -73,9 +73,11 @@ public:
                            std::stoi(ID.substr(ID.find("_") + 1, ID.length())));
   }
 
+  mutable std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> JumpTableTargets;
   std::string FixupParentID;
   bool isJumpTableRef = false;
   std::string SymbolRefFixupName;
+
 
   std::string getFixupParentID() const { return FixupParentID; }
   void setFixupParentID(std::string Value) { FixupParentID = Value; }
@@ -180,6 +182,15 @@ public:
                        const MCAsmInfo *MAI, const MCObjectFileInfo *MOFI,
                        MCSectionELF &ELFSec);
 
+  void updateJumpTableTargets(std::string Key, unsigned EntryKind, unsigned EntrySize, \
+          std::list<std::string> JTEntries) const {
+      JumpTableTargets[Key] = std::make_tuple(EntryKind, EntrySize, JTEntries);
+  }
+
+  std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> 
+      getJumpTableTargets() const { 
+          return JumpTableTargets; 
+      }
   /// @brief Set the latest parent ID.
   void setFunctionid(std::string id) { latestFunctionID = id; }
 
