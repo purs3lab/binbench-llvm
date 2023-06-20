@@ -32,6 +32,7 @@ add_clang_library(clangAST
   AttrDocTable.cpp
   AttrImpl.cpp
   BingeFrontEndCollector.cpp
+  BingeCollectCXXInfo.cpp
   Comment.cpp
   CommentBriefParser.cpp
   CommentCommandTraits.cpp

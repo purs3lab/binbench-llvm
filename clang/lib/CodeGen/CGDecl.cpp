@@ -1440,7 +1440,7 @@ CodeGenFunction::EmitAutoVarAlloca(const VarDecl &D) {
 
   auto *DI = getDebugInfo();
   bool EmitDebugInfo = DI && CGM.getCodeGenOpts().hasReducedDebugInfo();
-  bool EmitBingeMetadataInfo = CGM.getCodeGenOpts().BinBenchCollector;
+  bool EmitBingeMetadataInfo = CGM.getCodeGenOpts().binbench_collector;
 
   Address address = Address::invalid();
   Address AllocaAddr = Address::invalid();

@@ -4755,6 +4755,10 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
     if (JA.getType() == types::TY_LLVM_BC)
       CmdArgs.push_back("-emit-llvm-uselists");
 
+    if (Args.hasFlag(options::OPT_fbinbench_collector, false)) {
+      CmdArgs.push_back("-fbinbench_collector");
+    }
+
     if (IsUsingLTO) {
       // Only AMDGPU supports device-side LTO.
       if (IsDeviceOffloadAction &&

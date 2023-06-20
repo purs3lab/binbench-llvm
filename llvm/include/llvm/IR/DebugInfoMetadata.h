@@ -244,6 +244,7 @@ public:
     // Provide a static creation method that uses the LLVMContext to allocate an instance.
     static BingeMDNode *get(LLVMContext &Context,
                             std::map<std::string, std::map<Value*, std::string>> BingeIRSrcInfoArg,
+                            std::map<std::string, std::set<std::string>>MangledClassNameToVirtualTableSizeInfoIR,
                             std::vector<Value*> BingeInterestingInstructionsArg,
                             std::string FunctionNameArg,
                             std::string FileNameArg,
@@ -265,6 +266,7 @@ public:
       // Then cast it to our subclass and set the additional data members.
       BingeMDNode *Node = static_cast<BingeMDNode*>(Tuple);
       Node->BingeIRSrcInfo = BingeIRSrcInfoArg;
+      Node->MangledClassNameToVirtualTableSizeInfoIR = MangledClassNameToVirtualTableSizeInfoIR;
       Node->BingeInterestingInstructions = BingeInterestingInstructionsArg;
       Node->FunctionName = FunctionNameArg;
       Node->FileName = FileNameArg;

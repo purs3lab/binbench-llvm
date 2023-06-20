@@ -245,11 +245,15 @@ int cc1_main(ArrayRef<const char *> Argv, const char *Argv0, void *MainAddr) {
   }
 
   // Execute the frontend actions.
+  //check if this flag is set
+  if (Clang->getFrontendOpts().binbench_collector)
   {
     llvm::TimeTraceScope TimeScope("ExecuteCompiler");
-    auto myAction = std::make_unique<ConditionStmtTypeFEAction>();
-    Success = Clang->ExecuteAction(*myAction);
-    Success = ExecuteCompilerInvocation(Clang.get());
+    auto ConditionStmtTypeFE_Action = std::make_unique<ConditionStmtTypeFEAction>();
+    Success |= Clang->ExecuteAction(*ConditionStmtTypeFE_Action);
+    auto ClassVTSizeFE_Action = std::make_unique<ClassVTSizeFEAction>();
+    Success |= Clang->ExecuteAction(*ClassVTSizeFE_Action);
+    Success |= ExecuteCompilerInvocation(Clang.get());
   }
 
   // If any timers were active but haven't been destroyed yet, print their

@@ -114,7 +114,7 @@ CODEGENOPT(XRayInstrumentFunctions , 1, 0) ///< Set when -fxray-instrument is
 CODEGENOPT(StackSizeSection  , 1, 0) ///< Set when -fstack-size-section is enabled.
 CODEGENOPT(ForceDwarfFrameSection , 1, 0) ///< Set when -fforce-dwarf-frame is
                                           ///< enabled.
-CODEGENOPT(BinBenchCollector, 1, 0) ///< Set when -fbinbench-collector is enabled.
+CODEGENOPT(binbench_collector, 1, 0) ///< Set when -fbinbench-collector is enabled.
 ///< Set when -femit-dwarf-unwind is passed.
 ENUM_CODEGENOPT(EmitDwarfUnwind, llvm::EmitDwarfUnwindType, 2,
                 llvm::EmitDwarfUnwindType::Default)
