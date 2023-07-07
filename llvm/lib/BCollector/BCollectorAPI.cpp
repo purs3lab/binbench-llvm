@@ -405,6 +405,11 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
     for (auto const &argSize : argSizes) {
       FunctionInfo->add_argsizes(argSize);
     }
+    auto argTypes = x.second.ArgTypes;
+    for (auto const argType : argTypes) {
+      DEBUG_WITH_TYPE("binbench", dbgs() << "Func Arg Type "<< argType << "\n");
+      FunctionInfo->add_arg_types(argType);
+    }
     auto localVars = x.second.LocalVars;
     for (auto const &localVar : localVars) {
       FunctionInfo->add_local_var_names(localVar.first);

@@ -328,6 +328,18 @@ public:
     MachineFunctions[NametoMFID[funcname]].NumArgs = numArgs;
   }
 
+  void updateArgTypes(std::string funcname, std::string argType) {
+
+    // check if name is in the map
+    if (NametoMFID.find(funcname) == NametoMFID.end()) {
+      DEBUG_WITH_TYPE("binbench",
+                      dbgs() << "Function not found: " << funcname << "\n");
+      return;
+    }
+
+    MachineFunctions[NametoMFID[funcname]].ArgTypes.push_back(argType);
+  }
+
   void addLocalVariable(std::string funcname, std::string varname,
                         std::string type, int Offset, unsigned size) {
     MachineFunctions[NametoMFID[funcname]].LocalVars[varname] =

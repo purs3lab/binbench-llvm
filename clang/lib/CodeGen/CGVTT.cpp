@@ -120,6 +120,8 @@ llvm::GlobalVariable *CodeGenVTables::GetAddrOfVTT(const CXXRecordDecl *RD) {
       Name, ArrayType, llvm::GlobalValue::ExternalLinkage, Align);
   GV->setUnnamedAddr(llvm::GlobalValue::UnnamedAddr::Global);
   CGM.setGVProperties(GV, RD);
+
+  GV->dump();
   return GV;
 }
 

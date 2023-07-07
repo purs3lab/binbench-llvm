@@ -19,6 +19,7 @@
 #include "clang/Basic/CodeGenOptions.h"
 #include "clang/CodeGen/CGFunctionInfo.h"
 #include "clang/CodeGen/ConstantInitBuilder.h"
+#include "llvm-c/Core.h"
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/Support/Format.h"
 #include "llvm/Transforms/Utils/Cloning.h"
@@ -807,7 +808,7 @@ void CodeGenVTables::addVTableComponent(ConstantArrayBuilder &builder,
     if (useRelativeLayout()) {
       return addRelativeComponent(
           builder, fnPtr, vtableAddressPoint, vtableHasLocalLinkage,
-          component.getKind() == VTableComponent::CK_CompleteDtorPointer);
+          component.getKind() == VTableComponent::CK_CompleteDtorPointer); 
     } else
       return builder.add(llvm::ConstantExpr::getBitCast(fnPtr, CGM.Int8PtrTy));
   }
@@ -844,6 +845,12 @@ void CodeGenVTables::createVTableInitializer(ConstantStructBuilder &builder,
     auto vtableElem = builder.beginArray(componentType);
 
     size_t vtableStart = layout.getVTableOffset(vtableIndex);
+    size_t numVtables = layout.getNumVTables();
+    auto vtableSize = layout.getVTableSize(vtableIndex);
+    DEBUG_WITH_TYPE("binbench", llvm::dbgs() << " VTABLE OFFSET: " << vtableStart << "\n");
+    DEBUG_WITH_TYPE("binbench", llvm::dbgs() << " Num Vtables: " << numVtables << "\n");
+    DEBUG_WITH_TYPE("binbench", llvm::dbgs() << " VTable Size " << vtableSize << "\n");
+    // TODO: Get no. of entries, that's all we need
     size_t vtableEnd = vtableStart + layout.getVTableSize(vtableIndex);
     for (size_t componentIndex = vtableStart; componentIndex < vtableEnd;
          ++componentIndex) {
@@ -1098,6 +1105,8 @@ CodeGenVTables::GenerateClassData(const CXXRecordDecl *RD) {
     CGM.getCXXABI().emitVirtualInheritanceTables(RD);
 
   CGM.getCXXABI().emitVTableDefinitions(*this, RD);
+  // auto MAI = CGM.TargetMachine->getAsmInfo();
+  // AKULXXX Can intercept here
 }
 
 /// At this point in the translation unit, does it appear that can we
@@ -1253,7 +1262,7 @@ void CodeGenModule::EmitVTableTypeMetadata(const CXXRecordDecl *RD,
                                            const VTableLayout &VTLayout) {
   if (!getCodeGenOpts().LTOUnit)
     return;
-
+  // TODO intercept the final stuff here AKULXXX
   CharUnits PointerWidth =
       Context.toCharUnitsFromBits(Context.getTargetInfo().getPointerWidth(0));
 

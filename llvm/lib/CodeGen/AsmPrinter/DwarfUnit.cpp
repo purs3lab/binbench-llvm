@@ -1306,12 +1306,27 @@ void DwarfUnit::applySubprogramAttributes(const DISubprogram *SP, DIE &SPDie,
   MAI->getFC()->updateArgDetails(funcName, nargs);
 
 
+
   for (int i = 0; i < nargs; i++) {
     auto arg = Args[i];
     if (arg == nullptr)
       continue;
     auto argSize = arg->getSizeInBits();
+    if (argSize == 0) {
+        // auto new_argsize = 
+        DEBUG_WITH_TYPE("binbench", dbgs() << "Found arg with size 0 in " << funcName << "\n" );
+    }
+
+    auto ArgType = arg->getName().str();
+
+    
+    if(ArgType == "") {
+        ArgType = MAI->getFC()->checkDIType(arg);
+    }
+
     MAI->getFC()->addArgSizes(funcName, argSize);
+    MAI->getFC()->updateArgTypes(funcName, ArgType);
+    DEBUG_WITH_TYPE("binbench", dbgs() << "Found arg with type " << ArgType << "\n" );
   }
 
   if (Args.size())

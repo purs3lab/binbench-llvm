@@ -34,7 +34,9 @@
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/Value.h"
+#include "llvm/Support/Debug.h"
 #include "llvm/Support/ScopedPrinter.h"
+#include "llvm/Target/TargetMachine.h"
 
 using namespace clang;
 using namespace CodeGen;
@@ -47,6 +49,8 @@ class ItaniumCXXABI : public CodeGen::CGCXXABI {
   /// All the thread wrapper functions that have been used.
   llvm::SmallVector<std::pair<const VarDecl *, llvm::Function *>, 8>
       ThreadWrappers;
+
+  // llvm::TargetMachine TM;
 
 protected:
   bool UseARMMethodPtrABI;
@@ -647,6 +651,7 @@ CGCallee ItaniumCXXABI::EmitLoadOfMemberFunctionPointer(
   llvm::Value *VTable = CGF.GetVTablePtr(
       Address(This, ThisAddr.getElementType(), VTablePtrAlign), VTableTy, RD);
 
+  // TODO: intercept the VTable stuff here
   // Apply the offset.
   // On ARM64, to reserve extra space in virtual member function pointers,
   // we only pay attention to the low 32 bits of the offset.
@@ -658,6 +663,9 @@ CGCallee ItaniumCXXABI::EmitLoadOfMemberFunctionPointer(
     VTableOffset = Builder.CreateZExt(VTableOffset, CGM.PtrDiffTy);
   }
 
+  DEBUG_WITH_TYPE("binbench", llvm::dbgs() << "VtableName: " << VTable->getName() << "\n");
+  DEBUG_WITH_TYPE("binbench", llvm::dbgs() << "VTableOffset: " << VTableOffset << "\n");
+  // DEBUG_WITH_TYPE("binbench", llvm::dbgs() << "Num Entires: " << VTable->);
   // Check the address of the function pointer if CFI on member function
   // pointers is enabled.
   llvm::Constant *CheckSourceLocation;
@@ -1716,6 +1724,8 @@ void ItaniumCXXABI::EmitDestructorCall(CodeGenFunction &CGF,
 void ItaniumCXXABI::emitVTableDefinitions(CodeGenVTables &CGVT,
                                           const CXXRecordDecl *RD) {
   llvm::GlobalVariable *VTable = getAddrOfVTable(RD, CharUnits());
+  // auto MAI = getM
+
   if (VTable->hasInitializer())
     return;
 
@@ -1726,6 +1736,7 @@ void ItaniumCXXABI::emitVTableDefinitions(CodeGenVTables &CGVT,
       CGM.GetAddrOfRTTIDescriptor(CGM.getContext().getTagDeclType(RD));
 
   // Create and set the initializer.
+  // auto MAI = 
   ConstantInitBuilder builder(CGM);
   auto components = builder.beginStruct();
   CGVT.createVTableInitializer(components, VTLayout, RTTI,

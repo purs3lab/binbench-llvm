@@ -767,6 +767,7 @@ class ReorderInfo_FunctionInfo PROTOBUF_FINAL :
     kLocalVarOffsetsFieldNumber = 7,
     kLocalVarTypesFieldNumber = 8,
     kLocalVarSizesFieldNumber = 9,
+    kArgTypesFieldNumber = 10,
     kFIdFieldNumber = 1,
     kFNameFieldNumber = 2,
     kBbNumFieldNumber = 3,
@@ -886,6 +887,30 @@ class ReorderInfo_FunctionInfo PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
       mutable_local_var_sizes();
 
+  // repeated string arg_types = 10;
+  int arg_types_size() const;
+  private:
+  int _internal_arg_types_size() const;
+  public:
+  void clear_arg_types();
+  const std::string& arg_types(int index) const;
+  std::string* mutable_arg_types(int index);
+  void set_arg_types(int index, const std::string& value);
+  void set_arg_types(int index, std::string&& value);
+  void set_arg_types(int index, const char* value);
+  void set_arg_types(int index, const char* value, size_t size);
+  std::string* add_arg_types();
+  void add_arg_types(const std::string& value);
+  void add_arg_types(std::string&& value);
+  void add_arg_types(const char* value);
+  void add_arg_types(const char* value, size_t size);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& arg_types() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_arg_types();
+  private:
+  const std::string& _internal_arg_types(int index) const;
+  std::string* _internal_add_arg_types();
+  public:
+
   // optional string f_id = 1;
   bool has_f_id() const;
   private:
@@ -966,6 +991,7 @@ class ReorderInfo_FunctionInfo PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int64 > local_var_offsets_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> local_var_types_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 > local_var_sizes_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> arg_types_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr f_id_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr f_name_;
   ::PROTOBUF_NAMESPACE_ID::uint64 bb_num_;
@@ -3181,6 +3207,80 @@ inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >
 ReorderInfo_FunctionInfo::mutable_argsizes() {
   // @@protoc_insertion_point(field_mutable_list:ShuffleInfo.ReorderInfo.FunctionInfo.argsizes)
   return _internal_mutable_argsizes();
+}
+
+// repeated string arg_types = 10;
+inline int ReorderInfo_FunctionInfo::_internal_arg_types_size() const {
+  return arg_types_.size();
+}
+inline int ReorderInfo_FunctionInfo::arg_types_size() const {
+  return _internal_arg_types_size();
+}
+inline void ReorderInfo_FunctionInfo::clear_arg_types() {
+  arg_types_.Clear();
+}
+inline std::string* ReorderInfo_FunctionInfo::add_arg_types() {
+  // @@protoc_insertion_point(field_add_mutable:ShuffleInfo.ReorderInfo.FunctionInfo.arg_types)
+  return _internal_add_arg_types();
+}
+inline const std::string& ReorderInfo_FunctionInfo::_internal_arg_types(int index) const {
+  return arg_types_.Get(index);
+}
+inline const std::string& ReorderInfo_FunctionInfo::arg_types(int index) const {
+  // @@protoc_insertion_point(field_get:ShuffleInfo.ReorderInfo.FunctionInfo.arg_types)
+  return _internal_arg_types(index);
+}
+inline std::string* ReorderInfo_FunctionInfo::mutable_arg_types(int index) {
+  // @@protoc_insertion_point(field_mutable:ShuffleInfo.ReorderInfo.FunctionInfo.arg_types)
+  return arg_types_.Mutable(index);
+}
+inline void ReorderInfo_FunctionInfo::set_arg_types(int index, const std::string& value) {
+  // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.FunctionInfo.arg_types)
+  arg_types_.Mutable(index)->assign(value);
+}
+inline void ReorderInfo_FunctionInfo::set_arg_types(int index, std::string&& value) {
+  // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.FunctionInfo.arg_types)
+  arg_types_.Mutable(index)->assign(std::move(value));
+}
+inline void ReorderInfo_FunctionInfo::set_arg_types(int index, const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  arg_types_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:ShuffleInfo.ReorderInfo.FunctionInfo.arg_types)
+}
+inline void ReorderInfo_FunctionInfo::set_arg_types(int index, const char* value, size_t size) {
+  arg_types_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:ShuffleInfo.ReorderInfo.FunctionInfo.arg_types)
+}
+inline std::string* ReorderInfo_FunctionInfo::_internal_add_arg_types() {
+  return arg_types_.Add();
+}
+inline void ReorderInfo_FunctionInfo::add_arg_types(const std::string& value) {
+  arg_types_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:ShuffleInfo.ReorderInfo.FunctionInfo.arg_types)
+}
+inline void ReorderInfo_FunctionInfo::add_arg_types(std::string&& value) {
+  arg_types_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:ShuffleInfo.ReorderInfo.FunctionInfo.arg_types)
+}
+inline void ReorderInfo_FunctionInfo::add_arg_types(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  arg_types_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:ShuffleInfo.ReorderInfo.FunctionInfo.arg_types)
+}
+inline void ReorderInfo_FunctionInfo::add_arg_types(const char* value, size_t size) {
+  arg_types_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:ShuffleInfo.ReorderInfo.FunctionInfo.arg_types)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>&
+ReorderInfo_FunctionInfo::arg_types() const {
+  // @@protoc_insertion_point(field_list:ShuffleInfo.ReorderInfo.FunctionInfo.arg_types)
+  return arg_types_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>*
+ReorderInfo_FunctionInfo::mutable_arg_types() {
+  // @@protoc_insertion_point(field_mutable_list:ShuffleInfo.ReorderInfo.FunctionInfo.arg_types)
+  return &arg_types_;
 }
 
 // repeated string local_var_names = 6;

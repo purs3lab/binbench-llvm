@@ -367,7 +367,7 @@ void MachineFunction::RenumberBlocks(MachineBasicBlock *MBB) {
 //        b) MachineFunctionPass::BranchFolderPass::runOnMachineFunction()
 void MachineFunction::RecordMachineJumpTableInfo(MachineJumpTableInfo *MJTI) {
   const std::vector<MachineJumpTableEntry> &JT = MJTI->getJumpTables();
-  auto JTTs = Ctx.getAsmInfo()->getBC()->JumpTableTargets;
+  // auto JTTs = Ctx.getAsmInfo()->getBC()->JumpTableTargets;
   if (!JT.empty()) {
     const MachineModuleInfo &MMI = this->getMMI();
     const MCObjectFileInfo* MOFI = MMI.getMCObjectFileInfo();

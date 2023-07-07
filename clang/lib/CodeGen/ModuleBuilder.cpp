@@ -318,6 +318,7 @@ namespace {
         return;
 
       Builder->EmitVTable(RD);
+      // auto MAI = TargetMachine;
     }
   };
 }

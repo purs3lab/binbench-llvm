@@ -55,6 +55,8 @@ public:
 
   std::map<std::string, std::list<unsigned>> vTables; ///< Map of vtables to their entries.
 
+  std::vector<std::string> ArgTypes;
+
   BMachineFunctionInfo() {
     TotalSizeInBytes = 0;
     FunctionName = "";
