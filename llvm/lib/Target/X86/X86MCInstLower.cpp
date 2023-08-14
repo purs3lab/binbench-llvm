@@ -134,6 +134,11 @@ void X86AsmPrinter::EmitAndCountInstruction(MCInst &Inst) {
   SMShadowTracker.count(Inst, getSubtargetInfo(), CodeEmitter.get());
 }
 
+void X86AsmPrinter::EmitAndCountMetaInstruction(const MachineInstr *MI, MCInst &Inst) {
+  OutStreamer->emitMetaInstruction(MI, Inst, getSubtargetInfo());
+  SMShadowTracker.count(Inst, getSubtargetInfo(), CodeEmitter.get());
+}
+
 X86MCInstLower::X86MCInstLower(const MachineFunction &mf,
                                X86AsmPrinter &asmprinter)
     : Ctx(mf.getContext()), MF(mf), TM(mf.getTarget()), MAI(*TM.getMCAsmInfo()),
@@ -1206,6 +1211,7 @@ static unsigned emitNop(MCStreamer &OS, unsigned NumBytes,
     break;
   case X86::NOOPL:
   case X86::NOOPW:
+    // TODO: Akul: Add instrumentation
     OS.emitInstruction(MCInstBuilder(Opc)
                            .addReg(BaseReg)
                            .addImm(ScaleVal)
@@ -1280,6 +1286,7 @@ void X86AsmPrinter::LowerSTATEPOINT(const MachineInstr &MI,
     MCInst CallInst;
     CallInst.setOpcode(CallOpcode);
     CallInst.addOperand(CallTargetMCOp);
+    // TODO: Akul: Add instrumentation
     OutStreamer->emitInstruction(CallInst, getSubtargetInfo());
   }
 
@@ -2681,6 +2688,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
 
   // Akul 
 
+  /*
   LLVM_DEBUG(dbgs() << "MIOp:" << TmpInst.getOpcode()
                     << " MI:" << TM.getMCInstrInfo()->getName(TmpInst.getOpcode())
                     << " MBB:" << MI->getParent()->getNumber()
@@ -2709,12 +2717,8 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
     Preds.insert(PID);
   }
   LLVM_DEBUG(dbgs() << "\n");
-  const MachineBasicBlock *MBB = MI->getParent();
-  unsigned MBBID = MBB->getNumber();
-  unsigned MFID = MBB->getParent()->getFunctionNumber();
   unsigned funcsize = MBB->getParent()->size();
   std::string FunctionName = MBB->getParent()->getName().str();
-  std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
   TmpInst.setParentID(ID);
   TmpInst.setFunctionID(std::to_string(MFID));
   TmpInst.setFunctionName(FunctionName);
@@ -2722,6 +2726,11 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
   TmpInst.setSuccs(ID, Succs);
   TmpInst.setPreds(ID, Preds);
 
+*/
+  const MachineBasicBlock *MBB = MI->getParent();
+  unsigned MBBID = MBB->getNumber();
+  unsigned MFID = MBB->getParent()->getFunctionNumber();
+  std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
   // Koo [Note] While converting MachineInstr into MCInst, it is essential to maintain
   //            its parent MF and MBB because MCStreamer and MCAssembler do not care 
   //            them any more semantically. After this phase, fragment and section govern.
@@ -2750,9 +2759,9 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
     // after it.
     SMShadowTracker.emitShadowPadding(*OutStreamer, getSubtargetInfo());
     // Then emit the call
-    OutStreamer->emitInstruction(TmpInst, getSubtargetInfo());
+    OutStreamer->emitMetaInstruction(MI, TmpInst, getSubtargetInfo());
     return;
   }
 
-  EmitAndCountInstruction(TmpInst);
+  EmitAndCountMetaInstruction(MI,TmpInst);
 }
