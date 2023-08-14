@@ -23,6 +23,7 @@
 #include "llvm/MC/MCLinkerOptimizationHint.h"
 #include "llvm/MC/MCPseudoProbe.h"
 #include "llvm/MC/MCWinEH.h"
+#include "llvm/CodeGen/MachineInstr.h"
 #include "llvm/Support/ARMTargetParser.h"
 #include "llvm/Support/Error.h"
 #include "llvm/Support/MD5.h"
@@ -1096,6 +1097,7 @@ public:
   virtual void emitAddrsig() {}
   virtual void emitAddrsigSym(const MCSymbol *Sym) {}
 
+  virtual void emitMetaInstruction(const MachineInstr *MI, MCInst &Inst, const MCSubtargetInfo &STI);
   /// Emit the given \p Instruction into the current section.
   virtual void emitInstruction(const MCInst &Inst, const MCSubtargetInfo &STI);
 

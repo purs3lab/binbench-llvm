@@ -1196,9 +1196,11 @@ static unsigned emitNop(MCStreamer &OS, unsigned NumBytes,
   switch (Opc) {
   default: llvm_unreachable("Unexpected opcode");
   case X86::NOOP:
+    // TODO: Akul: Add instrumentation
     OS.emitInstruction(MCInstBuilder(Opc), *Subtarget);
     break;
   case X86::XCHG16ar:
+    // TODO: Akul: Add instrumentation
     OS.emitInstruction(MCInstBuilder(Opc).addReg(X86::AX).addReg(X86::AX),
                        *Subtarget);
     break;
