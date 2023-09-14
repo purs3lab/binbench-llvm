@@ -2429,6 +2429,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
   // X86_MC::verifyInstructionPredicates(MI->getOpcode(),
   //                                     Subtarget->getFeatureBits());
 
+  bool is_jmp = false;
   X86MCInstLower MCInstLowering(*MF, *this);
   const X86RegisterInfo *RI =
       MF->getSubtarget<X86Subtarget>().getRegisterInfo();
@@ -2512,6 +2513,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
   case X86::TAILJMPr64_REX:
   case X86::TAILJMPm64_REX:
     // Lower these as normal, but add some comments.
+    is_jmp = true;
     OutStreamer->AddComment("TAILCALL");
     break;
 
@@ -2752,7 +2754,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
   // in a call towards the shadow, but must ensure that the no thread returns
   // in to the stackmap shadow.  The only way to achieve this is if the call
   // is at the end of the shadow.
-  if (MI->isCall()) {
+  if (MI->isCall() && !is_jmp) {
     // Count then size of the call towards the shadow
     SMShadowTracker.count(TmpInst, getSubtargetInfo(), CodeEmitter.get());
     // Then flush the shadow so that we fill with nops before the call, not
