@@ -57,6 +57,47 @@ using namespace llvm;
 
 namespace {
 
+
+MCInst &setGenMetaDataX86(const MachineInstr *MI, MCInst *Inst) {
+  std::set<std::string> Preds;
+  std::set<std::string> Succs;
+  // LLVM_DEBUG(dbgs() << "Successors: ");
+  auto succs = MI->getParent()->successors();
+  for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+    // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
+    unsigned SMBBID = (*succ)->getNumber();
+    unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
+    std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+    Succs.insert(SID);
+  }
+  // LLVM_DEBUG(dbgs() << "\n");
+  // LLVM_DEBUG(dbgs() << "Predecessors: ");
+  auto preds = MI->getParent()->predecessors();
+  for (auto pred = preds.begin(); pred != preds.end(); pred++) {
+    // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
+    unsigned PMBBID = (*pred)->getNumber();
+    unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
+    std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+    Preds.insert(PID);
+  }
+  // LLVM_DEBUG(dbgs() << "\n");
+  const MachineBasicBlock *MBBa = MI->getParent();
+  unsigned MBBID = MBBa->getNumber();
+  unsigned MFID = MBBa->getParent()->getFunctionNumber();
+  unsigned funcsize = MBBa->getParent()->size();
+  std::string FunctionName = MBBa->getParent()->getName().str();
+  std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+
+  Inst->setParentID(ID);
+  Inst->setFunctionID(std::to_string(MFID));
+  Inst->setFunctionName(FunctionName);
+  Inst->setFunctionSize(funcsize);
+  Inst->setSuccs(ID, Succs);
+  Inst->setPreds(ID, Preds);
+
+  return *Inst;
+}
+
 /// X86MCInstLower - This class is used to lower an MachineInstr into an MCInst.
 class X86MCInstLower {
   MCContext &Ctx;
@@ -1036,8 +1077,8 @@ void X86AsmPrinter::LowerTlsAddr(X86MCInstLower &MCInstLowering,
   if (Is64Bits) {
     bool NeedsPadding = SRVK == MCSymbolRefExpr::VK_TLSGD;
     if (NeedsPadding && Is64BitsLP64)
-      EmitAndCountInstruction(MCInstBuilder(X86::DATA16_PREFIX));
-    EmitAndCountInstruction(MCInstBuilder(X86::LEA64r)
+      EmitAndCountMetaInstruction(&MI, MCInstBuilder(X86::DATA16_PREFIX));
+    EmitAndCountMetaInstruction(&MI, MCInstBuilder(X86::LEA64r)
                                 .addReg(X86::RDI)
                                 .addReg(X86::RIP)
                                 .addImm(1)
@@ -1047,28 +1088,28 @@ void X86AsmPrinter::LowerTlsAddr(X86MCInstLower &MCInstLowering,
     const MCSymbol *TlsGetAddr = Ctx.getOrCreateSymbol("__tls_get_addr");
     if (NeedsPadding) {
       if (!UseGot)
-        EmitAndCountInstruction(MCInstBuilder(X86::DATA16_PREFIX));
-      EmitAndCountInstruction(MCInstBuilder(X86::DATA16_PREFIX));
-      EmitAndCountInstruction(MCInstBuilder(X86::REX64_PREFIX));
+        EmitAndCountMetaInstruction(&MI, MCInstBuilder(X86::DATA16_PREFIX));
+      EmitAndCountMetaInstruction(&MI, MCInstBuilder(X86::DATA16_PREFIX));
+      EmitAndCountMetaInstruction(&MI, MCInstBuilder(X86::REX64_PREFIX));
     }
     if (UseGot) {
       const MCExpr *Expr = MCSymbolRefExpr::create(
           TlsGetAddr, MCSymbolRefExpr::VK_GOTPCREL, Ctx);
-      EmitAndCountInstruction(MCInstBuilder(X86::CALL64m)
+      EmitAndCountMetaInstruction(&MI, MCInstBuilder(X86::CALL64m)
                                   .addReg(X86::RIP)
                                   .addImm(1)
                                   .addReg(0)
                                   .addExpr(Expr)
                                   .addReg(0));
     } else {
-      EmitAndCountInstruction(
+      EmitAndCountMetaInstruction(&MI,
           MCInstBuilder(X86::CALL64pcrel32)
               .addExpr(MCSymbolRefExpr::create(TlsGetAddr,
                                                MCSymbolRefExpr::VK_PLT, Ctx)));
     }
   } else {
     if (SRVK == MCSymbolRefExpr::VK_TLSGD && !UseGot) {
-      EmitAndCountInstruction(MCInstBuilder(X86::LEA32r)
+      EmitAndCountMetaInstruction(&MI, MCInstBuilder(X86::LEA32r)
                                   .addReg(X86::EAX)
                                   .addReg(0)
                                   .addImm(1)
@@ -1076,7 +1117,7 @@ void X86AsmPrinter::LowerTlsAddr(X86MCInstLower &MCInstLowering,
                                   .addExpr(Sym)
                                   .addReg(0));
     } else {
-      EmitAndCountInstruction(MCInstBuilder(X86::LEA32r)
+      EmitAndCountMetaInstruction(&MI, MCInstBuilder(X86::LEA32r)
                                   .addReg(X86::EAX)
                                   .addReg(X86::EBX)
                                   .addImm(1)
@@ -1089,14 +1130,14 @@ void X86AsmPrinter::LowerTlsAddr(X86MCInstLower &MCInstLowering,
     if (UseGot) {
       const MCExpr *Expr =
           MCSymbolRefExpr::create(TlsGetAddr, MCSymbolRefExpr::VK_GOT, Ctx);
-      EmitAndCountInstruction(MCInstBuilder(X86::CALL32m)
+      EmitAndCountMetaInstruction(&MI, MCInstBuilder(X86::CALL32m)
                                   .addReg(X86::EBX)
                                   .addImm(1)
                                   .addReg(0)
                                   .addExpr(Expr)
                                   .addReg(0));
     } else {
-      EmitAndCountInstruction(
+      EmitAndCountMetaInstruction(&MI,
           MCInstBuilder(X86::CALLpcrel32)
               .addExpr(MCSymbolRefExpr::create(TlsGetAddr,
                                                MCSymbolRefExpr::VK_PLT, Ctx)));
@@ -1343,7 +1384,7 @@ void X86AsmPrinter::LowerFENTRY_CALL(const MachineInstr &MI,
   const MCSymbolRefExpr *Op =
       MCSymbolRefExpr::create(fentry, MCSymbolRefExpr::VK_None, Ctx);
 
-  EmitAndCountInstruction(
+  EmitAndCountMetaInstruction(&MI,
       MCInstBuilder(Is64Bits ? X86::CALL64pcrel32 : X86::CALLpcrel32)
           .addExpr(Op));
 }
@@ -1375,7 +1416,7 @@ void X86AsmPrinter::LowerASAN_CHECK_MEMACCESS(const MachineInstr &MI) {
     report_fatal_error(
         "OrShadowOffset is not supported with optimized callbacks");
 
-  EmitAndCountInstruction(
+  EmitAndCountMetaInstruction(&MI,
       MCInstBuilder(X86::CALL64pcrel32)
           .addExpr(MCSymbolRefExpr::create(
               OutContext.getOrCreateSymbol(SymName), OutContext)));
@@ -1490,13 +1531,13 @@ void X86AsmPrinter::LowerPATCHPOINT(const MachineInstr &MI,
     else
       EncodedBytes = 12;
 
-    EmitAndCountInstruction(
+    EmitAndCountMetaInstruction(&MI,
         MCInstBuilder(X86::MOV64ri).addReg(ScratchReg).addOperand(CalleeMCOp));
     // FIXME: Add retpoline support and remove this.
     if (Subtarget->useIndirectThunkCalls())
       report_fatal_error(
           "Lowering patchpoint with thunks not yet implemented.");
-    EmitAndCountInstruction(MCInstBuilder(X86::CALL64r).addReg(ScratchReg));
+    EmitAndCountMetaInstruction(&MI, MCInstBuilder(X86::CALL64r).addReg(ScratchReg));
   }
 
   // Emit padding.
@@ -1561,7 +1602,7 @@ void X86AsmPrinter::LowerPATCHABLE_EVENT_CALL(const MachineInstr &MI,
       SrcRegs[I] = getX86SubSuperRegister(Op->getReg(), 64);
       if (SrcRegs[I] != DestRegs[I]) {
         UsedMask[I] = true;
-        EmitAndCountInstruction(
+        EmitAndCountMetaInstruction(&MI,
             MCInstBuilder(X86::PUSH64r).addReg(DestRegs[I]));
       } else {
         emitX86Nops(*OutStreamer, 4, Subtarget);
@@ -1574,7 +1615,7 @@ void X86AsmPrinter::LowerPATCHABLE_EVENT_CALL(const MachineInstr &MI,
   // we can copy from it.
   for (unsigned I = 0; I < MI.getNumOperands(); ++I)
     if (SrcRegs[I] != DestRegs[I])
-      EmitAndCountInstruction(
+      EmitAndCountMetaInstruction(&MI,
           MCInstBuilder(X86::MOV64rr).addReg(DestRegs[I]).addReg(SrcRegs[I]));
 
   // We emit a hard dependency on the __xray_CustomEvent symbol, which is the
@@ -1585,13 +1626,13 @@ void X86AsmPrinter::LowerPATCHABLE_EVENT_CALL(const MachineInstr &MI,
     TOp.setTargetFlags(X86II::MO_PLT);
 
   // Emit the call instruction.
-  EmitAndCountInstruction(MCInstBuilder(X86::CALL64pcrel32)
+  EmitAndCountMetaInstruction(&MI, MCInstBuilder(X86::CALL64pcrel32)
                               .addOperand(MCIL.LowerSymbolOperand(TOp, TSym)));
 
   // Restore caller-saved and used registers.
   for (unsigned I = sizeof UsedMask; I-- > 0;)
     if (UsedMask[I])
-      EmitAndCountInstruction(MCInstBuilder(X86::POP64r).addReg(DestRegs[I]));
+      EmitAndCountMetaInstruction(&MI, MCInstBuilder(X86::POP64r).addReg(DestRegs[I]));
     else
       emitX86Nops(*OutStreamer, 1, Subtarget);
 
@@ -1659,7 +1700,7 @@ void X86AsmPrinter::LowerPATCHABLE_TYPED_EVENT_CALL(const MachineInstr &MI,
       SrcRegs[I] = getX86SubSuperRegister(Op->getReg(), 64);
       if (SrcRegs[I] != DestRegs[I]) {
         UsedMask[I] = true;
-        EmitAndCountInstruction(
+        EmitAndCountMetaInstruction(&MI,
             MCInstBuilder(X86::PUSH64r).addReg(DestRegs[I]));
       } else {
         emitX86Nops(*OutStreamer, 4, Subtarget);
@@ -1677,7 +1718,7 @@ void X86AsmPrinter::LowerPATCHABLE_TYPED_EVENT_CALL(const MachineInstr &MI,
   // we can copy from it.
   for (unsigned I = 0; I < MI.getNumOperands(); ++I)
     if (UsedMask[I])
-      EmitAndCountInstruction(
+      EmitAndCountMetaInstruction(&MI,
           MCInstBuilder(X86::MOV64rr).addReg(DestRegs[I]).addReg(SrcRegs[I]));
 
   // We emit a hard dependency on the __xray_TypedEvent symbol, which is the
@@ -1688,13 +1729,13 @@ void X86AsmPrinter::LowerPATCHABLE_TYPED_EVENT_CALL(const MachineInstr &MI,
     TOp.setTargetFlags(X86II::MO_PLT);
 
   // Emit the call instruction.
-  EmitAndCountInstruction(MCInstBuilder(X86::CALL64pcrel32)
+  EmitAndCountMetaInstruction(&MI, MCInstBuilder(X86::CALL64pcrel32)
                               .addOperand(MCIL.LowerSymbolOperand(TOp, TSym)));
 
   // Restore caller-saved and used registers.
   for (unsigned I = sizeof UsedMask; I-- > 0;)
     if (UsedMask[I])
-      EmitAndCountInstruction(MCInstBuilder(X86::POP64r).addReg(DestRegs[I]));
+      EmitAndCountMetaInstruction(&MI, MCInstBuilder(X86::POP64r).addReg(DestRegs[I]));
     else
       emitX86Nops(*OutStreamer, 1, Subtarget);
 
@@ -2454,6 +2495,9 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
   if (OutStreamer->isVerboseAsm())
     addConstantComments(MI, *OutStreamer);
 
+  // define TmpInst1
+  // use setGenMetaData here, remove from emitInstruction
+
   switch (MI->getOpcode()) {
   case TargetOpcode::DBG_VALUE:
     llvm_unreachable("Should be handled target independently");
@@ -2494,7 +2538,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
         MI == &MF->front().front()) {
       MCInst Inst;
       MCInstLowering.Lower(MI, Inst);
-      EmitAndCountInstruction(Inst);
+      EmitAndCountMetaInstruction(MI, Inst);
       CurrentPatchableFunctionEntrySym = createTempSymbol("patch");
       OutStreamer->emitLabel(CurrentPatchableFunctionEntrySym);
       return;
@@ -2536,7 +2580,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
     MCSymbol *PICBase = MF->getPICBaseSymbol();
     // FIXME: We would like an efficient form for this, so we don't have to do a
     // lot of extra uniquing.
-    EmitAndCountInstruction(
+    EmitAndCountMetaInstruction(MI,
         MCInstBuilder(X86::CALLpcrel32)
             .addExpr(MCSymbolRefExpr::create(PICBase, OutContext)));
 
@@ -2558,7 +2602,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
     OutStreamer->emitLabel(PICBase);
 
     // popl $reg
-    EmitAndCountInstruction(
+    EmitAndCountMetaInstruction(MI,
         MCInstBuilder(X86::POP32r).addReg(MI->getOperand(0).getReg()));
 
     if (HasActiveDwarfFrame && !hasFP) {
@@ -2593,7 +2637,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
     DotExpr = MCBinaryExpr::createAdd(
         MCSymbolRefExpr::create(OpSym, OutContext), DotExpr, OutContext);
 
-    EmitAndCountInstruction(MCInstBuilder(X86::ADD32ri)
+    EmitAndCountMetaInstruction(MI, MCInstBuilder(X86::ADD32ri)
                                 .addReg(MI->getOperand(0).getReg())
                                 .addReg(MI->getOperand(1).getReg())
                                 .addExpr(DotExpr));
@@ -2633,7 +2677,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
     return LowerPATCHABLE_TYPED_EVENT_CALL(*MI, MCInstLowering);
 
   case X86::MORESTACK_RET:
-    EmitAndCountInstruction(MCInstBuilder(getRetOpcode(*Subtarget)));
+    EmitAndCountMetaInstruction(MI, MCInstBuilder(getRetOpcode(*Subtarget)));
     return;
 
   case X86::ASAN_CHECK_MEMACCESS:
@@ -2641,9 +2685,9 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
 
   case X86::MORESTACK_RET_RESTORE_R10:
     // Return, then restore R10.
-    EmitAndCountInstruction(MCInstBuilder(getRetOpcode(*Subtarget)));
-    EmitAndCountInstruction(
-        MCInstBuilder(X86::MOV64rr).addReg(X86::R10).addReg(X86::RAX));
+    EmitAndCountMetaInstruction(MI, MCInstBuilder(getRetOpcode(*Subtarget)));
+    EmitAndCountMetaInstruction(
+        MI, MCInstBuilder(X86::MOV64rr).addReg(X86::R10).addReg(X86::RAX));
     return;
 
   case X86::SEH_PushReg:
@@ -2668,14 +2712,14 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
       // looking for a call. We may emit an unnecessary nop in some cases.
       if (!MBBI->isPseudo()) {
         if (MBBI->isCall())
-          EmitAndCountInstruction(MCInstBuilder(X86::NOOP));
+          EmitAndCountMetaInstruction(MI, MCInstBuilder(X86::NOOP));
         break;
       }
     }
     return;
   }
   case X86::UBSAN_UD1:
-    EmitAndCountInstruction(MCInstBuilder(X86::UD1Lm)
+    EmitAndCountMetaInstruction(MI, MCInstBuilder(X86::UD1Lm)
                                 .addReg(X86::EAX)
                                 .addReg(X86::EAX)
                                 .addImm(1)
@@ -2687,6 +2731,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
 
   MCInst TmpInst;
   MCInstLowering.Lower(MI, TmpInst);
+  setGenMetaDataX86(MI, &TmpInst);
 
   // Akul 
 
@@ -2761,7 +2806,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
     // after it.
     SMShadowTracker.emitShadowPadding(*OutStreamer, getSubtargetInfo());
     // Then emit the call
-    OutStreamer->emitMetaInstruction(MI, TmpInst, getSubtargetInfo());
+    OutStreamer->emitInstruction(TmpInst, getSubtargetInfo());
     return;
   }
 
