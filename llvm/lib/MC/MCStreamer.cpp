@@ -1134,7 +1134,7 @@ void MCStreamer::visitUsedExpr(const MCExpr &Expr) {
 }
 
 void MCStreamer::emitMetaInstruction(const MachineInstr *MI, MCInst &Inst, const MCSubtargetInfo &STI) {
-    // setGenMetaData(MI, &Inst);
+    setGenMetaData(MI, &Inst);
     emitInstruction(Inst, STI);
 }
 

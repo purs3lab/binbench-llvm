@@ -2731,7 +2731,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
 
   MCInst TmpInst;
   MCInstLowering.Lower(MI, TmpInst);
-  setGenMetaDataX86(MI, &TmpInst);
+  // setGenMetaDataX86(MI, &TmpInst);
 
   // Akul 
 
@@ -2806,7 +2806,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
     // after it.
     SMShadowTracker.emitShadowPadding(*OutStreamer, getSubtargetInfo());
     // Then emit the call
-    OutStreamer->emitInstruction(TmpInst, getSubtargetInfo());
+    OutStreamer->emitMetaInstruction(MI, TmpInst, getSubtargetInfo());
     return;
   }
 
