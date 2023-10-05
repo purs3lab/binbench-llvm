@@ -947,7 +947,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
                      .getParentID();
 
           alignSize = computeFragmentSize(Layout, Frag);
-          MAI->updateByteCounter(ID, alignSize, 0, /*isAlign=*/true,
+          MAI->getBC()->updateByteCounter(ID, alignSize, 0, /*isAlign=*/true,
                                  /*isInline=*/false);
           // MAI->updateByteCounter(ID, 0, 0, /*isAlign=*/true,
           //                         /*isInline=*/false);
@@ -1231,7 +1231,7 @@ bool MCAssembler::relaxInstruction(MCAsmLayout &Layout,
       if (relaxedBytes < curBytes) {
         // RelaxableFragment always contains relaxedBytes and fixupCtr variable 
         // for the adjustment in case of re-evaluation (simple hack but tricky)
-        MAI->updateByteCounter(ID, curBytes - relaxedBytes, 1 - fixupCtr, 
+        MAI->getBC()->updateByteCounter(ID, curBytes - relaxedBytes, 1 - fixupCtr, 
                               /*isAlign=*/ false, /*isInline=*/ false);
         DEBUG_WITH_TYPE("binbench", dbgs() << "Relaxed instruction: " 
                                                << ID << " " << curBytes << "\n");
@@ -1274,7 +1274,7 @@ bool MCAssembler::relaxInstruction(MCAsmLayout &Layout,
   // Note: The relaxable fragment could be re-evaluated multiple times for relaxation
   //       Thus update it only if the relaxable fragment has not been relaxed previously 
   if (relaxedBytes < Code.size() && ID.length() > 0) {
-    MAI->updateByteCounter(ID, Code.size() - relaxedBytes, 1 - fixupCtr, \
+    MAI->getBC()->updateByteCounter(ID, Code.size() - relaxedBytes, 1 - fixupCtr, \
                            /*isAlign=*/ false, /*isInline=*/ false);
     F.setRelaxedBytes(Code.size());
     F.setFixup(1);
