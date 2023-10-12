@@ -57,8 +57,7 @@ using namespace llvm;
 
 namespace {
 
-
-MCInst &setGenMetaDataX86(const MachineInstr *MI, MCInst *Inst) {
+MCInst &setMetaDataX86(const MachineInstr *MI, MCInst *Inst) {
   std::set<std::string> Preds;
   std::set<std::string> Succs;
   // LLVM_DEBUG(dbgs() << "Successors: ");
@@ -96,6 +95,11 @@ MCInst &setGenMetaDataX86(const MachineInstr *MI, MCInst *Inst) {
   Inst->setPreds(ID, Preds);
 
   return *Inst;
+}
+
+
+MCInst &setMetaDataAMDGPU(const MachineInstr *MI, MCInst *Inst) {
+    return setMetaDataX86(MI, Inst);
 }
 
 /// X86MCInstLower - This class is used to lower an MachineInstr into an MCInst.
@@ -2496,7 +2500,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
     addConstantComments(MI, *OutStreamer);
 
   // define TmpInst1
-  // use setGenMetaData here, remove from emitInstruction
+  // use setMetaDataX86 here, remove from emitInstruction
 
   switch (MI->getOpcode()) {
   case TargetOpcode::DBG_VALUE:
@@ -2731,7 +2735,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
 
   MCInst TmpInst;
   MCInstLowering.Lower(MI, TmpInst);
-  // setGenMetaDataX86(MI, &TmpInst);
+  // setMetaDataX86(MI, &TmpInst);
 
   // Akul 
 

@@ -300,6 +300,7 @@ public:
   const MCSubtargetInfo &getSubtargetInfo() const;
 
   void EmitToStreamer(MCStreamer &S, const MCInst &Inst);
+  void EmitToStreamer(const MachineInstr *MI, MCStreamer &S, const MCInst &Inst);
 
   /// Emits inital debug location directive.
   void emitInitialRawDwarfLocDirective(const MachineFunction &MF);

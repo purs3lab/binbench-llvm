@@ -287,7 +287,8 @@ void PseudoLoweringEmitter::emitLoweringEmitter(raw_ostream &o) {
           << "      if (lowerOperand(MI->getOperand(i), MCOp))\n"
           << "        TmpInst.addOperand(MCOp);\n";
       }
-      o << "    EmitToStreamer(OutStreamer, TmpInst);\n"
+      o << "    setMetaData" << Target.getName() << "(MI, &TmpInst);\n"
+        << "    EmitToStreamer(OutStreamer, TmpInst);\n"
         << "    break;\n"
         << "  }\n";
     }

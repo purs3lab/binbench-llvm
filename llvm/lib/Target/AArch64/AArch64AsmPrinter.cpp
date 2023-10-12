@@ -200,7 +200,7 @@ private:
 
 } // end anonymous namespace
 
-MCInst &setMetaData(const MachineInstr *MI, MCInst *Inst) {
+MCInst &setMetaDataAArch64(const MachineInstr *MI, MCInst *Inst) {
   std::set<std::string> Preds;
   std::set<std::string> Succs;
   // LLVM_DEBUG(dbgs() << "Successors: ");
@@ -1209,7 +1209,7 @@ void AArch64AsmPrinter::emitFMov0(const MachineInstr &MI) {
       FMov.addOperand(MCOperand::createReg(AArch64::XZR));
       break;
     }
-    setMetaData(&MI, &FMov);
+    setMetaDataAArch64(&MI, &FMov);
     EmitToStreamer(*OutStreamer, FMov);
   }
 }
@@ -1261,7 +1261,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
         MCInst Inst;
         MCInstLowering.Lower(MI, Inst);
 
-        setMetaData(MI, &Inst);
+        setMetaDataAArch64(MI, &Inst);
 
         EmitToStreamer(*OutStreamer, Inst);
         CurrentPatchableFunctionEntrySym = createTempSymbol("patch");
@@ -1289,7 +1289,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
       MovZ.addOperand(Hi_MCSym);
       MovZ.addOperand(MCOperand::createImm(16));
 
-      setMetaData(MI, &MovZ); 
+      setMetaDataAArch64(MI, &MovZ); 
       EmitToStreamer(*OutStreamer, MovZ);
 
       MCInst MovK;
@@ -1299,7 +1299,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
       MovK.addOperand(Lo_MCSym);
       MovK.addOperand(MCOperand::createImm(0));
 
-      setMetaData(MI, &MovK);
+      setMetaDataAArch64(MI, &MovK);
       EmitToStreamer(*OutStreamer, MovK);
       return;
   }
@@ -1315,7 +1315,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
 
 
 
-      setMetaData(MI, &TmpInst);
+      setMetaDataAArch64(MI, &TmpInst);
 
 
       EmitToStreamer(*OutStreamer, TmpInst);
@@ -1367,7 +1367,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
     TmpInst.setOpcode(AArch64::BR);
     TmpInst.addOperand(MCOperand::createReg(MI->getOperand(0).getReg()));
 
-    setMetaData(MI, &TmpInst);
+    setMetaDataAArch64(MI, &TmpInst);
 
     EmitToStreamer(*OutStreamer, TmpInst);
     return;
@@ -1379,7 +1379,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
     TmpInst.setOpcode(AArch64::B);
     TmpInst.addOperand(Dest);
 
-    setMetaData(MI, &TmpInst);
+    setMetaDataAArch64(MI, &TmpInst);
     EmitToStreamer(*OutStreamer, TmpInst);
     return;
   }
@@ -1391,13 +1391,13 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
 
 
 
-    setMetaData(MI, &TmpInstDSB);
+    setMetaDataAArch64(MI, &TmpInstDSB);
     EmitToStreamer(*OutStreamer, TmpInstDSB);
     MCInst TmpInstISB;
     TmpInstISB.setOpcode(AArch64::ISB);
     TmpInstISB.addOperand(MCOperand::createImm(0xf));
 
-    setMetaData(MI, &TmpInstISB);
+    setMetaDataAArch64(MI, &TmpInstISB);
     EmitToStreamer(*OutStreamer, TmpInstISB);
     return;
   }
@@ -1407,7 +1407,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
     TmpInstSB.setOpcode(AArch64::SB);
   
 
-    setMetaData(MI, &TmpInstSB);
+    setMetaDataAArch64(MI, &TmpInstSB);
     EmitToStreamer(*OutStreamer, TmpInstSB);
     return;
   }
@@ -1433,7 +1433,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
     Adrp.addOperand(MCOperand::createReg(AArch64::X0));
     Adrp.addOperand(SymTLSDesc);
   
-    setMetaData(MI, &Adrp);
+    setMetaDataAArch64(MI, &Adrp);
     EmitToStreamer(*OutStreamer, Adrp);
 
     MCInst Ldr;
@@ -1447,7 +1447,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
     Ldr.addOperand(MCOperand::createReg(AArch64::X0));
     Ldr.addOperand(SymTLSDescLo12);
     Ldr.addOperand(MCOperand::createImm(0));
-    setMetaData(MI, &Ldr);
+    setMetaDataAArch64(MI, &Ldr);
     EmitToStreamer(*OutStreamer, Ldr);
 
     MCInst Add;
@@ -1463,7 +1463,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
     Add.addOperand(SymTLSDescLo12);
     Add.addOperand(MCOperand::createImm(AArch64_AM::getShiftValue(0)));
 
-    setMetaData(MI, &Add);
+    setMetaDataAArch64(MI, &Add);
     EmitToStreamer(*OutStreamer, Add);
 
     // Emit a relocation-annotation. This expands to no code, but requests
@@ -1472,14 +1472,14 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
     TLSDescCall.setOpcode(AArch64::TLSDESCCALL);
     TLSDescCall.addOperand(Sym);
 
-    setMetaData(MI, &TLSDescCall);
+    setMetaDataAArch64(MI, &TLSDescCall);
     EmitToStreamer(*OutStreamer, TLSDescCall);
 
     MCInst Blr;
     Blr.setOpcode(AArch64::BLR);
     Blr.addOperand(MCOperand::createReg(AArch64::X1));
 
-    setMetaData(MI, &Blr);
+    setMetaDataAArch64(MI, &Blr);
     EmitToStreamer(*OutStreamer, Blr);
 
     return;
@@ -1639,7 +1639,7 @@ void AArch64AsmPrinter::emitInstruction(const MachineInstr *MI) {
   // Finally, do the automated lowerings for everything else.
   MCInst TmpInst;
   MCInstLowering.Lower(MI, TmpInst);
-  setMetaData(MI, &TmpInst);
+  setMetaDataAArch64(MI, &TmpInst);
   EmitToStreamer(*OutStreamer, TmpInst);
 }
 

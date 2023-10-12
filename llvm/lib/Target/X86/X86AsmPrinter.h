@@ -124,6 +124,7 @@ public:
     return "X86 Assembly Printer";
   }
 
+  MCInst &setMetaDataX86(const MachineInstr *MI, MCInst *Inst);
   const X86Subtarget &getSubtarget() const { return *Subtarget; }
 
   void emitStartOfAsmFile(Module &M) override;

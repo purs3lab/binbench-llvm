@@ -71,7 +71,7 @@ using namespace llvm;
 
 extern cl::opt<bool> EmitJalrReloc;
 
-MCInst &setMetaDataMIPS(const MachineInstr *MI, MCInst *Inst) {
+MCInst &setMetaDataMips(const MachineInstr *MI, MCInst *Inst) {
   std::set<std::string> Preds;
   std::set<std::string> Succs;
   // LLVM_DEBUG(dbgs() << "Successors: ");
@@ -184,7 +184,7 @@ void MipsAsmPrinter::emitPseudoIndirectBranch(MCStreamer &OutStreamer,
   lowerOperand(MI->getOperand(0), MCOp);
   TmpInst0.addOperand(MCOp);
 
-  setMetaDataMIPS(MI, &TmpInst0);
+  setMetaDataMips(MI, &TmpInst0);
 
   EmitToStreamer(OutStreamer, TmpInst0);
 }
@@ -363,7 +363,7 @@ void MipsAsmPrinter::emitInstruction(const MachineInstr *MI) {
     // TmpInst0.setSuccs(ID, Succs);
     // TmpInst0.setPreds(ID, Preds);
 
-    setMetaDataMIPS(&(*I), &TmpInst0);
+    setMetaDataMips(&(*I), &TmpInst0);
     EmitToStreamer(*OutStreamer, TmpInst0);
   } while ((++I != E) && I->isInsideBundle()); // Delay slot check
 }

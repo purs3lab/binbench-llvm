@@ -41,6 +41,7 @@
 #include "llvm/Support/TargetParser.h"
 #include "llvm/Target/TargetLoweringObjectFile.h"
 #include "llvm/Target/TargetMachine.h"
+#include "llvm/Target/X86/X86AsmPrinter.h"
 
 using namespace llvm;
 using namespace llvm::AMDGPU;
@@ -99,6 +100,11 @@ AMDGPUAsmPrinter::AMDGPUAsmPrinter(TargetMachine &TM,
       HSAMetadataStream.reset(new HSAMD::MetadataStreamerV4());
     }
   }
+
+}
+
+MCInst &setMetaDataAMDGPU(const MachineInstr *MI, MCInst *Inst) {
+    return setMetaDataX86(MI, Inst);
 }
 
 StringRef AMDGPUAsmPrinter::getPassName() const {

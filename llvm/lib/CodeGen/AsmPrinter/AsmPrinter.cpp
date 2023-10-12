@@ -402,6 +402,11 @@ void AsmPrinter::EmitToStreamer(MCStreamer &S, const MCInst &Inst) {
   S.emitInstruction(Inst, getSubtargetInfo());
 }
 
+//void AsmPrinter::EmitToMetaStreamer(const MachineInstr *MI, MCStreamer &S, const MCInst &Inst) {
+//    S.emitMetaInstruction(MI, *Inst, getSubtargetInfo());
+//
+//}
+
 void AsmPrinter::emitInitialRawDwarfLocDirective(const MachineFunction &MF) {
   if (DD) {
     assert(OutStreamer->hasRawTextSupport() &&

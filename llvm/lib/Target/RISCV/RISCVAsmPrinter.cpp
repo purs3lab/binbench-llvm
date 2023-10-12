@@ -48,6 +48,10 @@ public:
 
   StringRef getPassName() const override { return "RISCV Assembly Printer"; }
 
+
+  MCInst &setMetaDataRISCV(const MachineInstr *MI, MCInst *Inst) {
+      return *Inst;
+  }
   bool runOnMachineFunction(MachineFunction &MF) override;
 
   void emitInstruction(const MachineInstr *MI) override;
@@ -209,6 +213,7 @@ void RISCVAsmPrinter::emitFunctionEntryLabel() {
       static_cast<RISCVTargetStreamer &>(*OutStreamer->getTargetStreamer());
   RTS.setTargetABI(STI->getTargetABI());
 }
+
 
 // Force static initialization.
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeRISCVAsmPrinter() {

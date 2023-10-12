@@ -99,12 +99,12 @@ public:
     std::string FunctionName = MBBa->getParent()->getName().str();
     std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
 
-    Inst.setParentID(ID);
-    Inst.setFunctionID(std::to_string(MFID));
-    Inst.setFunctionName(FunctionName);
-    Inst.setFunctionSize(funcsize);
-    Inst.setSuccs(ID, Succs);
-    Inst.setPreds(ID, Preds);
+    this->Inst.setParentID(ID);
+    this->Inst.setFunctionID(std::to_string(MFID));
+    this->Inst.setFunctionName(FunctionName);
+    this->Inst.setFunctionSize(funcsize);
+    this->Inst.setSuccs(ID, Succs);
+    this->Inst.setPreds(ID, Preds);
 
     return *this;
   }
