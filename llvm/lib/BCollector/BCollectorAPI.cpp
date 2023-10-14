@@ -55,10 +55,12 @@ void BasicBlockCollector::performCollection(const MachineInstr *MI,
   Inst->setPreds(ID, Preds);
 }
 
-BCollector::BCollector() { 
-    utils = new BCollectorUtils(); 
-    JumpTableTargets = std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>>();
-    JumpTableTargets.clear();
+BCollector::BCollector() {
+  utils = new BCollectorUtils();
+  JumpTableTargets =
+      std::map<std::string,
+               std::tuple<unsigned, unsigned, std::list<std::string>>>();
+  JumpTableTargets.clear();
 }
 
 // Akul FIXME: Move this to BCollector
@@ -82,11 +84,13 @@ void BCollector::dumpFixups(
                isNewSection, sectionName, numJTEntries, JTEntrySize) = *it;
       char isRelTF = isRel ? 'T' : 'F';
       if (isDebug && SymbolRefFixupName.length() > 0) {
-        errs() << "\t[" << FixupParentID << "]\t(" << offset << ", " << size
-               << ", " << isRelTF;
+
+        DEBUG_WITH_TYPE("binbench", dbgs() << "\t[" << FixupParentID << "]\t("
+                                           << offset << ", " << size << ", "
+                                           << isRelTF);
         if (SymbolRefFixupName.length() > 0)
-          errs() << ", JT#" << SymbolRefFixupName;
-        errs() << ")\n";
+          DEBUG_WITH_TYPE("binbench",
+                          dbgs() << ", JT#" << SymbolRefFixupName << ")\n");
       }
     }
   }
@@ -108,8 +112,7 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
     if (sectionName.find(".text") == 0) {
 
       // Per each fragment in a .text section
-      processFragment(Sec, Layout, MAI, MOFI, ELFSec);      
-
+      processFragment(Sec, Layout, MAI, MOFI, ELFSec);
     }
   }
 
@@ -118,7 +121,9 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
 }
 
 void BCollector::processFragment(MCSection &Sec, const MCAsmLayout &Layout,
-                     const MCAsmInfo *MAI, const MCObjectFileInfo *MOFI, MCSectionELF &ELFSec) {
+                                 const MCAsmInfo *MAI,
+                                 const MCObjectFileInfo *MOFI,
+                                 MCSectionELF &ELFSec) {
   unsigned totalOffset = 0, totalFixups = 0, totalAlignSize = 0, prevMBB = 0;
   int MFID, MBBID, prevMFID = -1;
   std::string prevID, canFallThrough;
@@ -267,8 +272,10 @@ void BCollector::dumpJT(JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI) {
         std::tie(MFID2, MBBID) = BCollector::separateID(JTE);
         totalEntries++;
         if (MFID != MFID2)
-          errs() << "[CCR-Error] MCAssembler::updateReorderInfoValues - JT "
-                    "Entry points to the outside of MF! \n";
+          DEBUG_WITH_TYPE(
+              "binbench",
+              dbgs() << "[CCR-Error] MCAssembler::updateReorderInfoValues - JT "
+                        "Entry points to the outside of MF! \n");
         DEBUG_WITH_TYPE("binbench",
                         dbgs()
                             << "\t[" << JTE << "]\t"
@@ -422,13 +429,14 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
   auto CallGraphInfo = MAI->getFC()->getCG();
 
   for (auto const &x : CallGraphInfo) {
-      ShuffleInfo::ReorderInfo_CallGraphInfo *CGInfo = ri->add_func_cg();
-      CGInfo->set_f_name(x.first);
-      DEBUG_WITH_TYPE("binbench", dbgs() << "Func found in CG "<< x.first << "\n");
-      for(auto const &successor : x.second) {
-          CGInfo->add_succs(successor);
-          DEBUG_WITH_TYPE("binbench", dbgs() << "Succs "<< successor << "\n");
-      }
+    ShuffleInfo::ReorderInfo_CallGraphInfo *CGInfo = ri->add_func_cg();
+    CGInfo->set_f_name(x.first);
+    DEBUG_WITH_TYPE("binbench", dbgs()
+                                    << "Func found in CG " << x.first << "\n");
+    for (auto const &successor : x.second) {
+      CGInfo->add_succs(successor);
+      DEBUG_WITH_TYPE("binbench", dbgs() << "Succs " << successor << "\n");
+    }
   }
 
   auto vTables = MAI->getFC()->getVT();
@@ -438,7 +446,7 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
 
     ClassInfo->set_vtable_name(x.first);
     for (auto const &entry : x.second) {
-        ClassInfo->add_ventry(entry);
+      ClassInfo->add_ventry(entry);
     }
 
   }

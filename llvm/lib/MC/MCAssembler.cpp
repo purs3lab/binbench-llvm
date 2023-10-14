@@ -288,7 +288,7 @@ bool MCAssembler::evaluateFixup(const MCAsmLayout &Layout,
   bool ShouldAlignPC = getBackend().getFixupKindInfo(Fixup.getKind()).Flags &
                        MCFixupKindInfo::FKF_IsAlignedDownTo32Bits;
   assert((ShouldAlignPC ? IsPCRel : true) &&
-    "FKF_IsAlignedDownTo32Bits is only allowed on PC-relative fixups!");
+         "FKF_IsAlignedDownTo32Bits is only allowed on PC-relative fixups!");
 
   if (IsPCRel) {
     uint32_t Offset = Layout.getFragmentOffset(DF) + Fixup.getOffset();
@@ -374,7 +374,7 @@ uint64_t MCAssembler::computeFragmentSize(const MCAsmLayout &Layout,
     if (!OF.getOffset().evaluateAsValue(Value, Layout)) {
       getContext().reportError(OF.getLoc(),
                                "expected assembly-time absolute expression");
-        return 0;
+      return 0;
     }
 
     uint64_t FragmentOffset = Layout.getFragmentOffset(&OF);
@@ -558,9 +558,9 @@ static void writeFragment(raw_ostream &OS, const MCAssembler &Asm,
     // severe enough that we want to report it. How to handle this?
     if (Count * AF.getValueSize() != FragmentSize)
       report_fatal_error("undefined .align directive, value size '" +
-                        Twine(AF.getValueSize()) +
-                        "' is not a divisor of padding size '" +
-                        Twine(FragmentSize) + "'");
+                         Twine(AF.getValueSize()) +
+                         "' is not a divisor of padding size '" +
+                         Twine(FragmentSize) + "'");
 
     // See if we are aligning with nops, and if so do that first to try to fill
     // the Count bytes.  Then if that did not fill any bytes or there are any
@@ -568,8 +568,8 @@ static void writeFragment(raw_ostream &OS, const MCAssembler &Asm,
     // If we are aligning with nops, ask that target to emit the right data.
     if (AF.hasEmitNops()) {
       if (!Asm.getBackend().writeNopData(OS, Count, AF.getSubtargetInfo()))
-        report_fatal_error("unable to write nop sequence of " +
-                          Twine(Count) + " bytes");
+        report_fatal_error("unable to write nop sequence of " + Twine(Count) +
+                           " bytes");
       break;
     }
 
@@ -820,7 +820,7 @@ MCAssembler::handleFixup(const MCAsmLayout &Layout, MCFragment &F,
   // Koo: Fixme - the following line is redundant in evaluateFixup()
   bool IsPCRel = getBackendPtr()->getFixupKindInfo(Fixup.getKind()).Flags &
                  MCFixupKindInfo::FKF_IsPCRel;
-                              
+
   if (!IsResolved) {
     // The fixup was unresolved, we need a relocation. Inform the object
     // writer of the relocation, and give it an opportunity to adjust the
@@ -834,8 +834,9 @@ MCAssembler::handleFixup(const MCAsmLayout &Layout, MCFragment &F,
 void MCAssembler::layout(MCAsmLayout &Layout) {
   assert(getBackendPtr() && "Expected assembler backend");
   DEBUG_WITH_TYPE("mc-dump", {
-      errs() << "assembler backend - pre-layout\n--\n";
-      dump(); });
+    errs() << "assembler backend - pre-layout\n--\n";
+    dump();
+  });
   // LLVM_DEBUG(dbgs() << "BasicBlock Info:" << "\n");
   // Koo - Collect what we need once layout has been finalized
   const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
@@ -896,15 +897,17 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
   }
 
   DEBUG_WITH_TYPE("mc-dump", {
-      errs() << "assembler backend - post-relaxation\n--\n";
-      dump(); });
+    errs() << "assembler backend - post-relaxation\n--\n";
+    dump();
+  });
 
   // Finalize the layout, including fragment lowering.
   finishLayout(Layout);
 
   DEBUG_WITH_TYPE("mc-dump", {
-      errs() << "assembler backend - final-layout\n--\n";
-      dump(); });
+    errs() << "assembler backend - final-layout\n--\n";
+    dump();
+  });
 
   // Allow the object writer a chance to perform post-layout binding (for
   // example, to set the index fields in the symbol data).
@@ -939,16 +942,17 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
           // belongs to
           unsigned alignSize;
           std::string ID;
-          if (isa<MCDataFragment>(*prevFrag))
+          static const MCFragment &_prevFrag = *prevFrag;
+          if (isa<MCDataFragment>(_prevFrag))
             ID = static_cast<MCDataFragment *>(prevFrag)->getLastParentTag();
-          if (isa<MCRelaxableFragment>(*prevFrag))
+          if (isa<MCRelaxableFragment>(_prevFrag))
             ID = static_cast<MCRelaxableFragment *>(prevFrag)
                      ->getInst()
                      .getParentID();
 
           alignSize = computeFragmentSize(Layout, Frag);
           MAI->getBC()->updateByteCounter(ID, alignSize, 0, /*isAlign=*/true,
-                                 /*isInline=*/false);
+                                          /*isInline=*/false);
           // MAI->updateByteCounter(ID, 0, 0, /*isAlign=*/true,
           //                         /*isInline=*/false);
         }
@@ -1024,7 +1028,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
         if (true) {
           unsigned offset = fragOffset + Fixup.getOffset();
           unsigned derefSize = 0;
-              // getBackend().getFixupKindLog2Size(Fixup.getKind()); XXXAKUL
+          // getBackend().getFixupKindLog2Size(Fixup.getKind()); XXXAKUL
           unsigned jtEntryKind = 0, jtEntrySize = 0, numJTEntries = 0;
           std::map<std::string,
                    std::tuple<unsigned, unsigned, std::list<std::string>>>
@@ -1126,7 +1130,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
           }
 
           // else // debug_* sections
-        }                              
+        }
       }
     }
   }
@@ -1218,7 +1222,7 @@ bool MCAssembler::relaxInstruction(MCAsmLayout &Layout,
   // Koo
   // Whether or not the instruction has been relaxed
   // The RelaxableFragment must be counted as the emitted bytes
-  // Akul FIXME: Unmmovable instrumentation, use a function if possible 
+  // Akul FIXME: Unmmovable instrumentation, use a function if possible
   const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
   std::string ID = F.getInst().getParentID();
   unsigned relaxedBytes = F.getRelaxedBytes();
@@ -1229,12 +1233,13 @@ bool MCAssembler::relaxInstruction(MCAsmLayout &Layout,
     if (ID.length() > 0) {
       unsigned curBytes = F.getInst().getByteCtr();
       if (relaxedBytes < curBytes) {
-        // RelaxableFragment always contains relaxedBytes and fixupCtr variable 
+        // RelaxableFragment always contains relaxedBytes and fixupCtr variable
         // for the adjustment in case of re-evaluation (simple hack but tricky)
-        MAI->getBC()->updateByteCounter(ID, curBytes - relaxedBytes, 1 - fixupCtr, 
-                              /*isAlign=*/ false, /*isInline=*/ false);
-        DEBUG_WITH_TYPE("binbench", dbgs() << "Relaxed instruction: " 
-                                               << ID << " " << curBytes << "\n");
+        MAI->getBC()->updateByteCounter(ID, curBytes - relaxedBytes,
+                                        1 - fixupCtr,
+                                        /*isAlign=*/false, /*isInline=*/false);
+        DEBUG_WITH_TYPE("binbench", dbgs() << "Relaxed instruction: " << ID
+                                           << " " << curBytes << "\n");
         F.setRelaxedBytes(curBytes);
         F.setFixup(1);
 
@@ -1242,7 +1247,7 @@ bool MCAssembler::relaxInstruction(MCAsmLayout &Layout,
         F.getFixups()[0].setFixupParentID(ID);
       }
     }
-  // if (!fragmentNeedsRelaxation(&F, Layout))
+    // if (!fragmentNeedsRelaxation(&F, Layout))
     return false;
   }
 
@@ -1269,13 +1274,16 @@ bool MCAssembler::relaxInstruction(MCAsmLayout &Layout,
   F.setInst(Relaxed);
   F.getContents() = Code;
   F.getFixups() = Fixups;
-  // Koo [Case 2] Relaxed instruction: 
+  // Koo [Case 2] Relaxed instruction:
   // The only relaxations X86 does is from a 1byte pcrel to a 4byte pcrel
-  // Note: The relaxable fragment could be re-evaluated multiple times for relaxation
-  //       Thus update it only if the relaxable fragment has not been relaxed previously 
+  // Note: The relaxable fragment could be re-evaluated multiple times for
+  // relaxation
+  //       Thus update it only if the relaxable fragment has not been relaxed
+  //       previously
   if (relaxedBytes < Code.size() && ID.length() > 0) {
-    MAI->getBC()->updateByteCounter(ID, Code.size() - relaxedBytes, 1 - fixupCtr, \
-                           /*isAlign=*/ false, /*isInline=*/ false);
+    MAI->getBC()->updateByteCounter(ID, Code.size() - relaxedBytes,
+                                    1 - fixupCtr, /*isAlign=*/false,
+                                    /*isInline=*/false);
     F.setRelaxedBytes(Code.size());
     F.setFixup(1);
     F.getFixups()[0].setFixupParentID(ID);

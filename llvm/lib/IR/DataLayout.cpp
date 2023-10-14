@@ -593,8 +593,8 @@ DataLayout::getPointerAlignElem(uint32_t AddressSpace) const {
   if (AddressSpace != 0) {
     auto I = lower_bound(Pointers, AddressSpace,
                          [](const PointerAlignElem &A, uint32_t AddressSpace) {
-      return A.AddressSpace < AddressSpace;
-    });
+                           return A.AddressSpace < AddressSpace;
+                         });
     if (I != Pointers.end() && I->AddressSpace == AddressSpace)
       return *I;
   }
@@ -613,8 +613,8 @@ Error DataLayout::setPointerAlignmentInBits(uint32_t AddrSpace, Align ABIAlign,
 
   auto I = lower_bound(Pointers, AddrSpace,
                        [](const PointerAlignElem &A, uint32_t AddressSpace) {
-    return A.AddressSpace < AddressSpace;
-  });
+                         return A.AddressSpace < AddressSpace;
+                       });
   if (I == Pointers.end() || I->AddressSpace != AddrSpace) {
     Pointers.insert(I,
                     PointerAlignElem::getInBits(AddrSpace, ABIAlign, PrefAlign,
@@ -754,7 +754,7 @@ Align DataLayout::getAlignment(Type *Ty, bool abi_or_pref) const {
     unsigned AS = cast<PointerType>(Ty)->getAddressSpace();
     return abi_or_pref ? getPointerABIAlignment(AS)
                        : getPointerPrefAlignment(AS);
-    }
+  }
   case Type::ArrayTyID:
     return getAlignment(cast<ArrayType>(Ty)->getElementType(), abi_or_pref);
 
@@ -880,9 +880,9 @@ int64_t DataLayout::getIndexedOffsetInType(Type *ElemTy,
                                            ArrayRef<Value *> Indices) const {
   int64_t Result = 0;
 
-  generic_gep_type_iterator<Value* const*>
-    GTI = gep_type_begin(ElemTy, Indices),
-    GTE = gep_type_end(ElemTy, Indices);
+  generic_gep_type_iterator<Value *const *> GTI =
+                                                gep_type_begin(ElemTy, Indices),
+                                            GTE = gep_type_end(ElemTy, Indices);
   for (; GTI != GTE; ++GTI) {
     Value *Idx = GTI.getOperand();
     if (StructType *STy = GTI.getStructTypeOrNull()) {
