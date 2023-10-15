@@ -930,15 +930,15 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
         uint64_t fragOffset = Frag.getOffset();
         MCFragment *prevFrag;
 
-        if (Frag.hasInstructions() && isa<MCDataFragment>(&Frag))
-          prevFrag = static_cast<MCDataFragment *>(&Frag);
-
-        else if (Frag.hasInstructions() && isa<MCRelaxableFragment>(&Frag))
-          prevFrag = static_cast<MCRelaxableFragment *>(&Frag);
+        if(Frag.hasInstructions()){
+            if(isa<MCDataFragment>(&Frag))
+                prevFrag = static_cast<MCDataFragment *>(&Frag);
+            else if (isa<MCRelaxableFragment>(&Frag))
+                prevFrag = static_cast<MCRelaxableFragment *>(&Frag);
+        }
 
         // Update alignment size to reflect to the size of MF and MBB
-        if (secName.find(".text") == 0 && (isa<MCAlignFragment>(&Frag)) &&
-            fragOffset > 0) {
+        if (secName.find(".text") == 0 && (fragOffset > 0) && (isa<MCAlignFragment>(&Frag))) {
           // Push this alignment to the previous MBB and the MF that the MBB
           // belongs to
           unsigned alignSize;
