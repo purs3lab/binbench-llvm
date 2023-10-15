@@ -121,7 +121,7 @@ llvm::GlobalVariable *CodeGenVTables::GetAddrOfVTT(const CXXRecordDecl *RD) {
   GV->setUnnamedAddr(llvm::GlobalValue::UnnamedAddr::Global);
   CGM.setGVProperties(GV, RD);
 
-  GV->dump();
+  //GV->dump();
   return GV;
 }
 

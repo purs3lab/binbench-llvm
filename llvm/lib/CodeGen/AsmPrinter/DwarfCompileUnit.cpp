@@ -1280,7 +1280,7 @@ void DwarfCompileUnit::constructCallSiteParmEntryDIEs(
                     dbgs() << " - Function Callsite Param Info, Register: "
                            << Param.getRegister() << " Value: "
                            << "\n");
-    Param.getValue().dump();
+    //Param.getValue().dump();
     unsigned Register = Param.getRegister();
     auto CallSiteDieParam =
         DIE::get(DIEValueAllocator,
