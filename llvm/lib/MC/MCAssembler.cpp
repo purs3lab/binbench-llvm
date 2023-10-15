@@ -847,7 +847,8 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
   unsigned prevLayoutOrder;
 
   // Akul FIXME: looks like test code, get rid of it?
-  for (MCSection &Sec : Layout.getAssembler()) {
+  // Vidush: This just looks like printing, commenting this for now.
+  /*for (MCSection &Sec : Layout.getAssembler()) {
     MCSectionELF &ELFSec = reinterpret_cast<MCSectionELF &>(Sec);
     // MCSection &ELFSec = Sec;
     std::string sectionName = ELFSec.getSectionName().str();
@@ -856,14 +857,14 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
       // const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
       // BC->updateMetadata(MAI);
       for (MCFragment &MCF : Sec) {
-        if (isa<MCDataFragment>(MCF) && MCF.hasInstructions()) {
+        if (MCF.hasInstructions() && isa<MCDataFragment>(MCF)) {
           for (std::string ID : MCF.getAllMBBs()) {
             LLVM_DEBUG(dbgs() << ID <<"\n");
           }
         }
       }
     }
-  }
+  }*/
   // Create dummy fragments and assign section ordinals.
   unsigned SectionIndex = 0;
   for (MCSection &Sec : *this) {
@@ -929,10 +930,10 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
         uint64_t fragOffset = Frag.getOffset();
         MCFragment *prevFrag;
 
-        if (isa<MCDataFragment>(&Frag) && Frag.hasInstructions())
+        if (Frag.hasInstructions() && isa<MCDataFragment>(&Frag))
           prevFrag = static_cast<MCDataFragment *>(&Frag);
 
-        if (isa<MCRelaxableFragment>(&Frag) && Frag.hasInstructions())
+        else if (Frag.hasInstructions() && isa<MCRelaxableFragment>(&Frag))
           prevFrag = static_cast<MCRelaxableFragment *>(&Frag);
 
         // Update alignment size to reflect to the size of MF and MBB
@@ -945,7 +946,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
           static const MCFragment &_prevFrag = *prevFrag;
           if (isa<MCDataFragment>(_prevFrag))
             ID = static_cast<MCDataFragment *>(prevFrag)->getLastParentTag();
-          if (isa<MCRelaxableFragment>(_prevFrag))
+          else if (isa<MCRelaxableFragment>(_prevFrag))
             ID = static_cast<MCRelaxableFragment *>(prevFrag)
                      ->getInst()
                      .getParentID();
