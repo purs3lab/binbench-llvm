@@ -271,7 +271,7 @@ public:
     NametoMFID[funcname] = id;
   }
 
-  auto getVT() {return vTables;}
+  auto &getVT() { return vTables; }
 
   std::string getDICompositeTypeKind(const DICompositeType *CompositeType) {
     if (CompositeType == nullptr) {
@@ -347,10 +347,10 @@ public:
   }
 
     void addCGSuccessor(std::string caller, std::string callee) {
-        auto it = CallGraphInfo.find(caller);
-        if (it == CallGraphInfo.end()) {
-            std::list<std::string> newList {callee};
-            CallGraphInfo[caller] = newList;
+      const auto &it = CallGraphInfo.find(caller);
+      if (it == CallGraphInfo.end()) {
+        std::list<std::string> newList{callee};
+        CallGraphInfo[caller] = newList;
         } else {
             // Check if callee already exists
             auto &callerList = CallGraphInfo[caller];
@@ -362,7 +362,7 @@ public:
     }
 
   void addVTableEntry(std::string classname, std::string entry) {
-    auto it = vTables.find(classname);
+    const auto &it = vTables.find(classname);
     if (it == vTables.end()) {
         std::list<std::string> newList {entry};
         vTables[classname] = newList;
