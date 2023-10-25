@@ -67,11 +67,8 @@ BCollector::BCollector() {
 // Koo: Dump all fixups if necessary
 //      In .text, .rodata, .data, .data.rel.ro, .eh_frame, and debugging
 //      sections
-void BCollector::dumpFixups(
-    std::list<std::tuple<unsigned, unsigned, bool, std::string, std::string,
-                         bool, std::string, unsigned, unsigned>>
-        Fixups,
-    std::string kind, bool isDebug) {
+void BCollector::dumpFixups(FIXUPTYPE &Fixups,
+    const std::string &kind, bool isDebug) {    
   if (Fixups.size() > 0) {
     DEBUG_WITH_TYPE("binbench", dbgs() << " - Fixups Info (." << kind
                                        << "): " << Fixups.size() << "\n");
@@ -79,7 +76,7 @@ void BCollector::dumpFixups(
     bool isRel, isNewSection;
     std::string FixupParentID, SymbolRefFixupName, sectionName;
 
-    for (auto it = Fixups.begin(); it != Fixups.end(); ++it) {
+    for (FIXUPTYPE::const_iterator it = Fixups.begin(); it != Fixups.end(); ++it) {
       std::tie(offset, size, isRel, FixupParentID, SymbolRefFixupName,
                isNewSection, sectionName, numJTEntries, JTEntrySize) = *it;
       char isRelTF = isRel ? 'T' : 'F';
@@ -108,7 +105,8 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
     MCSectionELF &ELFSec = reinterpret_cast<MCSectionELF &>(Sec);
     // MCSection &ELFSec = Sec;
 
-    std::string tmpSN, sectionName = ELFSec.getSectionName().str();
+    const std::string &tmpSN = ELFSec.getSectionName().str();
+    const std::string &sectionName = ELFSec.getSectionName().str();
     if (sectionName.find(".text") == 0) {
 
       // Per each fragment in a .text section
@@ -131,7 +129,8 @@ void BCollector::processFragment(MCSection &Sec, const MCAsmLayout &Layout,
   std::set<std::string> countedMBBs;
   std::set<std::string> preds;
   std::set<std::string> succs;
-  std::string tmpSN, sectionName = ELFSec.getSectionName().str();
+  std::string tmpSN = ELFSec.getSectionName().str();
+  const std::string &sectionName = ELFSec.getSectionName().str();
   for (MCFragment &MCF : Sec) {
     // processFragment(MCF, Layout, MAI, MOFI, totalOffset, totalFixups)
     // Here MCDataFragment has combined with the following
@@ -254,7 +253,7 @@ void BCollector::dumpJT(JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI) {
   if (jumpTables.size() > 0) {
     DEBUG_WITH_TYPE("binbench", dbgs() << "\n<Jump Tables Summary>\n");
     unsigned totalEntries = 0;
-    for (auto it = jumpTables.begin(); it != jumpTables.end(); ++it) {
+    for (JTTYPEWITHID::const_iterator it = jumpTables.begin(); it != jumpTables.end(); ++it) {
       int JTI, MFID, MFID2, MBBID;
       unsigned entryKind, entrySize;
       std::list<std::string> JTEntries;
@@ -268,7 +267,7 @@ void BCollector::dumpJT(JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI) {
                                          << JTEntries.size() << " Entries of "
                                          << entrySize << "B each)\n");
 
-      for (std::string JTE : JTEntries) {
+      for (const std::string &JTE : JTEntries) {
         std::tie(MFID2, MBBID) = BCollector::separateID(JTE);
         totalEntries++;
         if (MFID != MFID2)
@@ -293,16 +292,13 @@ void BCollector::dumpJT(JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI) {
 
 
 // Akul FIXME: Move this to BCollector
-void BCollector::setFixups(
-    std::list<std::tuple<unsigned, unsigned, bool, std::string, std::string,
-                         bool, std::string, unsigned, unsigned>>
-        Fixups,
-    ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo, std::string secName) {
+void BCollector::setFixups(FIXUPTYPE &Fixups,
+    ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo, const std::string &secName) {
   unsigned FixupOffset, FixupSize, FixupisRela, numJTEntries, JTEntrySize;
   std::string sectionName, FixupParentID, SymbolRefFixupName;
   bool isNewSection;
 
-  for (auto F = Fixups.begin(); F != Fixups.end(); ++F) {
+  for (FIXUPTYPE::const_iterator F = Fixups.begin(); F != Fixups.end(); ++F) {
     ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple *pFixupTuple =
         getFixupTuple(fixupInfo, secName);
     std::tie(FixupOffset, FixupSize, FixupisRela, FixupParentID,
@@ -359,10 +355,10 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
   std::vector<std::string> preds;
   std::vector<std::string> succs;
 
-  for (auto MBBI = MAI->getBC()->MBBLayoutOrder.begin();
+  for (std::list<std::string>::const_iterator MBBI = MAI->getBC()->MBBLayoutOrder.begin();
        MBBI != MAI->getBC()->MBBLayoutOrder.end(); ++MBBI) {
     ShuffleInfo::ReorderInfo_LayoutInfo *layoutInfo = ri->add_layout();
-    std::string ID = *MBBI;
+    const std::string &ID = MBBI->c_str();
     std::tie(MFID, MBBID) = separateID(ID);
 
     auto &MBBInfo = MAI->getBC()->MachineBasicBlocks[ID];
@@ -382,7 +378,7 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
     for (auto &pred : MBBInfo.Predecessors) {
       layoutInfo->add_preds(pred);
     }
-    for (auto succ : MBBInfo.Successors) {
+    for (auto &succ : MBBInfo.Successors) {
       layoutInfo->add_succs(succ);
     }
     layoutInfo->set_padding_size(MBBInfo.Alignments);
@@ -401,23 +397,23 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
 
   // Set the fixup information (.text, .rodata, .data, .data.rel.ro and
   // .init_array)
-  MFCONTAINER &MFs = MAI->getFC()->getMFs();
+  const MFCONTAINER &MFs = MAI->getFC()->getMFs();
   for (auto const &x : MFs) {
     ShuffleInfo::ReorderInfo_FunctionInfo *FunctionInfo = ri->add_func();
     FunctionInfo->set_f_id(x.first);
     FunctionInfo->set_bb_num(x.second.TotalSizeInBytes);
     FunctionInfo->set_f_name(x.second.FunctionName);
     FunctionInfo->set_nargs(x.second.NumArgs);
-    auto argSizes = x.second.ArgSizesInBits;
+    const auto &argSizes = x.second.ArgSizesInBits;
     for (auto const &argSize : argSizes) {
       FunctionInfo->add_argsizes(argSize);
     }
-    auto argTypes = x.second.ArgTypes;
+    const auto &argTypes = x.second.ArgTypes;
     for (auto const &argType : argTypes) {
       DEBUG_WITH_TYPE("binbench", dbgs() << "Func Arg Type "<< argType << "\n");
       FunctionInfo->add_arg_types(argType);
     }
-    auto localVars = x.second.LocalVars;
+    const auto &localVars = x.second.LocalVars;
     for (auto const &localVar : localVars) {
       FunctionInfo->add_local_var_names(localVar.first);
       FunctionInfo->add_local_var_types(std::get<0>(localVar.second));
@@ -426,20 +422,20 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
     }
   }
 
-  auto CallGraphInfo = MAI->getFC()->getCG();
+  const auto &CallGraphInfo = MAI->getFC()->getCG();
 
-  for (auto const &x : CallGraphInfo) {
+  for (auto const &Cg : CallGraphInfo) {
     ShuffleInfo::ReorderInfo_CallGraphInfo *CGInfo = ri->add_func_cg();
-    CGInfo->set_f_name(x.first);
+    CGInfo->set_f_name(Cg.first);
     DEBUG_WITH_TYPE("binbench", dbgs()
-                                    << "Func found in CG " << x.first << "\n");
-    for (auto const &successor : x.second) {
+                                    << "Func found in CG " << Cg.first << "\n");
+    for (auto const &successor : Cg.second) {
       CGInfo->add_succs(successor);
       DEBUG_WITH_TYPE("binbench", dbgs() << "Succs " << successor << "\n");
     }
   }
 
-  auto vTables = MAI->getFC()->getVT();
+  const auto &vTables = MAI->getFC()->getVT();
 
   for (auto const &x: vTables) {
     ShuffleInfo::ReorderInfo_ClassInfo *ClassInfo = ri->add_class_proto();

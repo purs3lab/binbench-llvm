@@ -61,7 +61,7 @@ public:
   }; ///< List of sections that can have fixups.
 
   /// @brief Dump collected Fixup information. This is used for debugging.
-  void dumpFixups(FIXUPTYPE Fixups, std::string kind, bool isDebug);
+  void dumpFixups(FIXUPTYPE &Fixups, const std::string &kind, bool isDebug);
 
   /// @brief Updates the ReorderInfo object with the collected metadata.
   /// @param Layout The MCAsmLayout object that contains required metadata.
@@ -86,9 +86,9 @@ public:
   std::string getSymbolRefFixupName() const { return SymbolRefFixupName; }
   void setSymbolRefFixupName(std::string FN) { SymbolRefFixupName = FN; }
   /// @brief Set Fixup information for a given section. Users need not use this.
-  void setFixups(FIXUPTYPE Fixups,
+  void setFixups(FIXUPTYPE &Fixups,
                  ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo,
-                 std::string secName);
+                 const std::string &secName);
 
   /// @brief get the section id for a given section name.
   int getFixupSectionId(std::string secName) {
