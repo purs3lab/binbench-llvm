@@ -43,7 +43,7 @@ namespace {
                       SMLoc Loc = SMLoc()) override {}
     void emitGPRel32Value(const MCExpr *Value) override {}
     void beginCOFFSymbolDef(const MCSymbol *Symbol) override {}
-    void setObjTmpName(std::string tmpFileName) override {} // Koo
+    void setObjTmpName(const StringRef tmpFileName) override {} // Koo
     void emitCOFFSymbolStorageClass(int StorageClass) override {}
     void emitCOFFSymbolType(int Type) override {}
     void endCOFFSymbolDef() override {}

@@ -135,7 +135,7 @@ public:
 
   // Koo
   void EmitRand() override;
-  void setObjTmpName(std::string tmpFileName) override;
+  void setObjTmpName(const StringRef tmpFileName) override;
 
   virtual void emitLabelAtPos(MCSymbol *Symbol, SMLoc Loc, MCFragment *F,
                               uint64_t Offset);

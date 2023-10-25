@@ -52,7 +52,7 @@ public:
 
   // Koo Akul
   void EmitRand() override;
-  void setObjTmpName(std::string tmpFileName) override;
+  void setObjTmpName(const StringRef tmpFileName) override;
 
   void emitLabelAtPos(MCSymbol *Symbol, SMLoc Loc, MCFragment *F,
                       uint64_t Offset) override;

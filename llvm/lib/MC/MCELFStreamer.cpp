@@ -84,7 +84,7 @@ void MCELFStreamer::EmitRand() {
 }
 
 // Koo
-void MCELFStreamer::setObjTmpName(std::string tmpFileName) {
+void MCELFStreamer::setObjTmpName(const StringRef tmpFileName) {
   getAssembler().setObjTmpName(tmpFileName);
 }
 

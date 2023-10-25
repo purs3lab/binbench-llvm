@@ -66,7 +66,7 @@ public:
   void emitELFSymverDirective(const MCSymbol *OriginalSym, StringRef Name,
                               bool KeepOriginalSym) override;
 
-  void setObjTmpName(std::string tmpFileName) override {} // Koo
+  void setObjTmpName(const StringRef tmpFileName) override {} // Koo
   // Emit ELF .symver aliases and ensure they have the same binding as the
   // defined symbol they alias with.
   void flushSymverDirectives();

@@ -491,7 +491,7 @@ public:
 
   // Koo
   virtual void EmitRand() {}
-  virtual void setObjTmpName(std::string tmpFileName) {}
+  virtual void setObjTmpName(StringRef tmpFileName) {}
 
 
   virtual void emitEHSymAttributes(const MCSymbol *Symbol, MCSymbol *EHSymbol);

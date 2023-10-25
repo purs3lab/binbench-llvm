@@ -248,8 +248,8 @@ public:
   StringRef getName() const { return ModuleID; }
 
   // Koo Akul
-  std::string getTmpObjFile() { return tmpObjFile; }
-  void setTmpObjFile(std::string objFile) { tmpObjFile = objFile; }
+  StringRef getTmpObjFile() { return tmpObjFile; }
+  void setTmpObjFile(std::string &objFile) { tmpObjFile = objFile; }
 
   /// Get the data layout string for the module's target platform. This is
   /// equivalent to getDataLayout()->getStringRepresentation().

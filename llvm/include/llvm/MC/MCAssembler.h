@@ -283,7 +283,7 @@ public:
 
 
   // Koo
-  void setObjTmpName(std::string tmpFileName) { reorderTmpFile = tmpFileName; }
+  void setObjTmpName(const StringRef tmpFileName) { reorderTmpFile = tmpFileName.str(); }
   std::string getObjTmpName() const { return reorderTmpFile; }
   std::string WriteRandInfo(const MCAsmLayout &Layout) const;
   void writeReorderInfo(std::string fileName, ShuffleInfo::ReorderInfo* ri) const;

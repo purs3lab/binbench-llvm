@@ -52,7 +52,7 @@ void MCObjectStreamer::EmitRand() {
 }
 
 // Koo
-void MCObjectStreamer::setObjTmpName(std::string tmpFileName) {
+void MCObjectStreamer::setObjTmpName(const StringRef tmpFileName) {
     // Nothing to define here: Will define for ELF only at this time
 }
 
