@@ -122,6 +122,10 @@ void BCollector::processFragment(MCSection &Sec, const MCAsmLayout &Layout,
                                  const MCAsmInfo *MAI,
                                  const MCObjectFileInfo *MOFI,
                                  MCSectionELF &ELFSec) {
+  const llvm::MCAssembler &Assembler = Layout.getAssembler();
+  const llvm::MCContext &Ctx = Assembler.getContext();
+  const auto arch = Ctx.getTargetTriple().getArch();
+  // DEBUG_WITH_TYPE("binbench", dbgs() << "Arch: " << arch << "\n");
   unsigned totalOffset = 0, totalFixups = 0, totalAlignSize = 0, prevMBB = 0;
   int MFID, MBBID, prevMFID = -1;
   std::string prevID, canFallThrough;
@@ -137,7 +141,11 @@ void BCollector::processFragment(MCSection &Sec, const MCAsmLayout &Layout,
     // MCRelaxableFragment or MCAlignFragment Corner case: MCDataFragment
     // with no instruction - just skip it
     if (isa<MCDataFragment>(MCF) && MCF.hasInstructions()) {
-      totalOffset = MCF.getOffset();
+      if (arch != 16) {
+        totalOffset = MCF.getOffset(); // MIPS ??
+      }
+      // The offset we get here in incorrect for MIPS so we rely on our
+      // own arithmetic
 
       // Update the MBB offset and MF Size for all collected MBBs in the MF
       for (std::string ID : MCF.getAllMBBs()) {
@@ -178,6 +186,9 @@ void BCollector::processFragment(MCSection &Sec, const MCAsmLayout &Layout,
           totalOffset += MBBSize - alignSize;
           totalFixups += numFixups;
           totalAlignSize += alignSize;
+          // Akul: MIPSFIX: Debug HERE
+          // LLVM_DEBUG(dbgs() << "Debug alignSize: " << alignSize << " \n");
+          // DEBUG_WITH_TYPE("binbench", dbgs() << ID << " Offset " << totalOffset << " MBBSize: " << MBBSize << "\n");
           countedMBBs.insert(ID);
           MAI->getBC()->MachineFunctionSizes[MFID] += MBBSize;
           MAI->getBC()->MachineBasicBlocks[ID].SectionName = sectionName;
