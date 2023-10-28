@@ -112,11 +112,11 @@ public:
   void setOffset(uint32_t Value) { Offset = Value; }
 
   // Koo
-  std::string getFixupParentID() const { return FixupParentID; }
+  const std::string &getFixupParentID() const { return FixupParentID; }
   void setFixupParentID(std::string Value) { FixupParentID = Value; }
   bool getIsJumpTableRef() const { return isJumpTableRef; }
   void setIsJumpTableRef(bool V) { isJumpTableRef = V; }
-  std::string getSymbolRefFixupName() const { return SymbolRefFixupName; }
+  const std::string &getSymbolRefFixupName() const { return SymbolRefFixupName; }
   void setSymbolRefFixupName(std::string FN) { SymbolRefFixupName = FN; }
 
   const MCExpr *getValue() const { return Value; }

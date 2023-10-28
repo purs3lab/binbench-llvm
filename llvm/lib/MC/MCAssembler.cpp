@@ -807,7 +807,7 @@ void MCAssembler::writeSectionData(raw_ostream &OS, const MCSection *Sec,
 }
 // Akul: This function is called from MCAssembler::writeSectionData()
 // Move it to BCollectorUtils? Or leave it here? Does it matter?
-std::tuple<MCValue, uint64_t, bool, bool>
+const std::tuple<MCValue, uint64_t, bool, bool>
 MCAssembler::handleFixup(const MCAsmLayout &Layout, MCFragment &F,
                          const MCFixup &Fixup) {
   // Evaluate the fixup.
@@ -1142,7 +1142,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
 // calling by
 //      ELFObjectWriter::writeSectionData() from
 //      writeObject()@ELFObjectWriter.cpp
-std::string MCAssembler::WriteRandInfo(const MCAsmLayout &Layout) const {
+const std::string MCAssembler::WriteRandInfo(const MCAsmLayout &Layout) const {
   ShuffleInfo::ReorderInfo reorder_info;
   const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
   MAI->getBC()->serializeReorderInfo(&reorder_info, Layout);

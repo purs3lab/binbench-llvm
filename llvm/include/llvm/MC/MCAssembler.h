@@ -31,6 +31,7 @@
 #include <utility>
 #include <vector>
 
+#include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/shuffleInfo.pb.h" // Koo
 
 #define DEBUG_TYPE "binbench"
@@ -230,8 +231,7 @@ private:
   /// finishLayout - Finalize a layout, including fragment lowering.
   void finishLayout(MCAsmLayout &Layout);
 
-  std::tuple<MCValue, uint64_t, bool, bool>
-  handleFixup(const MCAsmLayout &Layout, MCFragment &F, const MCFixup &Fixup);
+  const std::tuple<MCValue, uint64_t, bool, bool> handleFixup(const MCAsmLayout &Layout, MCFragment &F, const MCFixup &Fixup);
 
 public:
   struct Symver {
@@ -284,9 +284,9 @@ public:
 
   // Koo
   void setObjTmpName(const StringRef tmpFileName) { reorderTmpFile = tmpFileName.str(); }
-  std::string getObjTmpName() const { return reorderTmpFile; }
-  std::string WriteRandInfo(const MCAsmLayout &Layout) const;
-  void writeReorderInfo(std::string fileName, ShuffleInfo::ReorderInfo* ri) const;
+  const std::string &getObjTmpName() const { return reorderTmpFile; }
+  const std::string WriteRandInfo(const MCAsmLayout &Layout) const;
+  void writeReorderInfo(const std::string &fileName, ShuffleInfo::ReorderInfo* ri) const;
 
 
   /// ELF e_header flags
@@ -493,7 +493,7 @@ public:
 
   void registerSymbol(const MCSymbol &Symbol, bool *Created = nullptr);
 
-  MutableArrayRef<std::pair<std::string, size_t>> getFileNames() {
+  const MutableArrayRef<std::pair<std::string, size_t>> getFileNames() {
     return FileNames;
   }
 

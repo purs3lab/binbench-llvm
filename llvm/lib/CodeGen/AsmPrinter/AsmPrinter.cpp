@@ -1478,17 +1478,17 @@ void AsmPrinter::emitFunctionBody() {
   CallGraph CG(*M);
 
   // Iterate over the functions in the call graph.
-  for (auto &FunctionNode : CG) {
-    if (auto *Function = FunctionNode.second->getFunction()) {
+  for (const auto &FunctionNode : CG) {
+    if (const auto *Function = FunctionNode.second->getFunction()) {
       DEBUG_WITH_TYPE("binbench",
                       dbgs() << "Function: " << Function->getName() << "\n");
-      auto FuncName = Function->getName().str();
+      const auto &FuncName = Function->getName().str();
       for (auto &CallRecord : *FunctionNode.second) {
         CallGraphNode *CalleeNode = CallRecord.second;
         if (auto *Callee = CalleeNode->getFunction()) {
           DEBUG_WITH_TYPE("binbench",
                           dbgs() << "  Calls:" << Callee->getName() << "\n");
-          auto SuccessorFuncName = Callee->getName().str();
+          const auto &SuccessorFuncName = Callee->getName().str();
           // add to MAI
           MAI->getFC()->addCGSuccessor(FuncName, SuccessorFuncName);
         }

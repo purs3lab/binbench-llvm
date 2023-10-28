@@ -552,8 +552,8 @@ void MCObjectFileInfo::initGOFFMCObjectFileInfo(const Triple &T) {
 }
 
 
-std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> 
-MCObjectFileInfo::getJumpTableTargets() const { 
+const std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> 
+&MCObjectFileInfo::getJumpTableTargets() const { 
     return Ctx->getAsmInfo()->getBC()->JumpTableTargets; 
 }
 

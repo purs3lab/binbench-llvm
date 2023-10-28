@@ -208,24 +208,24 @@ class MCInst {
 public:
   MCInst() = default;
 
-  void setSuccs(std::string id, std::set<std::string> Succs) const {
+  void setSuccs(const std::string &id, const std::set<std::string> &Succs) const {
     succs = Succs; 
   }
-  void setPreds(std::string id, std::set<std::string> Preds) const {
+  void setPreds(const std::string &id, const std::set<std::string> &Preds) const {
     preds = Preds; 
   }
-  std::set<std::string> getSuccs() const {return succs;}
-  std::set<std::string> getPreds() const {return preds;}
+  const std::set<std::string> &getSuccs() const {return succs;}
+  const std::set<std::string> &getPreds() const {return preds;}
   void setNArgs(unsigned nargs) const { nArgs = nargs; }
-  void setFunctionName(std::string funcname) const { FunctionName = funcname; }
-  std::string getFunctionName() const {return FunctionName; }
-  std::string getParentID() const { return parentID; }
-  void setFunctionID(std::string funcid) const {FunctionID = funcid; }
-  std::string getFunctionID() const {return FunctionID; }
+  void setFunctionName(const std::string &funcname) const { FunctionName = funcname; }
+  const std::string &getFunctionName() const {return FunctionName; }
+  const std::string &getParentID() const { return parentID; }
+  void setFunctionID(const std::string &funcid) const {FunctionID = funcid; }
+  const std::string &getFunctionID() const {return FunctionID; }
   void setFunctionSize(unsigned funcsize) const {FunctionSize = funcsize; }
   unsigned getFunctionSize() const {return FunctionSize;}
   unsigned getNArgs() const { return nArgs; }
-  void setParentID(std::string P) { parentID = P; }
+  void setParentID(const std::string &P) { parentID = P; }
 
   void setOpcode(unsigned Op) { Opcode = Op; }
   unsigned getOpcode() const { return Opcode; }
@@ -233,8 +233,8 @@ public:
   void setFlags(unsigned F) { Flags = F; }
   unsigned getFlags() const { return Flags; }
 
-  void setLoc(SMLoc loc) { Loc = loc; }
-  SMLoc getLoc() const { return Loc; }
+  void setLoc(const SMLoc &loc) { Loc = loc; }
+  const SMLoc &getLoc() const { return Loc; }
 
   const MCOperand &getOperand(unsigned i) const { return Operands[i]; }
   MCOperand &getOperand(unsigned i) { return Operands[i]; }

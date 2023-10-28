@@ -227,24 +227,24 @@ public:
   unsigned getByteCtr() const { return byteCtr; }
   void setFixupCounter(unsigned numFixups) const { fixupCtr = numFixups; }
   unsigned getFixupCtr() const { return fixupCtr; }
-  void setParentID(std::string parent) const { parentID = parent; }
+  void setParentID(const std::string &parent) const { parentID = parent; }
 
-  void setSuccs(std::string id, std::vector<std::string> Succs) const {
+  void setSuccs(const std::string &id, const std::vector<std::string> &Succs) const {
     succs = Succs; 
   }
-  void setPreds(std::string id, std::vector<std::string> Preds) const {
+  void setPreds(const std::string &id, const std::vector<std::string> &Preds) const {
     preds = Preds; 
   }
-  std::vector<std::string> getSuccs() const {return succs;}
-  std::vector<std::string> getPreds() const {return preds;}
+  const std::vector<std::string> &getSuccs() const {return succs;}
+  const std::vector<std::string> &getPreds() const {return preds;}
   void setNArgs(unsigned nargs) const { nArgs = nargs; }
   void addArgSize(unsigned argsize) const { argsizes.push_back(argsize); }
-  std::vector<unsigned> getArgSizes() const { return argsizes; }
-  void setFunctionName(std::string funcname) const { FunctionName = funcname; }
-  std::string getFunctionName() const {return FunctionName; }
-  std::string getParentID() const { return parentID; }
-  void setFunctionID(std::string funcid) const {FunctionID = funcid; }
-  std::string getFunctionID() const {return FunctionID; }
+  const std::vector<unsigned> &getArgSizes() const { return argsizes; }
+  void setFunctionName(const std::string &funcname) const { FunctionName = funcname; }
+  const std::string &getFunctionName() const {return FunctionName; }
+  const std::string &getParentID() const { return parentID; }
+  void setFunctionID(const std::string &funcid) const {FunctionID = funcid; }
+  const std::string &getFunctionID() const {return FunctionID; }
   void setFunctionSize(unsigned funcsize) const {FunctionSize = funcsize; }
   unsigned getFunctionSize() const {return FunctionSize;}
   unsigned getNArgs() const { return nArgs; }

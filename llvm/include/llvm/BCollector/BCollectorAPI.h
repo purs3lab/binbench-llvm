@@ -79,19 +79,19 @@ public:
   std::string SymbolRefFixupName;
 
 
-  std::string getFixupParentID() const { return FixupParentID; }
-  void setFixupParentID(std::string Value) { FixupParentID = Value; }
+  const std::string &getFixupParentID() const { return FixupParentID; }
+  void setFixupParentID(const std::string &Value) { FixupParentID = Value; }
   bool getIsJumpTableRef() const { return isJumpTableRef; }
   void setIsJumpTableRef(bool V) { isJumpTableRef = V; }
-  std::string getSymbolRefFixupName() const { return SymbolRefFixupName; }
-  void setSymbolRefFixupName(std::string FN) { SymbolRefFixupName = FN; }
+  const std::string &getSymbolRefFixupName() const { return SymbolRefFixupName; }
+  void setSymbolRefFixupName(const std::string &FN) { SymbolRefFixupName = FN; }
   /// @brief Set Fixup information for a given section. Users need not use this.
   void setFixups(FIXUPTYPE &Fixups,
                  ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo,
                  const std::string &secName);
 
   /// @brief get the section id for a given section name.
-  int getFixupSectionId(std::string secName) {
+  int getFixupSectionId(const std::string &secName) {
     for (size_t i = 0;
          i < sizeof(fixupLookupSections) / sizeof(*fixupLookupSections); ++i)
       if (secName.compare(fixupLookupSections[i]) == 0)
@@ -101,7 +101,7 @@ public:
 
   /// @brief Get the FixupTuple object for a given section.
   ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple *
-  getFixupTuple(ShuffleInfo::ReorderInfo_FixupInfo *FI, std::string secName) {
+  getFixupTuple(ShuffleInfo::ReorderInfo_FixupInfo *FI, const std::string &secName) {
     switch (getFixupSectionId(secName)) {
     case 0:
       return FI->add_text();
@@ -182,17 +182,17 @@ public:
                        const MCAsmInfo *MAI, const MCObjectFileInfo *MOFI,
                        MCSectionELF &ELFSec);
 
-  void updateJumpTableTargets(std::string Key, unsigned EntryKind, unsigned EntrySize, \
-          std::list<std::string> JTEntries) const {
+  void updateJumpTableTargets(const std::string &Key, unsigned EntryKind, unsigned EntrySize, \
+          const std::list<std::string> &JTEntries) const {
       JumpTableTargets[Key] = std::make_tuple(EntryKind, EntrySize, JTEntries);
   }
 
-  std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> 
-      getJumpTableTargets() const { 
+  const std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> 
+      &getJumpTableTargets() const { 
           return JumpTableTargets; 
       }
   /// @brief Set the latest parent ID.
-  void setFunctionid(std::string id) { latestFunctionID = id; }
+  void setFunctionid(const std::string &id) { latestFunctionID = id; }
 
   /// @brief Set the Fixup info from each section
   void setFixupInfo(ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo,
@@ -236,14 +236,14 @@ public:
   /// @brief  Sets the successors of a basic block.
   /// @param id The ID of the basic block to be updated.
   /// @param succs Successor IDs of the basic block.
-  void setSuccs(std::string id, const std::set<std::string> &succs) {
+  void setSuccs(const std::string &id, const std::set<std::string> &succs) {
     MachineBasicBlocks[id].Successors = succs;
   }
 
   /// @brief Sets the predecessors of a basic block.
   /// @param id  The ID of the basic block to be updated.
   /// @param preds  Predecessor IDs of the basic block.
-  void setPreds(std::string id, const std::set<std::string> &preds) {
+  void setPreds(const std::string &id, const std::set<std::string> &preds) {
     MachineBasicBlocks[id].Predecessors = preds;
   }
   BasicBlockCollector() {}
@@ -252,7 +252,7 @@ public:
 
 class ClassCollector : public BCollector {
 public:
-  void addVTable(std::string classname, std::list<std::string> vtable_entries) {
+  void addVTable(const std::string &classname, const std::list<std::string> &vtable_entries) {
     vTables[classname] = vtable_entries;
   }
 };
@@ -264,16 +264,16 @@ class FunctionCollector : public BCollector {
 public:
   /// @brief  Collects the function information. Includes things like:
   /// ID, function name, arguments (if any)
-  void updateFuncDetails(std::string id, std::string funcname, unsigned size) {
+  void updateFuncDetails(const std::string &id, const std::string &funcname, unsigned size) {
     MachineFunctions[id].TotalSizeInBytes = size;
     MachineFunctions[id].FunctionName = funcname;
     MachineFunctions[id].ID = id;
     NametoMFID[funcname] = id;
   }
 
-  auto &getVT() { return vTables; }
+  const auto &getVT() { return vTables; }
 
-  std::string getDICompositeTypeKind(const DICompositeType *CompositeType) {
+  const std::string getDICompositeTypeKind(const DICompositeType *CompositeType) {
     if (CompositeType == nullptr) {
       // might want to log an error message here.
       return "Invalid";
@@ -297,7 +297,7 @@ public:
     }
   }
 
-  std::string checkDIType(const DIType *TheDIType) {
+  const std::string checkDIType(const DIType *TheDIType) {
     std::string type_name = "";
     if (const DIBasicType *BasicType = dyn_cast<DIBasicType>(TheDIType)) {
       // TheDIType is a DIBasicType, and BasicType is of type DIBasicType*
@@ -315,7 +315,7 @@ public:
   /// @brief Update the argument details of a function
   /// @param funcname Name of the function to be updated
   /// @param numArgs Number of arguments observed
-  void updateArgDetails(std::string funcname, int numArgs) {
+  void updateArgDetails(const std::string &funcname, int numArgs) {
 
     // check if name is in the map
     if (NametoMFID.find(funcname) == NametoMFID.end()) {
@@ -328,7 +328,7 @@ public:
     MachineFunctions[NametoMFID[funcname]].NumArgs = numArgs;
   }
 
-  void updateArgTypes(std::string funcname, std::string argType) {
+  void updateArgTypes(const std::string &funcname, const std::string &argType) {
 
     // check if name is in the map
     if (NametoMFID.find(funcname) == NametoMFID.end()) {
@@ -340,13 +340,13 @@ public:
     MachineFunctions[NametoMFID[funcname]].ArgTypes.push_back(argType);
   }
 
-  void addLocalVariable(std::string funcname, std::string varname,
-                        std::string type, int Offset, unsigned size) {
+  void addLocalVariable(const std::string &funcname, const std::string &varname,
+                        const std::string &type, int Offset, unsigned size) {
     MachineFunctions[NametoMFID[funcname]].LocalVars[varname] =
         std::make_tuple(type, Offset, size);
   }
 
-    void addCGSuccessor(std::string caller, std::string callee) {
+    void addCGSuccessor(const std::string &caller, const std::string &callee) {
       const auto &it = CallGraphInfo.find(caller);
       if (it == CallGraphInfo.end()) {
         std::list<std::string> newList{callee};
@@ -361,7 +361,7 @@ public:
         }
     }
 
-  void addVTableEntry(std::string classname, std::string entry) {
+  void addVTableEntry(const std::string &classname, const std::string &entry) {
     const auto &it = vTables.find(classname);
     if (it == vTables.end()) {
         std::list<std::string> newList {entry};
@@ -382,7 +382,7 @@ public:
 
   /// @brief To set the number of arguments for a function internally and for
   /// debugging.
-  void setNumArgs(std::string funcname, unsigned numArgs) {
+  void setNumArgs(const std::string &funcname, unsigned numArgs) {
     nargs = numArgs;
     DEBUG_WITH_TYPE("binbench", dbgs() << "NumArgs: " << nargs << "\n");
     DEBUG_WITH_TYPE("binbench", dbgs() << "funcname: " << funcname << "\n");
@@ -391,7 +391,7 @@ public:
   /// @brief Update the argument sizes of a function
   /// @param funcname Name of the function to be updated
   /// @param argsize The size of the argument in bits
-  void addArgSizes(std::string funcname, unsigned argsize) {
+  void addArgSizes(const std::string &funcname, unsigned argsize) {
     DEBUG_WITH_TYPE("binbench", dbgs() << "For Func " << funcname
                                        << "ArgSize: " << argsize << "\n");
     MachineFunctions[NametoMFID[funcname]].ArgSizesInBits.push_back(argsize);

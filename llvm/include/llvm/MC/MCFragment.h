@@ -94,8 +94,8 @@ public:
 
   // Koo Akul
   uint64_t getOffset() { return Offset; }
-  const std::list<std::string> getAllMBBs() const {return MBBIDs; }
-  void addMachineBasicBlockTag(std::string T) {
+  const std::list<std::string> &getAllMBBs() const {return MBBIDs; }
+  void addMachineBasicBlockTag(const std::string &T) {
     for (auto it=MBBIDs.begin(); it!=MBBIDs.end(); ++it)
       if (T.compare(*it) == 0)
         return;
@@ -267,8 +267,8 @@ public:
 
 
   // Koo: Check out the last parentID in MCAssembler
-  void setLastParentTag(std::string P) { ParentID = P; }
-  const std::string getLastParentTag() const { return ParentID; }
+  void setLastParentTag(const std::string &P) { ParentID = P; }
+  const std::string &getLastParentTag() const { return ParentID; }
 
   void setNArgs(unsigned nargs) { nArgs = nargs; }
   unsigned getNArgs(unsigned nargs) { return nArgs; }
