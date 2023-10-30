@@ -78,7 +78,8 @@ public:
       // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
       unsigned SMBBID = (*succ)->getNumber();
       unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-      const std::string &SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+      const std::string &SID =
+          std::to_string(SMFID) + "_" + std::to_string(SMBBID);
       Succs.insert(SID);
     }
     // LLVM_DEBUG(dbgs() << "\n");
@@ -88,7 +89,8 @@ public:
       // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
       unsigned PMBBID = (*pred)->getNumber();
       unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-      const std::string &PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+      const std::string &PID =
+          std::to_string(PMFID) + "_" + std::to_string(PMBBID);
       Preds.insert(PID);
     }
     // LLVM_DEBUG(dbgs() << "\n");

@@ -88,7 +88,6 @@ void MCELFStreamer::setObjTmpName(const StringRef tmpFileName) {
   getAssembler().setObjTmpName(tmpFileName);
 }
 
-
 void MCELFStreamer::mergeFragment(MCDataFragment *DF,
                                   MCDataFragment *EF) {
   MCAssembler &Assembler = getAssembler();
@@ -715,8 +714,8 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
   
   LLVM_DEBUG(dbgs() << "Prev MFBID " << ID << "\n");
   LLVM_DEBUG(dbgs() << "MInst: ");
-  //Inst.dump();
-  //Inst.print(dbgs(), getContext().getRegisterInfo());
+  // Inst.dump();
+  // Inst.print(dbgs(), getContext().getRegisterInfo());
   LLVM_DEBUG(dbgs() << "\n");
 
   unsigned nargs = Inst.getNArgs();

@@ -551,10 +551,10 @@ void MCObjectFileInfo::initGOFFMCObjectFileInfo(const Triple &T) {
                           MCConstantExpr::create(GOFF::SK_PPA1, *Ctx));
 }
 
-
-const std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> 
-&MCObjectFileInfo::getJumpTableTargets() const { 
-    return Ctx->getAsmInfo()->getBC()->JumpTableTargets; 
+const std::map<std::string,
+               std::tuple<unsigned, unsigned, std::list<std::string>>> &
+MCObjectFileInfo::getJumpTableTargets() const {
+  return Ctx->getAsmInfo()->getBC()->JumpTableTargets;
 }
 
 void MCObjectFileInfo::updateJumpTableTargets(std::string Key, unsigned EntryKind, unsigned EntrySize, \

@@ -231,7 +231,8 @@ private:
   /// finishLayout - Finalize a layout, including fragment lowering.
   void finishLayout(MCAsmLayout &Layout);
 
-  const std::tuple<MCValue, uint64_t, bool, bool> handleFixup(const MCAsmLayout &Layout, MCFragment &F, const MCFixup &Fixup);
+  const std::tuple<MCValue, uint64_t, bool, bool>
+  handleFixup(const MCAsmLayout &Layout, MCFragment &F, const MCFixup &Fixup);
 
 public:
   struct Symver {
@@ -283,11 +284,13 @@ public:
 
 
   // Koo
-  void setObjTmpName(const StringRef tmpFileName) { reorderTmpFile = tmpFileName.str(); }
+  void setObjTmpName(const StringRef tmpFileName) {
+    reorderTmpFile = tmpFileName.str();
+  }
   const std::string &getObjTmpName() const { return reorderTmpFile; }
   const std::string WriteRandInfo(const MCAsmLayout &Layout) const;
-  void writeReorderInfo(const std::string &fileName, ShuffleInfo::ReorderInfo* ri) const;
-
+  void writeReorderInfo(const std::string &fileName,
+                        ShuffleInfo::ReorderInfo *ri) const;
 
   /// ELF e_header flags
   unsigned getELFHeaderEFlags() const { return ELFHeaderEFlags; }

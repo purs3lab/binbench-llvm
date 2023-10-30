@@ -94,7 +94,7 @@ public:
 
   // Koo Akul
   uint64_t getOffset() { return Offset; }
-  const std::list<std::string> &getAllMBBs() const {return MBBIDs; }
+  const std::list<std::string> &getAllMBBs() const { return MBBIDs; }
   void addMachineBasicBlockTag(const std::string &T) {
     for (auto it=MBBIDs.begin(); it!=MBBIDs.end(); ++it)
       if (T.compare(*it) == 0)

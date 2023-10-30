@@ -67,8 +67,8 @@ BCollector::BCollector() {
 // Koo: Dump all fixups if necessary
 //      In .text, .rodata, .data, .data.rel.ro, .eh_frame, and debugging
 //      sections
-void BCollector::dumpFixups(FIXUPTYPE &Fixups,
-    const std::string &kind, bool isDebug) {    
+void BCollector::dumpFixups(FIXUPTYPE &Fixups, const std::string &kind,
+                            bool isDebug) {
   if (Fixups.size() > 0) {
     DEBUG_WITH_TYPE("binbench", dbgs() << " - Fixups Info (." << kind
                                        << "): " << Fixups.size() << "\n");
@@ -76,7 +76,8 @@ void BCollector::dumpFixups(FIXUPTYPE &Fixups,
     bool isRel, isNewSection;
     std::string FixupParentID, SymbolRefFixupName, sectionName;
 
-    for (FIXUPTYPE::const_iterator it = Fixups.begin(); it != Fixups.end(); ++it) {
+    for (FIXUPTYPE::const_iterator it = Fixups.begin(); it != Fixups.end();
+         ++it) {
       std::tie(offset, size, isRel, FixupParentID, SymbolRefFixupName,
                isNewSection, sectionName, numJTEntries, JTEntrySize) = *it;
       char isRelTF = isRel ? 'T' : 'F';
@@ -103,9 +104,6 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
   // Deal with MFs and MBBs in a ELF code section (.text) only
   for (MCSection &Sec : Layout.getAssembler()) {
     MCSectionELF &ELFSec = reinterpret_cast<MCSectionELF &>(Sec);
-    // MCSection &ELFSec = Sec;
-
-    const std::string &tmpSN = ELFSec.getSectionName().str();
     const std::string &sectionName = ELFSec.getSectionName().str();
     if (sectionName.find(".text") == 0) {
 
@@ -133,7 +131,7 @@ void BCollector::processFragment(MCSection &Sec, const MCAsmLayout &Layout,
   std::set<std::string> countedMBBs;
   std::set<std::string> preds;
   std::set<std::string> succs;
-  std::string tmpSN = ELFSec.getSectionName().str();
+  std::string tmpSN = "";
   const std::string &sectionName = ELFSec.getSectionName().str();
   for (MCFragment &MCF : Sec) {
     // processFragment(MCF, Layout, MAI, MOFI, totalOffset, totalFixups)
@@ -188,7 +186,8 @@ void BCollector::processFragment(MCSection &Sec, const MCAsmLayout &Layout,
           totalAlignSize += alignSize;
           // Akul: MIPSFIX: Debug HERE
           // LLVM_DEBUG(dbgs() << "Debug alignSize: " << alignSize << " \n");
-          // DEBUG_WITH_TYPE("binbench", dbgs() << ID << " Offset " << totalOffset << " MBBSize: " << MBBSize << "\n");
+          // DEBUG_WITH_TYPE("binbench", dbgs() << ID << " Offset " <<
+          // totalOffset << " MBBSize: " << MBBSize << "\n");
           countedMBBs.insert(ID);
           MAI->getBC()->MachineFunctionSizes[MFID] += MBBSize;
           MAI->getBC()->MachineBasicBlocks[ID].SectionName = sectionName;
@@ -264,7 +263,8 @@ void BCollector::dumpJT(JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI) {
   if (jumpTables.size() > 0) {
     DEBUG_WITH_TYPE("binbench", dbgs() << "\n<Jump Tables Summary>\n");
     unsigned totalEntries = 0;
-    for (JTTYPEWITHID::const_iterator it = jumpTables.begin(); it != jumpTables.end(); ++it) {
+    for (JTTYPEWITHID::const_iterator it = jumpTables.begin();
+         it != jumpTables.end(); ++it) {
       int JTI, MFID, MFID2, MBBID;
       unsigned entryKind, entrySize;
       std::list<std::string> JTEntries;
@@ -304,7 +304,8 @@ void BCollector::dumpJT(JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI) {
 
 // Akul FIXME: Move this to BCollector
 void BCollector::setFixups(FIXUPTYPE &Fixups,
-    ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo, const std::string &secName) {
+                           ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo,
+                           const std::string &secName) {
   unsigned FixupOffset, FixupSize, FixupisRela, numJTEntries, JTEntrySize;
   std::string sectionName, FixupParentID, SymbolRefFixupName;
   bool isNewSection;
@@ -366,7 +367,8 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
   std::vector<std::string> preds;
   std::vector<std::string> succs;
 
-  for (std::list<std::string>::const_iterator MBBI = MAI->getBC()->MBBLayoutOrder.begin();
+  for (std::list<std::string>::const_iterator MBBI =
+           MAI->getBC()->MBBLayoutOrder.begin();
        MBBI != MAI->getBC()->MBBLayoutOrder.end(); ++MBBI) {
     ShuffleInfo::ReorderInfo_LayoutInfo *layoutInfo = ri->add_layout();
     const std::string &ID = MBBI->c_str();

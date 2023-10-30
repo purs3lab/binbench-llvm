@@ -277,8 +277,9 @@ public:
   //<MachineFunctionIdx_JumpTableIdx> - <(EntryKind, EntrySize, Entries[MFID_MBBID])>
   mutable std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> JumpTableTargets;
 
-  const std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> &getJumpTableTargets() const; 
-
+  const std::map<std::string,
+                 std::tuple<unsigned, unsigned, std::list<std::string>>> &
+  getJumpTableTargets() const;
 
   void updateJumpTableTargets(std::string Key, unsigned EntryKind, unsigned EntrySize, \
                               std::list<std::string> JTEntries) const; 

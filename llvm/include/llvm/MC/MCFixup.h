@@ -116,7 +116,9 @@ public:
   void setFixupParentID(std::string Value) { FixupParentID = Value; }
   bool getIsJumpTableRef() const { return isJumpTableRef; }
   void setIsJumpTableRef(bool V) { isJumpTableRef = V; }
-  const std::string &getSymbolRefFixupName() const { return SymbolRefFixupName; }
+  const std::string &getSymbolRefFixupName() const {
+    return SymbolRefFixupName;
+  }
   void setSymbolRefFixupName(std::string FN) { SymbolRefFixupName = FN; }
 
   const MCExpr *getValue() const { return Value; }

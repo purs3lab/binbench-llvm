@@ -208,20 +208,24 @@ class MCInst {
 public:
   MCInst() = default;
 
-  void setSuccs(const std::string &id, const std::set<std::string> &Succs) const {
-    succs = Succs; 
+  void setSuccs(const std::string &id,
+                const std::set<std::string> &Succs) const {
+    succs = Succs;
   }
-  void setPreds(const std::string &id, const std::set<std::string> &Preds) const {
-    preds = Preds; 
+  void setPreds(const std::string &id,
+                const std::set<std::string> &Preds) const {
+    preds = Preds;
   }
-  const std::set<std::string> &getSuccs() const {return succs;}
-  const std::set<std::string> &getPreds() const {return preds;}
+  const std::set<std::string> &getSuccs() const { return succs; }
+  const std::set<std::string> &getPreds() const { return preds; }
   void setNArgs(unsigned nargs) const { nArgs = nargs; }
-  void setFunctionName(const std::string &funcname) const { FunctionName = funcname; }
-  const std::string &getFunctionName() const {return FunctionName; }
+  void setFunctionName(const std::string &funcname) const {
+    FunctionName = funcname;
+  }
+  const std::string &getFunctionName() const { return FunctionName; }
   const std::string &getParentID() const { return parentID; }
-  void setFunctionID(const std::string &funcid) const {FunctionID = funcid; }
-  const std::string &getFunctionID() const {return FunctionID; }
+  void setFunctionID(const std::string &funcid) const { FunctionID = funcid; }
+  const std::string &getFunctionID() const { return FunctionID; }
   void setFunctionSize(unsigned funcsize) const {FunctionSize = funcsize; }
   unsigned getFunctionSize() const {return FunctionSize;}
   unsigned getNArgs() const { return nArgs; }

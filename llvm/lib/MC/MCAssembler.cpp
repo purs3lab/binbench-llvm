@@ -830,7 +830,6 @@ MCAssembler::handleFixup(const MCAsmLayout &Layout, MCFragment &F,
   return std::make_tuple(Target, FixedValue, IsResolved, IsPCRel);
 }
 
-
 void MCAssembler::layout(MCAsmLayout &Layout) {
   assert(getBackendPtr() && "Expected assembler backend");
   DEBUG_WITH_TYPE("mc-dump", {
@@ -1172,7 +1171,6 @@ const std::string MCAssembler::WriteRandInfo(const MCAsmLayout &Layout) const {
   google::protobuf::ShutdownProtobufLibrary();
   return randContents;
 }
-
 
 void MCAssembler::Finish() {
   // Create the layout object.

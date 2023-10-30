@@ -78,12 +78,13 @@ public:
   bool isJumpTableRef = false;
   std::string SymbolRefFixupName;
 
-
   const std::string &getFixupParentID() const { return FixupParentID; }
   void setFixupParentID(const std::string &Value) { FixupParentID = Value; }
   bool getIsJumpTableRef() const { return isJumpTableRef; }
   void setIsJumpTableRef(bool V) { isJumpTableRef = V; }
-  const std::string &getSymbolRefFixupName() const { return SymbolRefFixupName; }
+  const std::string &getSymbolRefFixupName() const {
+    return SymbolRefFixupName;
+  }
   void setSymbolRefFixupName(const std::string &FN) { SymbolRefFixupName = FN; }
   /// @brief Set Fixup information for a given section. Users need not use this.
   void setFixups(FIXUPTYPE &Fixups,
@@ -101,7 +102,8 @@ public:
 
   /// @brief Get the FixupTuple object for a given section.
   ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple *
-  getFixupTuple(ShuffleInfo::ReorderInfo_FixupInfo *FI, const std::string &secName) {
+  getFixupTuple(ShuffleInfo::ReorderInfo_FixupInfo *FI,
+                const std::string &secName) {
     switch (getFixupSectionId(secName)) {
     case 0:
       return FI->add_text();
@@ -182,15 +184,17 @@ public:
                        const MCAsmInfo *MAI, const MCObjectFileInfo *MOFI,
                        MCSectionELF &ELFSec);
 
-  void updateJumpTableTargets(const std::string &Key, unsigned EntryKind, unsigned EntrySize, \
-          const std::list<std::string> &JTEntries) const {
-      JumpTableTargets[Key] = std::make_tuple(EntryKind, EntrySize, JTEntries);
+  void updateJumpTableTargets(const std::string &Key, unsigned EntryKind,
+                              unsigned EntrySize,
+                              const std::list<std::string> &JTEntries) const {
+    JumpTableTargets[Key] = std::make_tuple(EntryKind, EntrySize, JTEntries);
   }
 
-  const std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> 
-      &getJumpTableTargets() const { 
-          return JumpTableTargets; 
-      }
+  const std::map<std::string,
+                 std::tuple<unsigned, unsigned, std::list<std::string>>> &
+  getJumpTableTargets() const {
+    return JumpTableTargets;
+  }
   /// @brief Set the latest parent ID.
   void setFunctionid(const std::string &id) { latestFunctionID = id; }
 
@@ -252,7 +256,8 @@ public:
 
 class ClassCollector : public BCollector {
 public:
-  void addVTable(const std::string &classname, const std::list<std::string> &vtable_entries) {
+  void addVTable(const std::string &classname,
+                 const std::list<std::string> &vtable_entries) {
     vTables[classname] = vtable_entries;
   }
 };
@@ -264,7 +269,8 @@ class FunctionCollector : public BCollector {
 public:
   /// @brief  Collects the function information. Includes things like:
   /// ID, function name, arguments (if any)
-  void updateFuncDetails(const std::string &id, const std::string &funcname, unsigned size) {
+  void updateFuncDetails(const std::string &id, const std::string &funcname,
+                         unsigned size) {
     MachineFunctions[id].TotalSizeInBytes = size;
     MachineFunctions[id].FunctionName = funcname;
     MachineFunctions[id].ID = id;
@@ -273,7 +279,8 @@ public:
 
   const auto &getVT() { return vTables; }
 
-  const std::string getDICompositeTypeKind(const DICompositeType *CompositeType) {
+  const std::string
+  getDICompositeTypeKind(const DICompositeType *CompositeType) {
     if (CompositeType == nullptr) {
       // might want to log an error message here.
       return "Invalid";
@@ -346,20 +353,21 @@ public:
         std::make_tuple(type, Offset, size);
   }
 
-    void addCGSuccessor(const std::string &caller, const std::string &callee) {
-      const auto &it = CallGraphInfo.find(caller);
-      if (it == CallGraphInfo.end()) {
-        std::list<std::string> newList{callee};
-        CallGraphInfo[caller] = newList;
-        } else {
-            // Check if callee already exists
-            auto &callerList = CallGraphInfo[caller];
-            if (std::find(callerList.begin(), callerList.end(), callee) == callerList.end()) {
-                // If callee doesn't exist, push it back to the list.
-                callerList.push_back(callee);
-            }
-        }
+  void addCGSuccessor(const std::string &caller, const std::string &callee) {
+    const auto &it = CallGraphInfo.find(caller);
+    if (it == CallGraphInfo.end()) {
+      std::list<std::string> newList{callee};
+      CallGraphInfo[caller] = newList;
+    } else {
+      // Check if callee already exists
+      auto &callerList = CallGraphInfo[caller];
+      if (std::find(callerList.begin(), callerList.end(), callee) ==
+          callerList.end()) {
+        // If callee doesn't exist, push it back to the list.
+        callerList.push_back(callee);
+      }
     }
+  }
 
   void addVTableEntry(const std::string &classname, const std::string &entry) {
     const auto &it = vTables.find(classname);
@@ -373,7 +381,6 @@ public:
         }
     }
   }
-
 
   /// @brief Get collected function metadata object.
   MFCONTAINER &getMFs() { return MachineFunctions; }

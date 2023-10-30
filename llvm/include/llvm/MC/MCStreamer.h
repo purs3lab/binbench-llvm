@@ -493,7 +493,6 @@ public:
   virtual void EmitRand() {}
   virtual void setObjTmpName(StringRef tmpFileName) {}
 
-
   virtual void emitEHSymAttributes(const MCSymbol *Symbol, MCSymbol *EHSymbol);
 
   /// Note in the output the specified \p Flag.

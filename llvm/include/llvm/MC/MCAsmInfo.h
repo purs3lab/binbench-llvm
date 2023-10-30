@@ -653,7 +653,9 @@ public:
     std::get<1>(MachineFunctions[id]) = funcname;
   }
 
-  std::map<std::string, std::tuple<unsigned, std::string>> &getMFs() const {return MachineFunctions;}
+  std::map<std::string, std::tuple<unsigned, std::string>> &getMFs() const {
+    return MachineFunctions;
+  }
 
   void setSuccs(std::string id, std::vector<std::string> succs) const {
     std::get<8>(MachineBasicBlocks[id]) = succs; 
