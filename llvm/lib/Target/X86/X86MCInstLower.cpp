@@ -2754,7 +2754,7 @@ void X86AsmPrinter::emitInstruction(const MachineInstr *MI) {
   // in a call towards the shadow, but must ensure that the no thread returns
   // in to the stackmap shadow.  The only way to achieve this is if the call
   // is at the end of the shadow.
-  if (MI->isCall() && !is_jmp) {
+  if (!is_jmp && MI->isCall()) {
     // Count then size of the call towards the shadow
     SMShadowTracker.count(TmpInst, getSubtargetInfo(), CodeEmitter.get());
     // Then flush the shadow so that we fill with nops before the call, not

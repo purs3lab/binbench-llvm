@@ -557,9 +557,11 @@ MCObjectFileInfo::getJumpTableTargets() const {
   return Ctx->getAsmInfo()->getBC()->JumpTableTargets;
 }
 
-void MCObjectFileInfo::updateJumpTableTargets(std::string Key, unsigned EntryKind, unsigned EntrySize, \
-        std::list<std::string> JTEntries) const {
-    Ctx->getAsmInfo()->getBC()->JumpTableTargets[Key] = std::make_tuple(EntryKind, EntrySize, JTEntries);
+void MCObjectFileInfo::updateJumpTableTargets(
+    const std::string &Key, unsigned EntryKind, unsigned EntrySize,
+    const std::list<std::string> &JTEntries) const {
+  Ctx->getAsmInfo()->getBC()->JumpTableTargets[Key] =
+      std::make_tuple(EntryKind, EntrySize, JTEntries);
 }
 
 void MCObjectFileInfo::initCOFFMCObjectFileInfo(const Triple &T) {

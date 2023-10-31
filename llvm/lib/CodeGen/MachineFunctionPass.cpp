@@ -92,8 +92,9 @@ bool MachineFunctionPass::runOnFunction(Function &F) {
   // Koo: collect the canFallThrough info per each MBB here
   for (MachineFunction::iterator I = MF.begin(), E = MF.end(); I != E; ++I) {
     MachineBasicBlock *MBB = &*I;
-    std::string ID = std::to_string(MBB->getParent()->getFunctionNumber()) + "_" + \
-                     std::to_string(MBB->getNumber());
+    const std::string &ID =
+        std::to_string(MBB->getParent()->getFunctionNumber()) + "_" +
+        std::to_string(MBB->getNumber());
     MF.canMBBFallThrough[ID] = MBB->canFallThrough();
   }
 

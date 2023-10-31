@@ -666,7 +666,7 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
     DF = getOrCreateDataFragment(&STI);
   }
   // FUNC_ARGS_TODO : propogate func arg changes
-  auto MSI = Assembler.getContext().getSubtargetInfo();
+  const auto &MSI = Assembler.getContext().getSubtargetInfo();
   // std::string ID = MSI->getParentID();
   std::string ID = Inst.getParentID();
   // Add the fixups and data.
@@ -720,11 +720,11 @@ void MCELFStreamer::emitInstToData(const MCInst &Inst,
 
   unsigned nargs = Inst.getNArgs();
   unsigned funcsize = Inst.getFunctionSize();
-  std::string FunctionID = Inst.getFunctionID();
-  std::string FunctionName = Inst.getFunctionName();
+  const std::string &FunctionID = Inst.getFunctionID();
+  const std::string &FunctionName = Inst.getFunctionName();
   std::set<std::string> succs = Inst.getSuccs();
   std::set<std::string> preds = Inst.getPreds();
-  std::vector<unsigned> argSizes = MSI->getArgSizes();
+  const std::vector<unsigned> &argSizes = MSI->getArgSizes();
   DEBUG_WITH_TYPE("binbench", dbgs() << "Parent ID in ELFStreamer " << ID << "\n");
   DEBUG_WITH_TYPE("binbench", dbgs() << "NArgs ELFStreamer " << nargs << "\n");
   for (auto &argSize : argSizes) {

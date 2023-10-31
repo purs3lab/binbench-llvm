@@ -846,9 +846,9 @@ void ELFWriter::writeSectionData(const MCAssembler &Asm, MCSection &Sec,
   StringRef SectionName = Section.getName();
 
   if (SectionName.startswith(".gt")) {
-    // Akul FIXME: transfer metadata from MCAsmInfo to BCollector  
-    std::string randContents = Asm.WriteRandInfo(Layout);
-    W.OS << randContents;
+    // Akul FIXME: transfer metadata from MCAsmInfo to BCollector
+    const std::string &RandContents = Asm.WriteRandInfo(Layout);
+    W.OS << RandContents;
     return;
   }
 

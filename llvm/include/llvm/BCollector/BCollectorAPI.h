@@ -177,7 +177,7 @@ public:
   mutable unsigned specialCntPriorToFunc = 0; ///< Unused and deprecated?
 
   /// Dump the collected jump table information.
-  void dumpJT(JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI);
+  void dumpJT(const JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI);
 
   /// Process a fragment and collect fixup information.
   void processFragment(MCSection &Sec, const MCAsmLayout &Layout,
@@ -188,6 +188,11 @@ public:
                               unsigned EntrySize,
                               const std::list<std::string> &JTEntries) const {
     JumpTableTargets[Key] = std::make_tuple(EntryKind, EntrySize, JTEntries);
+  }
+
+  const std::tuple<unsigned, unsigned, std::list<std::string>> &
+  getJumpTableTargetEntry(const std::string &Key) const {
+    return JumpTableTargets[Key];
   }
 
   const std::map<std::string,

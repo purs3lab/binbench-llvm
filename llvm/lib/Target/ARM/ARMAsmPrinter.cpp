@@ -56,22 +56,24 @@ MCInst &setMetaDataARM(const MachineInstr *MI, MCInst *Inst) {
   std::set<std::string> Preds;
   std::set<std::string> Succs;
   // LLVM_DEBUG(dbgs() << "Successors: ");
-  auto succs = MI->getParent()->successors();
+  const auto &succs = MI->getParent()->successors();
   for (auto succ = succs.begin(); succ != succs.end(); succ++) {
     // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
     unsigned SMBBID = (*succ)->getNumber();
     unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-    std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+    const std::string &SID =
+        std::to_string(SMFID) + "_" + std::to_string(SMBBID);
     Succs.insert(SID);
   }
   // LLVM_DEBUG(dbgs() << "\n");
   // LLVM_DEBUG(dbgs() << "Predecessors: ");
-  auto preds = MI->getParent()->predecessors();
+  const auto &preds = MI->getParent()->predecessors();
   for (auto pred = preds.begin(); pred != preds.end(); pred++) {
     // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
     unsigned PMBBID = (*pred)->getNumber();
     unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-    std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+    const std::string &PID =
+        std::to_string(PMFID) + "_" + std::to_string(PMBBID);
     Preds.insert(PID);
   }
   // LLVM_DEBUG(dbgs() << "\n");
@@ -79,8 +81,8 @@ MCInst &setMetaDataARM(const MachineInstr *MI, MCInst *Inst) {
   unsigned MBBID = MBBa->getNumber();
   unsigned MFID = MBBa->getParent()->getFunctionNumber();
   unsigned funcsize = MBBa->getParent()->size();
-  std::string FunctionName = MBBa->getParent()->getName().str();
-  std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+  const std::string &FunctionName = MBBa->getParent()->getName().str();
+  const std::string &ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
 
   Inst->setParentID(ID);
   Inst->setFunctionID(std::to_string(MFID));

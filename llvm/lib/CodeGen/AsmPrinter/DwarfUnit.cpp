@@ -981,7 +981,7 @@ void DwarfUnit::constructTypeDIE(DIE &Buffer, const DICompositeType *CTy) {
     // inside C++ composite types to point to the base class with the vtable.
     // Rust uses DW_AT_containing_type to link a vtable to the type
     // for which it was created.
-    if (auto *ContainingType = CTy->getVTableHolder()) {
+    if (const auto *ContainingType = CTy->getVTableHolder()) {
       addDIEEntry(Buffer, dwarf::DW_AT_containing_type,
                   *getOrCreateTypeDIE(ContainingType));
     }
@@ -1288,33 +1288,32 @@ void DwarfUnit::applySubprogramAttributes(const DISubprogram *SP, DIE &SPDie,
   // Add a return type. If this is a type like a C/C++ void type we don't add a
   // return type.
   // TODO: add instrumention here instead
-  auto MSI = TM.getMCSubtargetInfo();
-  auto MAI = TM.getMCAsmInfo();
+  // const auto &MSI = TM.getMCSubtargetInfo();
+  const auto &MAI = TM.getMCAsmInfo();
   int nargs = Args.size();
 
   if (nargs < 0)
     nargs = -1;
   // MSI->setNArgs(nargs);
-  auto funcName = SP->getName().str();
+  auto FuncName = SP->getName().str();
 
   // funcName must be unique
-  if (funcName.length() == 0)
-    funcName = "func_" + std::to_string(SP->getLine());
+  if (FuncName.length() == 0)
+    FuncName = "func_" + std::to_string(SP->getLine());
 
   // auto funcID = SP->getFunction()->getFunction()->getFunctionNumber();
   // MAI->getFC()->setNumArgs(funcName, nargs);
-  MAI->getFC()->updateArgDetails(funcName, nargs);
-
-
+  MAI->getFC()->updateArgDetails(FuncName, nargs);
 
   for (int i = 0; i < nargs; i++) {
     auto arg = Args[i];
     if (arg == nullptr)
       continue;
-    auto argSize = arg->getSizeInBits();
+    const auto &argSize = arg->getSizeInBits();
     if (argSize == 0) {
-        // auto new_argsize = 
-        DEBUG_WITH_TYPE("binbench", dbgs() << "Found arg with size 0 in " << funcName << "\n" );
+        // auto new_argsize =
+        DEBUG_WITH_TYPE("binbench", dbgs() << "Found arg with size 0 in "
+                                           << FuncName << "\n");
     }
 
     auto ArgType = arg->getName().str();
@@ -1324,13 +1323,13 @@ void DwarfUnit::applySubprogramAttributes(const DISubprogram *SP, DIE &SPDie,
         ArgType = MAI->getFC()->checkDIType(arg);
     }
 
-    MAI->getFC()->addArgSizes(funcName, argSize);
-    MAI->getFC()->updateArgTypes(funcName, ArgType);
+    MAI->getFC()->addArgSizes(FuncName, argSize);
+    MAI->getFC()->updateArgTypes(FuncName, ArgType);
     DEBUG_WITH_TYPE("binbench", dbgs() << "Found arg with type " << ArgType << "\n" );
   }
 
   if (Args.size())
-    if (auto Ty = Args[0])
+    if (const auto &Ty = Args[0])
       addType(SPDie, Ty);
 
   unsigned VK = SP->getVirtuality();
@@ -1341,12 +1340,13 @@ void DwarfUnit::applySubprogramAttributes(const DISubprogram *SP, DIE &SPDie,
       addUInt(*Block, dwarf::DW_FORM_data1, dwarf::DW_OP_constu);
       addUInt(*Block, dwarf::DW_FORM_udata, SP->getVirtualIndex());
       // // TODO: intercept vtable info here
-      DEBUG_WITH_TYPE("binbench",
-                      dbgs() << "3. Found vtable address for function " << funcName
-                             << " vtable address: " << VK
-                             << " virtuality index is : " << SP->getVirtualIndex() 
-                             << " Containing Class : " << SP->getContainingType()->getName() 
-                             << "Address: " << SP->getName()<< " \n");
+      DEBUG_WITH_TYPE(
+          "binbench",
+          dbgs() << "3. Found vtable address for function " << FuncName
+                 << " vtable address: " << VK
+                 << " virtuality index is : " << SP->getVirtualIndex()
+                 << " Containing Class : " << SP->getContainingType()->getName()
+                 << "Address: " << SP->getName() << " \n");
 
       MAI->getFC()->addVTableEntry(SP->getContainingType()->getName().str()
               ,SP->getLinkageName().str());
@@ -1636,7 +1636,7 @@ void DwarfUnit::constructEnumTypeDIE(DIE &Buffer, const DICompositeType *CTy) {
 }
 
 void DwarfUnit::constructContainingTypeDIEs() {
-  for (auto &P : ContainingTypeMap) {
+  for (const auto &P : ContainingTypeMap) {
     DIE &SPDie = *P.first;
     const DINode *D = P.second;
     if (!D)

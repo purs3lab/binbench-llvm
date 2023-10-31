@@ -380,7 +380,8 @@ void MachineFunction::RecordMachineJumpTableInfo(MachineJumpTableInfo *MJTI) {
       unsigned MFID = this->getFunctionNumber();
 
       // Key: <MachineFunctionIdx_JumpTableIdx>
-      std::string MJTKey = std::to_string(MFID) + "_" + std::to_string(JTI);
+      const std::string &MJTKey =
+          std::to_string(MFID) + "_" + std::to_string(JTI);
       std::list<std::string> JTEntries;
       // Walk through all Jump Table Entries (MBBs) to get targets
       for (unsigned ii = 0, ee = JTBBs.size(); ii != ee; ++ii) {

@@ -99,7 +99,7 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
   const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
   const MCObjectFileInfo *MOFI =
       Layout.getAssembler().getContext().getObjectFileInfo();
-  JTTYPEWITHID jumpTables = this->getJumpTableTargets();
+  const JTTYPEWITHID &jumpTables = this->getJumpTableTargets();
 
   // Deal with MFs and MBBs in a ELF code section (.text) only
   for (MCSection &Sec : Layout.getAssembler()) {
@@ -259,7 +259,7 @@ void BCollector::processFragment(MCSection &Sec, const MCAsmLayout &Layout,
       MBBINFOTYPE::ENDOFOBJECT;
 }
 
-void BCollector::dumpJT(JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI) {
+void BCollector::dumpJT(const JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI) {
   if (jumpTables.size() > 0) {
     DEBUG_WITH_TYPE("binbench", dbgs() << "\n<Jump Tables Summary>\n");
     unsigned totalEntries = 0;
@@ -300,7 +300,6 @@ void BCollector::dumpJT(JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI) {
                                        << totalEntries << "\n");
   }
 }
-
 
 // Akul FIXME: Move this to BCollector
 void BCollector::setFixups(FIXUPTYPE &Fixups,

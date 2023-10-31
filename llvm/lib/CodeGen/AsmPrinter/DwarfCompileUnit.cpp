@@ -869,8 +869,8 @@ DIE *DwarfCompileUnit::constructVariableDIEImpl(const DbgVariable &DV,
     // Handle non basic type variables differently.
 
     // intrumented
-    auto MAI = TM.getMCAsmInfo();
-    auto func_name = Asm->MF->getFunction().getName().str();
+    const auto &MAI = TM.getMCAsmInfo();
+    const auto &FuncName = Asm->MF->getFunction().getName().str();
 
     const auto *Var = DV.getVariable();
 
@@ -889,7 +889,7 @@ DIE *DwarfCompileUnit::constructVariableDIEImpl(const DbgVariable &DV,
                              << " Offset: " << Offset.getFixed() << "\n");
 
       MAI->getFC()->addLocalVariable(
-          func_name, DV.getVariable()->getName().str(), VarType,
+          FuncName, DV.getVariable()->getName().str(), VarType,
           Offset.getFixed(), DV.getVariable()->getType()->getSizeInBits());
     }
     // end intrumented

@@ -281,9 +281,9 @@ public:
                  std::tuple<unsigned, unsigned, std::list<std::string>>> &
   getJumpTableTargets() const;
 
-  void updateJumpTableTargets(std::string Key, unsigned EntryKind, unsigned EntrySize, \
-                              std::list<std::string> JTEntries) const; 
-
+  void updateJumpTableTargets(const std::string &Key, unsigned EntryKind,
+                              unsigned EntrySize,
+                              const std::list<std::string> &JTEntries) const;
 
   virtual unsigned getTextSectionAlignment() const { return 4; }
   MCSection *getTextSection() const { return TextSection; }

@@ -46,14 +46,15 @@
 // Koo
 #include "llvm/MC/MCObjectFileInfo.h"
 #include "llvm/Support/shuffleInfo.pb.h"
-#include <sstream>
+// vidush
+#include "llvm/BCollector/BCollectorAPI.h"
 #include <fstream>
-#include <iostream>
-#include <string>
 #include <iomanip>
+#include <iostream>
 #include <map>
 #include <set>
-
+#include <sstream>
+#include <string>
 
 using namespace llvm;
 
@@ -1030,11 +1031,9 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
           unsigned derefSize = 0;
           // getBackend().getFixupKindLog2Size(Fixup.getKind()); XXXAKUL
           unsigned jtEntryKind = 0, jtEntrySize = 0, numJTEntries = 0;
-          std::map<std::string,
-                   std::tuple<unsigned, unsigned, std::list<std::string>>>
-              JTs = MAI->getBC()->getJumpTableTargets();
-          std::string fixupParentID = Fixup.getFixupParentID();
-          std::string SymbolRefFixupName = Fixup.getSymbolRefFixupName();
+          const auto &JTs = MAI->getBC()->getJumpTableTargets();
+          const std::string &fixupParentID = Fixup.getFixupParentID();
+          const std::string &SymbolRefFixupName = Fixup.getSymbolRefFixupName();
           std::list<std::string>
               JTEs; // contains all target(MFID_MBBID) in the JT
 
@@ -1052,7 +1051,8 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
             }
             if (Fixup.getIsJumpTableRef()) {
               std::tie(jtEntryKind, jtEntrySize, JTEs) =
-                  JTs[Fixup.getSymbolRefFixupName()];
+                  MAI->getBC()->getJumpTableTargetEntry(
+                      Fixup.getSymbolRefFixupName());
               numJTEntries = JTEs.size();
             }
             MAI->getBC()->FixupsText.push_back(std::make_tuple(
