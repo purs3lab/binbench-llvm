@@ -1311,9 +1311,9 @@ void DwarfUnit::applySubprogramAttributes(const DISubprogram *SP, DIE &SPDie,
       continue;
     const auto &argSize = arg->getSizeInBits();
     if (argSize == 0) {
-        // auto new_argsize =
-        DEBUG_WITH_TYPE("binbench", dbgs() << "Found arg with size 0 in "
-                                           << FuncName << "\n");
+      // auto new_argsize =
+      DEBUG_WITH_TYPE("binbench", dbgs() << "Found arg with size 0 in "
+                                         << FuncName << "\n");
     }
 
     auto ArgType = arg->getName().str();

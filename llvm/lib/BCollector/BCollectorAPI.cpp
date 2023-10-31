@@ -1,15 +1,16 @@
 #include "llvm/BCollector/BCollectorAPI.h"
 
+#include "llvm/ADT/StringRef.h"
 #include "llvm/BCollector/BCollectorTypes.h"
 #include "llvm/BCollector/BCollectorUtils.h"
 #include "llvm/CodeGen/MachineBasicBlock.h"
-#include "llvm/CodeGen/MachineInstr.h"
 #include "llvm/CodeGen/MachineFunction.h"
-#include "llvm/MC/MCObjectFileInfo.h"
+#include "llvm/CodeGen/MachineInstr.h"
+#include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCAsmLayout.h"
 #include "llvm/MC/MCContext.h"
-#include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCInst.h"
+#include "llvm/MC/MCObjectFileInfo.h"
 #include "llvm/MC/MCSectionELF.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/ErrorHandling.h"
@@ -22,25 +23,27 @@ void BasicBlockCollector::performCollection(const MachineInstr *MI,
                                             MCInst *Inst) {
   std::set<std::string> Preds;
   std::set<std::string> Succs;
-  auto succs = MI->getParent()->successors();
+  const auto &succs = MI->getParent()->successors();
   for (auto succ = succs.begin(); succ != succs.end(); succ++) {
     unsigned SMBBID = (*succ)->getNumber();
     unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
-    std::string SID = std::to_string(SMFID) + "_" + std::to_string(SMBBID);
+    const std::string &SID =
+        std::to_string(SMFID) + "_" + std::to_string(SMBBID);
     Succs.insert(SID);
   }
-  auto preds = MI->getParent()->predecessors();
+  const auto &preds = MI->getParent()->predecessors();
   for (auto pred = preds.begin(); pred != preds.end(); pred++) {
     unsigned PMBBID = (*pred)->getNumber();
     unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
-    std::string PID = std::to_string(PMFID) + "_" + std::to_string(PMBBID);
+    const std::string &PID =
+        std::to_string(PMFID) + "_" + std::to_string(PMBBID);
     Preds.insert(PID);
   }
   const MachineBasicBlock *MBBa = MI->getParent();
   unsigned MBBID = MBBa->getNumber();
   unsigned MFID = MBBa->getParent()->getFunctionNumber();
   unsigned funcsize = MBBa->getParent()->size();
-  std::string ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
+  const std::string &ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
   std::string funcname = MBBa->getParent()->getName().str();
 
   // funcname should be unique
@@ -113,7 +116,8 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
   }
 
   // Dump if there is any CFI-generated JT
-  dumpJT(jumpTables, MAI);
+  // Commented out for debugging?
+  // dumpJT(jumpTables, MAI);
 }
 
 void BCollector::processFragment(MCSection &Sec, const MCAsmLayout &Layout,
@@ -306,19 +310,18 @@ void BCollector::setFixups(FIXUPTYPE &Fixups,
                            ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo,
                            const std::string &secName) {
   unsigned FixupOffset, FixupSize, FixupisRela, numJTEntries, JTEntrySize;
-  std::string sectionName, FixupParentID, SymbolRefFixupName;
+  StringRef SectionName;
   bool isNewSection;
 
   for (FIXUPTYPE::const_iterator F = Fixups.begin(); F != Fixups.end(); ++F) {
     ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple *pFixupTuple =
         getFixupTuple(fixupInfo, secName);
-    std::tie(FixupOffset, FixupSize, FixupisRela, FixupParentID,
-             SymbolRefFixupName, isNewSection, sectionName, numJTEntries,
-             JTEntrySize) = *F;
+    std::tie(FixupOffset, FixupSize, FixupisRela, std::ignore, std::ignore,
+             isNewSection, SectionName, numJTEntries, JTEntrySize) = *F;
     pFixupTuple->set_offset(FixupOffset);
     pFixupTuple->set_deref_sz(FixupSize);
     pFixupTuple->set_is_rela(FixupisRela);
-    pFixupTuple->set_section_name(sectionName);
+    pFixupTuple->set_section_name(SectionName.data());
     if (isNewSection)
       pFixupTuple->set_type(
           4); // let linker know if there are multiple .text sections
