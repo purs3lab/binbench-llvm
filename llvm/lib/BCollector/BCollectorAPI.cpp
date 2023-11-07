@@ -77,19 +77,19 @@ void BCollector::dumpFixups(FIXUPTYPE &Fixups, const std::string &kind,
                                        << "): " << Fixups.size() << "\n");
     unsigned offset, size, numJTEntries, JTEntrySize;
     bool isRel, isNewSection;
-    std::string FixupParentID, SymbolRefFixupName, sectionName;
+    StringRef FixupParentID, SymbolRefFixupName;
 
     for (FIXUPTYPE::const_iterator it = Fixups.begin(); it != Fixups.end();
          ++it) {
       std::tie(offset, size, isRel, FixupParentID, SymbolRefFixupName,
-               isNewSection, sectionName, numJTEntries, JTEntrySize) = *it;
+               isNewSection, std::ignore, numJTEntries, JTEntrySize) = *it;
       char isRelTF = isRel ? 'T' : 'F';
-      if (isDebug && SymbolRefFixupName.length() > 0) {
+      if (isDebug && SymbolRefFixupName.size() > 0) {
 
         DEBUG_WITH_TYPE("binbench", dbgs() << "\t[" << FixupParentID << "]\t("
                                            << offset << ", " << size << ", "
                                            << isRelTF);
-        if (SymbolRefFixupName.length() > 0)
+        if (SymbolRefFixupName.size() > 0)
           DEBUG_WITH_TYPE("binbench",
                           dbgs() << ", JT#" << SymbolRefFixupName << ")\n");
       }
@@ -133,8 +133,6 @@ void BCollector::processFragment(MCSection &Sec, const MCAsmLayout &Layout,
   std::string prevID, canFallThrough;
   unsigned MBBSize, numFixups, alignSize;
   std::set<std::string> countedMBBs;
-  std::set<std::string> preds;
-  std::set<std::string> succs;
   std::string tmpSN = "";
   const std::string &sectionName = ELFSec.getSectionName().str();
   for (MCFragment &MCF : Sec) {
@@ -362,12 +360,9 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
   updateReorderInfoValues(Layout);
   // Set the layout of both Machine Functions and Machine Basic Blocks with
   // protobuf definition
-  std::string sectionName;
   unsigned MBBSize;
   unsigned objSz = 0, numFuncs = 0, numBBs = 0;
   int MFID, MBBID, prevMFID = 0;
-  std::vector<std::string> preds;
-  std::vector<std::string> succs;
 
   for (std::list<std::string>::const_iterator MBBI =
            MAI->getBC()->MBBLayoutOrder.begin();
