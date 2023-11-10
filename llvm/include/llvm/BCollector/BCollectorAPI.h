@@ -7,7 +7,6 @@
 #include "llvm/CodeGen/MachineFunction.h"
 #include "llvm/CodeGen/MachineInstr.h"
 #include "llvm/IR/DebugInfoMetadata.h"
-// #include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCAsmLayout.h"
 #include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCInst.h"
@@ -72,7 +71,8 @@ public:
     return std::make_tuple(std::stoi(ID.substr(0, ID.find("_"))),
                            std::stoi(ID.substr(ID.find("_") + 1, ID.length())));
   }
-
+  
+  //map of Jump table entries and their corresponding targets
   mutable std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> JumpTableTargets;
   std::string FixupParentID;
   bool isJumpTableRef = false;
@@ -259,6 +259,7 @@ public:
   virtual ~BasicBlockCollector() {}
 };
 
+// Adds a v table entry for the particular class name. 
 class ClassCollector : public BCollector {
 public:
   void addVTable(const std::string &classname,

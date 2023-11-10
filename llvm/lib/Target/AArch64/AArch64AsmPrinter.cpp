@@ -203,29 +203,28 @@ private:
 MCInst &setMetaDataAArch64(const MachineInstr *MI, MCInst *Inst) {
   std::set<std::string> Preds;
   std::set<std::string> Succs;
-  // LLVM_DEBUG(dbgs() << "Successors: ");
-  const auto &succs = MI->getParent()->successors();
-  for (auto succ = succs.begin(); succ != succs.end(); succ++) {
+
+  const MachineBasicBlock *MBBa = MI->getParent();
+  using IteratorTypeSucc = MachineBasicBlock::const_succ_iterator;
+  for (IteratorTypeSucc Succ = MBBa->succ_begin(); Succ != MBBa->succ_end(); Succ++) {
     // LLVM_DEBUG(dbgs() << (*succ)->getNumber() << "\n");
-    unsigned SMBBID = (*succ)->getNumber();
-    unsigned SMFID = (*succ)->getParent()->getFunctionNumber();
+    unsigned SMBBID = (*Succ)->getNumber();
+    unsigned SMFID = (*Succ)->getParent()->getFunctionNumber();
     const std::string &SID =
         std::to_string(SMFID) + "_" + std::to_string(SMBBID);
     Succs.insert(SID);
   }
-  // LLVM_DEBUG(dbgs() << "\n");
-  // LLVM_DEBUG(dbgs() << "Predecessors: ");
-  const auto &preds = MI->getParent()->predecessors();
-  for (auto pred = preds.begin(); pred != preds.end(); pred++) {
-    // LLVM_DEBUG(dbgs() << (*pred)->getNumber() << "\n");
-    unsigned PMBBID = (*pred)->getNumber();
-    unsigned PMFID = (*pred)->getParent()->getFunctionNumber();
+
+  using IteratorTypePred = MachineBasicBlock::const_pred_iterator;
+  for (IteratorTypePred Pred = MBBa->pred_begin(); Pred != MBBa->pred_end(); Pred++) {
+    
+    unsigned PMBBID = (*Pred)->getNumber();
+    unsigned PMFID = (*Pred)->getParent()->getFunctionNumber();
     const std::string &PID =
         std::to_string(PMFID) + "_" + std::to_string(PMBBID);
     Preds.insert(PID);
   }
-  // LLVM_DEBUG(dbgs() << "\n");
-  const MachineBasicBlock *MBBa = MI->getParent();
+
   unsigned MBBID = MBBa->getNumber();
   unsigned MFID = MBBa->getParent()->getFunctionNumber();
   unsigned funcsize = MBBa->getParent()->size();
