@@ -33,6 +33,7 @@
 #include <cstdint>
 #include <iterator>
 #include <vector>
+#include <map>
 
 // Helper macros for defining get() overrides.
 #define DEFINE_MDNODE_GET_UNPACK_IMPL(...) __VA_ARGS__
@@ -218,7 +219,62 @@ public:
   }
 };
 
-/// Generic tagged DWARF-like metadata node.
+class BingeMDNode : public MDTuple {
+public:
+    // Delete the new operator to ensure instances can only be allocated using the LLVM context.
+    void* operator new(size_t) = delete;
+
+    // Add getters for the additional data members here.
+    const std::map<std::string, std::map<Value*, std::string>>& getBingeIRSrcInfo() const {
+      return BingeIRSrcInfo;
+    }
+
+    const std::string& getFunctionName() const {
+      return FunctionName;
+    }
+
+    const std::string& getFileName() const {
+      return FileName;
+    }
+
+    const std::vector<Value*> getBingeInterestingInstructions() const {
+      return BingeInterestingInstructions;
+    }
+
+    // Provide a static creation method that uses the LLVMContext to allocate an instance.
+    static BingeMDNode *get(LLVMContext &Context,
+                            std::map<std::string, std::map<Value*, std::string>> BingeIRSrcInfoArg,
+                            std::map<std::string, std::set<std::string>>MangledClassNameToVirtualTableSizeInfoIR,
+                            std::vector<Value*> BingeInterestingInstructionsArg,
+                            std::string FunctionNameArg,
+                            std::string FileNameArg,
+                            std::map<Metadata*, Value*> &metadataValueMap) {
+
+      std::vector<Metadata*> MDs;
+
+      // Create an MDString for the name of the instruction
+      MDString *FunctionName = MDString::get(Context, FunctionNameArg);
+      // Add it to the metadata list
+      MDs.push_back(FunctionName);
+      MDString *FileName = MDString::get(Context, FileNameArg);
+      // Add it to the metadata list
+      MDs.push_back(FileName);
+
+      // Create the MDTuple as usual.
+      MDTuple *Tuple = MDTuple::get(Context, MDs);
+
+      // Then cast it to our subclass and set the additional data members.
+      BingeMDNode *Node = static_cast<BingeMDNode*>(Tuple);
+      Node->BingeIRSrcInfo = BingeIRSrcInfoArg;
+      Node->MangledClassNameToVirtualTableSizeInfoIR = MangledClassNameToVirtualTableSizeInfoIR;
+      Node->BingeInterestingInstructions = BingeInterestingInstructionsArg;
+      Node->FunctionName = FunctionNameArg;
+      Node->FileName = FileNameArg;
+      return Node;
+    }
+};
+
+    /// Generic tagged DWARF-like metadata node.
 ///
 /// An un-specialized DWARF-like metadata node.  The first operand is a
 /// (possibly empty) null-separated \a MDString header that contains arbitrary

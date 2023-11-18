@@ -23,6 +23,8 @@
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/ASTLambda.h"
 #include "clang/AST/Attr.h"
+#include "clang/AST/BingeFrontEndCollector.h"
+#include "clang/AST/BingeCollectCXXInfo.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/Expr.h"
@@ -30,17 +32,21 @@
 #include "clang/AST/StmtObjC.h"
 #include "clang/Basic/Builtins.h"
 #include "clang/Basic/CodeGenOptions.h"
+#include "clang/Basic/SourceManager.h"
 #include "clang/Basic/TargetInfo.h"
 #include "clang/CodeGen/CGFunctionInfo.h"
 #include "clang/Frontend/FrontendDiagnostic.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/Frontend/OpenMP/OMPIRBuilder.h"
+#include "llvm/IR/BingeIRMetadata.h"
 #include "llvm/IR/DataLayout.h"
+#include "llvm/IR/DebugInfoMetadata.h"
 #include "llvm/IR/Dominators.h"
 #include "llvm/IR/FPEnv.h"
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/MDBuilder.h"
+#include "llvm/IR/Metadata.h"
 #include "llvm/IR/Operator.h"
 #include "llvm/Support/CRC.h"
 #include "llvm/Transforms/Scalar/LowerExpectIntrinsic.h"
@@ -356,6 +362,7 @@ void CodeGenFunction::FinishFunction(SourceLocation EndLoc) {
   bool HasOnlyLifetimeMarkers =
       HasCleanups && EHStack.containsOnlyLifetimeMarkers(PrologueCleanupDepth);
   bool EmitRetDbgLoc = !HasCleanups || HasOnlyLifetimeMarkers;
+  bool EmitBingeMetadata = CGM.getCodeGenOpts().binbench_collector;
   if (HasCleanups) {
     // Make sure the line table doesn't jump back into the body for
     // the ret after it's been at EndLoc.
@@ -402,6 +409,20 @@ void CodeGenFunction::FinishFunction(SourceLocation EndLoc) {
     EmitBlock(IndirectBranch->getParent());
     Builder.ClearInsertionPoint();
   }
+  auto &SM = CurFuncDecl->getASTContext().getSourceManager();
+  std::string const fileName = SM.getFilename(CurFuncDecl->getBeginLoc()).str();
+  std::map<llvm::Metadata*, llvm::Value*> metadataValueMap;
+
+  llvm::BingeMDNode *Node = llvm::BingeMDNode::get(CGM.getLLVMContext(),
+                                                   llvm::BingeIRMetadata::getBingeIRSrcInfo(),
+                                                   clang::ClassVTSizeCollector::MangledClassNameToVirtualTableSizeInfo,
+                                                   llvm::BingeIRMetadata::genBingeInterestingInstructions(),
+                                                   CurFn->getName().str(), fileName, metadataValueMap);
+  // Get metadata kind ID.
+  unsigned const BingeMDKindID = CurFn->getContext().getMDKindID("BingeIRMetadata");
+
+  // Set metadata for the function.
+  CurFn->setMetadata(BingeMDKindID, Node);
 
   // If some of our locals escaped, insert a call to llvm.localescape in the
   // entry block.
@@ -1859,7 +1880,17 @@ void CodeGenFunction::EmitBranchOnBoolExpr(const Expr *Cond,
     ApplyDebugLocation DL(*this, Cond);
     CondV = EvaluateExprAsBool(Cond);
   }
+  //capture your shit here -->
+  if (BingeFrontEndCollector::isStmtCollectedAsBingeSrcInfo(Cond)) {
+    BingeFrontEndCollector::addValueStmtInfo(CondV, Cond);
+    auto &SM = CurFuncDecl->getASTContext().getSourceManager();
+    clang::PresumedLoc PLoc = SM.getPresumedLoc(CurFuncDecl->getBeginLoc());
 
+    if (PLoc.isValid()) {
+      std::string fileName = PLoc.getFilename();
+      llvm::BingeIRMetadata::AddBingeIRSrcInfo("Branch", CurFn, fileName, CondV);
+    }
+  }
   llvm::MDNode *Weights = nullptr;
   llvm::MDNode *Unpredictable = nullptr;
 

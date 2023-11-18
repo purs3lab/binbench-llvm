@@ -47,7 +47,6 @@
 #include "llvm/Support/ToolOutputFile.h"
 #include "llvm/Support/YAMLTraits.h"
 #include "llvm/Transforms/IPO/Internalize.h"
-
 #include <memory>
 using namespace clang;
 using namespace llvm;
