@@ -1078,6 +1078,82 @@ bool CodeGenFunction::isObviouslyBranchWithoutCleanups(JumpDest Dest) const {
   return false;
 }
 
+llvm::BranchInst* CodeGenFunction::BingeEmitBranchThroughCleanup(JumpDest Dest) {
+    assert(Dest.getScopeDepth().encloses(EHStack.stable_begin())
+           && "stale jump destination");
+
+    if (!HaveInsertPoint())
+        return NULL;
+
+    // Create the branch.
+    llvm::BranchInst *BI = Builder.CreateBr(Dest.getBlock());
+
+    // Calculate the innermost active normal cleanup.
+    EHScopeStack::stable_iterator
+            TopCleanup = EHStack.getInnermostActiveNormalCleanup();
+
+    // If we're not in an active normal cleanup scope, or if the
+    // destination scope is within the innermost active normal cleanup
+    // scope, we don't need to worry about fixups.
+    if (TopCleanup == EHStack.stable_end() ||
+        TopCleanup.encloses(Dest.getScopeDepth())) { // works for invalid
+        Builder.ClearInsertionPoint();
+        return BI;
+    }
+
+    // If we can't resolve the destination cleanup scope, just add this
+    // to the current cleanup scope as a branch fixup.
+    if (!Dest.getScopeDepth().isValid()) {
+        BranchFixup &Fixup = EHStack.addBranchFixup();
+        Fixup.Destination = Dest.getBlock();
+        Fixup.DestinationIndex = Dest.getDestIndex();
+        Fixup.InitialBranch = BI;
+        Fixup.OptimisticBranchBlock = nullptr;
+
+        Builder.ClearInsertionPoint();
+        return BI;
+    }
+
+    // Otherwise, thread through all the normal cleanups in scope.
+
+    // Store the index at the start.
+    llvm::ConstantInt *Index = Builder.getInt32(Dest.getDestIndex());
+    createStoreInstBefore(Index, getNormalCleanupDestSlot(), BI);
+
+    // Adjust BI to point to the first cleanup block.
+    {
+        EHCleanupScope &Scope =
+                cast<EHCleanupScope>(*EHStack.find(TopCleanup));
+        BI->setSuccessor(0, CreateNormalEntry(*this, Scope));
+    }
+
+    // Add this destination to all the scopes involved.
+    EHScopeStack::stable_iterator I = TopCleanup;
+    EHScopeStack::stable_iterator E = Dest.getScopeDepth();
+    if (E.strictlyEncloses(I)) {
+        while (true) {
+            EHCleanupScope &Scope = cast<EHCleanupScope>(*EHStack.find(I));
+            assert(Scope.isNormalCleanup());
+            I = Scope.getEnclosingNormalCleanup();
+
+            // If this is the last cleanup we're propagating through, tell it
+            // that there's a resolved jump moving through it.
+            if (!E.strictlyEncloses(I)) {
+                Scope.addBranchAfter(Index, Dest.getBlock());
+                break;
+            }
+
+            // Otherwise, tell the scope that there's a jump propagating
+            // through it.  If this isn't new information, all the rest of
+            // the work has been done before.
+            if (!Scope.addBranchThrough(Dest.getBlock()))
+                break;
+        }
+    }
+
+    Builder.ClearInsertionPoint();
+    return BI;
+}
 
 /// Terminate the current block by emitting a branch which might leave
 /// the current cleanup-protected scope.  The target scope may not yet
