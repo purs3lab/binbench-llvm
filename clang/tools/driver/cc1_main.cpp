@@ -48,6 +48,8 @@
 
 #ifdef CLANG_HAVE_RLIMITS
 #include <sys/resource.h>
+#include <clang/AST/BingeCollectCXXInfo.h>
+
 #endif
 
 using namespace clang;

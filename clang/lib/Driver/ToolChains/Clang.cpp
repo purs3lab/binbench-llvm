@@ -4755,7 +4755,8 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
     if (JA.getType() == types::TY_LLVM_BC)
       CmdArgs.push_back("-emit-llvm-uselists");
 
-    if (Args.hasFlag(options::OPT_fbinbench_collector, false)) {
+    if (Args.hasFlag(options::OPT_fbinbench_collector, options::OPT_fno_binbench_collector,
+                     false)) {
       CmdArgs.push_back("-fbinbench_collector");
     }
 
