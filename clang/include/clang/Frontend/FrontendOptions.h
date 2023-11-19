@@ -432,6 +432,8 @@ public:
   /// The output file, if any.
   std::string OutputFile;
 
+  bool binbench_collector = false;
+  
   /// If given, the new suffix for fix-it rewritten files.
   std::string FixItSuffix;
 
