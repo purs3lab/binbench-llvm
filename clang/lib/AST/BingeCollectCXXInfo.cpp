@@ -14,7 +14,10 @@ void ClassVTSizeCollector::collectMangledNameAndVTableSize(ASTContext &Context, 
             llvm::raw_string_ostream MangledNameStream(MangledName);
             clang::DiagnosticsEngine &DE = Context.getDiagnostics();
             clang::ItaniumMangleContext* mangleContext_ = clang::ItaniumMangleContext::create(Context, DE);
-            mangleContext_->mangleCXXName(RD, MangledNameStream);
+
+            // Use appropriate mangling function
+            // For example, mangleCXXVTable for class VTable name
+            mangleContext_->mangleCXXVTable(RD, MangledNameStream);
             MangledNameStream.flush();
 
             // Get vtable size
