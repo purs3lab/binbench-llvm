@@ -3023,8 +3023,8 @@ defm stack_size_section : BoolFOption<"stack-size-section",
   CodeGenOpts<"StackSizeSection">, DefaultFalse,
   PosFlag<SetTrue, [CC1Option], "Emit section containing metadata on function stack sizes">,
   NegFlag<SetFalse>>;
-defm binbench_collector : BoolFOption<"binbench_collector",
-  CodeGenOpts<"binbench_collector">, DefaultFalse,
+defm fbinbench_collector : BoolFOption<"fbinbench_collector",
+  CodeGenOpts<"fbinbench_collector">, DefaultFalse,
   PosFlag<SetTrue, [CC1Option], "Enables Enable BinBenchCollector">, NegFlag<SetFalse>>;
 def fstack_usage : Flag<["-"], "fstack-usage">, Group<f_Group>,
   HelpText<"Emit .su file containing information on function stack sizes">;

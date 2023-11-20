@@ -466,7 +466,6 @@ static bool FixupInvocation(CompilerInvocation &Invocation,
   FrontendOptions &FrontendOpts = Invocation.getFrontendOpts();
   CodeGenOpts.XRayInstrumentFunctions = LangOpts.XRayInstrument;
   CodeGenOpts.binbench_collector = LangOpts.fbinbench_collector;
-  FrontendOpts.binbench_collector = LangOpts.fbinbench_collector;
   CodeGenOpts.XRayAlwaysEmitCustomEvents = LangOpts.XRayAlwaysEmitCustomEvents;
   CodeGenOpts.XRayAlwaysEmitTypedEvents = LangOpts.XRayAlwaysEmitTypedEvents;
   CodeGenOpts.DisableFree = FrontendOpts.DisableFree;

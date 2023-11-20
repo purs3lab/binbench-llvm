@@ -49,6 +49,7 @@
 #ifdef CLANG_HAVE_RLIMITS
 #include <sys/resource.h>
 #include <clang/AST/BingeCollectCXXInfo.h>
+#include <iostream>
 
 #endif
 
@@ -248,7 +249,7 @@ int cc1_main(ArrayRef<const char *> Argv, const char *Argv0, void *MainAddr) {
 
   // Execute the frontend actions.
   //check if this flag is set
-  if (Clang->getFrontendOpts().binbench_collector)
+  if (Clang->getCodeGenOpts().binbench_collector)
   {
     llvm::TimeTraceScope TimeScope("ExecuteCompiler");
     auto ConditionStmtTypeFE_Action = std::make_unique<ConditionStmtTypeFEAction>();

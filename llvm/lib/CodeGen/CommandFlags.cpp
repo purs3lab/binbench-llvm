@@ -93,6 +93,7 @@ CGOPT(bool, UniqueBasicBlockSectionNames)
 CGOPT(EABI, EABIVersion)
 CGOPT(DebuggerKind, DebuggerTuningOpt)
 CGOPT(bool, EnableStackSizeSection)
+CGOPT(bool, binbench_collector)
 CGOPT(bool, EnableAddrsig)
 CGOPT(bool, EmitCallSiteInfo)
 CGOPT(bool, EnableMachineFunctionSplitter)
@@ -434,6 +435,13 @@ codegen::RegisterCodeGenFlags::RegisterCodeGenFlags() {
       cl::init(false));
   CGBINDOPT(EnableStackSizeSection);
 
+  static cl::opt<bool> binbench_collector(
+          "binbench_collector",
+          cl::desc("Enable binbench collector"),
+          cl::init(false));
+  CGBINDOPT(binbench_collector);
+
+
   static cl::opt<bool> EnableAddrsig(
       "addrsig", cl::desc("Emit an address-significance table"),
       cl::init(false));
@@ -551,6 +559,7 @@ codegen::InitTargetOptionsFromCodeGenFlags(const Triple &TheTriple) {
   Options.ExplicitEmulatedTLS = EmulatedTLSView->getNumOccurrences() > 0;
   Options.ExceptionModel = getExceptionModel();
   Options.EmitStackSizeSection = getEnableStackSizeSection();
+  Options.binbench_collector = getbinbench_collector();
   Options.EnableMachineFunctionSplitter = getEnableMachineFunctionSplitter();
   Options.EmitAddrsig = getEnableAddrsig();
   Options.EmitCallSiteInfo = getEmitCallSiteInfo();
