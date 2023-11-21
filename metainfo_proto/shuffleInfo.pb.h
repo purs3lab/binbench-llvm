@@ -1517,6 +1517,7 @@ class ReorderInfo_FixupInfo_FixupTuple PROTOBUF_FINAL :
     kTypeFieldNumber = 4,
     kNumJtEntriesFieldNumber = 6,
     kJtEntrySzFieldNumber = 7,
+    kDstOffsetFieldNumber = 8,
   };
   // optional string section_name = 5;
   bool has_section_name() const;
@@ -1616,6 +1617,19 @@ class ReorderInfo_FixupInfo_FixupTuple PROTOBUF_FINAL :
   void _internal_set_jt_entry_sz(::PROTOBUF_NAMESPACE_ID::uint32 value);
   public:
 
+  // optional int32 dst_offset = 8;
+  bool has_dst_offset() const;
+  private:
+  bool _internal_has_dst_offset() const;
+  public:
+  void clear_dst_offset();
+  ::PROTOBUF_NAMESPACE_ID::int32 dst_offset() const;
+  void set_dst_offset(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_dst_offset() const;
+  void _internal_set_dst_offset(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
   // @@protoc_insertion_point(class_scope:ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple)
  private:
   class _Internal;
@@ -1635,6 +1649,7 @@ class ReorderInfo_FixupInfo_FixupTuple PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::uint32 type_;
   ::PROTOBUF_NAMESPACE_ID::uint32 num_jt_entries_;
   ::PROTOBUF_NAMESPACE_ID::uint32 jt_entry_sz_;
+  ::PROTOBUF_NAMESPACE_ID::int32 dst_offset_;
   friend struct ::TableStruct_shuffleInfo_2eproto;
 };
 // -------------------------------------------------------------------
@@ -3959,6 +3974,34 @@ inline void ReorderInfo_FixupInfo_FixupTuple::_internal_set_deref_sz(::PROTOBUF_
 inline void ReorderInfo_FixupInfo_FixupTuple::set_deref_sz(::PROTOBUF_NAMESPACE_ID::uint32 value) {
   _internal_set_deref_sz(value);
   // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple.deref_sz)
+}
+
+// optional int32 dst_offset = 8;
+inline bool ReorderInfo_FixupInfo_FixupTuple::_internal_has_dst_offset() const {
+  bool value = (_has_bits_[0] & 0x00000080u) != 0;
+  return value;
+}
+inline bool ReorderInfo_FixupInfo_FixupTuple::has_dst_offset() const {
+  return _internal_has_dst_offset();
+}
+inline void ReorderInfo_FixupInfo_FixupTuple::clear_dst_offset() {
+  dst_offset_ = 0;
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 ReorderInfo_FixupInfo_FixupTuple::_internal_dst_offset() const {
+  return dst_offset_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 ReorderInfo_FixupInfo_FixupTuple::dst_offset() const {
+  // @@protoc_insertion_point(field_get:ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple.dst_offset)
+  return _internal_dst_offset();
+}
+inline void ReorderInfo_FixupInfo_FixupTuple::_internal_set_dst_offset(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _has_bits_[0] |= 0x00000080u;
+  dst_offset_ = value;
+}
+inline void ReorderInfo_FixupInfo_FixupTuple::set_dst_offset(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_dst_offset(value);
+  // @@protoc_insertion_point(field_set:ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple.dst_offset)
 }
 
 // required bool is_rela = 3;

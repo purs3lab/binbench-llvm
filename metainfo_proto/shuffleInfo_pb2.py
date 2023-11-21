@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto2',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x11shuffleInfo.proto\x12\x0bShuffleInfo\"\x98\x0c\n\x0bReorderInfo\x12\x30\n\x03\x62in\x18\x01 \x01(\x0b\x32#.ShuffleInfo.ReorderInfo.BinaryInfo\x12\x33\n\x04\x66unc\x18\x05 \x03(\x0b\x32%.ShuffleInfo.ReorderInfo.FunctionInfo\x12\x33\n\x06layout\x18\x02 \x03(\x0b\x32#.ShuffleInfo.ReorderInfo.LayoutInfo\x12\x31\n\x05\x66ixup\x18\x03 \x03(\x0b\x32\".ShuffleInfo.ReorderInfo.FixupInfo\x12\x37\n\x0b\x63lass_proto\x18\x06 \x03(\x0b\x32\".ShuffleInfo.ReorderInfo.ClassInfo\x12\x37\n\x07\x66unc_cg\x18\x07 \x03(\x0b\x32&.ShuffleInfo.ReorderInfo.CallGraphInfo\x12\x33\n\x06source\x18\x04 \x01(\x0b\x32#.ShuffleInfo.ReorderInfo.SourceInfo\x1a\x61\n\nBinaryInfo\x12\x17\n\x0frand_obj_offset\x18\x01 \x01(\r\x12\x18\n\x10main_addr_offset\x18\x02 \x01(\r\x12\x0e\n\x06obj_sz\x18\x03 \x01(\r\x12\x10\n\x08src_type\x18\x04 \x01(\r\x1a\xe9\x01\n\nLayoutInfo\x12\x0f\n\x07\x62\x62_size\x18\x01 \x01(\x04\x12\x0c\n\x04type\x18\x02 \x01(\x04\x12\x0e\n\x06offset\x18\x06 \x01(\x04\x12\r\n\x05nargs\x18\t \x01(\r\x12\r\n\x05\x62\x62_id\x18\n \x01(\t\x12\r\n\x05succs\x18\x0b \x03(\t\x12\r\n\x05preds\x18\x0c \x03(\t\x12\x12\n\nnum_fixups\x18\x03 \x01(\r\x12\x16\n\x0e\x62\x62_fallthrough\x18\x04 \x01(\x08\x12\x14\n\x0csection_name\x18\x05 \x01(\t\x12\x14\n\x0cpadding_size\x18\x07 \x01(\r\x12\x18\n\rassemble_type\x18\x08 \x01(\r:\x01\x30\x1a\xd6\x01\n\x0c\x46unctionInfo\x12\x0c\n\x04\x66_id\x18\x01 \x01(\t\x12\x0e\n\x06\x66_name\x18\x02 \x01(\t\x12\x0e\n\x06\x62\x62_num\x18\x03 \x01(\x04\x12\r\n\x05nargs\x18\x04 \x01(\x04\x12\x10\n\x08\x61rgsizes\x18\x05 \x03(\x04\x12\x11\n\targ_types\x18\n \x03(\t\x12\x17\n\x0flocal_var_names\x18\x06 \x03(\t\x12\x19\n\x11local_var_offsets\x18\x07 \x03(\x03\x12\x17\n\x0flocal_var_types\x18\x08 \x03(\t\x12\x17\n\x0flocal_var_sizes\x18\t \x03(\x04\x1a\x30\n\tClassInfo\x12\x13\n\x0bvtable_name\x18\x01 \x01(\t\x12\x0e\n\x06ventry\x18\x02 \x03(\t\x1a=\n\rCallGraphInfo\x12\x0e\n\x06\x66_name\x18\x01 \x01(\t\x12\r\n\x05succs\x18\x02 \x03(\t\x12\r\n\x05preds\x18\x03 \x03(\t\x1a\xd9\x03\n\tFixupInfo\x12;\n\x04text\x18\x01 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x12=\n\x06rodata\x18\x02 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x12;\n\x04\x64\x61ta\x18\x03 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x12>\n\x07\x64\x61tarel\x18\x04 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x12@\n\tinitarray\x18\x05 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x1a\x90\x01\n\nFixupTuple\x12\x0e\n\x06offset\x18\x01 \x02(\r\x12\x10\n\x08\x64\x65ref_sz\x18\x02 \x02(\r\x12\x0f\n\x07is_rela\x18\x03 \x02(\x08\x12\x0c\n\x04type\x18\x04 \x01(\r\x12\x14\n\x0csection_name\x18\x05 \x01(\t\x12\x16\n\x0enum_jt_entries\x18\x06 \x01(\r\x12\x13\n\x0bjt_entry_sz\x18\x07 \x01(\r\x1a\x1e\n\nSourceInfo\x12\x10\n\x08src_type\x18\x01 \x03(\r'
+  serialized_pb=b'\n\x11shuffleInfo.proto\x12\x0bShuffleInfo\"\xac\x0c\n\x0bReorderInfo\x12\x30\n\x03\x62in\x18\x01 \x01(\x0b\x32#.ShuffleInfo.ReorderInfo.BinaryInfo\x12\x33\n\x04\x66unc\x18\x05 \x03(\x0b\x32%.ShuffleInfo.ReorderInfo.FunctionInfo\x12\x33\n\x06layout\x18\x02 \x03(\x0b\x32#.ShuffleInfo.ReorderInfo.LayoutInfo\x12\x31\n\x05\x66ixup\x18\x03 \x03(\x0b\x32\".ShuffleInfo.ReorderInfo.FixupInfo\x12\x37\n\x0b\x63lass_proto\x18\x06 \x03(\x0b\x32\".ShuffleInfo.ReorderInfo.ClassInfo\x12\x37\n\x07\x66unc_cg\x18\x07 \x03(\x0b\x32&.ShuffleInfo.ReorderInfo.CallGraphInfo\x12\x33\n\x06source\x18\x04 \x01(\x0b\x32#.ShuffleInfo.ReorderInfo.SourceInfo\x1a\x61\n\nBinaryInfo\x12\x17\n\x0frand_obj_offset\x18\x01 \x01(\r\x12\x18\n\x10main_addr_offset\x18\x02 \x01(\r\x12\x0e\n\x06obj_sz\x18\x03 \x01(\r\x12\x10\n\x08src_type\x18\x04 \x01(\r\x1a\xe9\x01\n\nLayoutInfo\x12\x0f\n\x07\x62\x62_size\x18\x01 \x01(\x04\x12\x0c\n\x04type\x18\x02 \x01(\x04\x12\x0e\n\x06offset\x18\x06 \x01(\x04\x12\r\n\x05nargs\x18\t \x01(\r\x12\r\n\x05\x62\x62_id\x18\n \x01(\t\x12\r\n\x05succs\x18\x0b \x03(\t\x12\r\n\x05preds\x18\x0c \x03(\t\x12\x12\n\nnum_fixups\x18\x03 \x01(\r\x12\x16\n\x0e\x62\x62_fallthrough\x18\x04 \x01(\x08\x12\x14\n\x0csection_name\x18\x05 \x01(\t\x12\x14\n\x0cpadding_size\x18\x07 \x01(\r\x12\x18\n\rassemble_type\x18\x08 \x01(\r:\x01\x30\x1a\xd6\x01\n\x0c\x46unctionInfo\x12\x0c\n\x04\x66_id\x18\x01 \x01(\t\x12\x0e\n\x06\x66_name\x18\x02 \x01(\t\x12\x0e\n\x06\x62\x62_num\x18\x03 \x01(\x04\x12\r\n\x05nargs\x18\x04 \x01(\x04\x12\x10\n\x08\x61rgsizes\x18\x05 \x03(\x04\x12\x11\n\targ_types\x18\n \x03(\t\x12\x17\n\x0flocal_var_names\x18\x06 \x03(\t\x12\x19\n\x11local_var_offsets\x18\x07 \x03(\x03\x12\x17\n\x0flocal_var_types\x18\x08 \x03(\t\x12\x17\n\x0flocal_var_sizes\x18\t \x03(\x04\x1a\x30\n\tClassInfo\x12\x13\n\x0bvtable_name\x18\x01 \x01(\t\x12\x0e\n\x06ventry\x18\x02 \x03(\t\x1a=\n\rCallGraphInfo\x12\x0e\n\x06\x66_name\x18\x01 \x01(\t\x12\r\n\x05succs\x18\x02 \x03(\t\x12\r\n\x05preds\x18\x03 \x03(\t\x1a\xed\x03\n\tFixupInfo\x12;\n\x04text\x18\x01 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x12=\n\x06rodata\x18\x02 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x12;\n\x04\x64\x61ta\x18\x03 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x12>\n\x07\x64\x61tarel\x18\x04 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x12@\n\tinitarray\x18\x05 \x03(\x0b\x32-.ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple\x1a\xa4\x01\n\nFixupTuple\x12\x0e\n\x06offset\x18\x01 \x02(\r\x12\x10\n\x08\x64\x65ref_sz\x18\x02 \x02(\r\x12\x12\n\ndst_offset\x18\x08 \x01(\x05\x12\x0f\n\x07is_rela\x18\x03 \x02(\x08\x12\x0c\n\x04type\x18\x04 \x01(\r\x12\x14\n\x0csection_name\x18\x05 \x01(\t\x12\x16\n\x0enum_jt_entries\x18\x06 \x01(\r\x12\x13\n\x0bjt_entry_sz\x18\x07 \x01(\r\x1a\x1e\n\nSourceInfo\x12\x10\n\x08src_type\x18\x01 \x03(\r'
 )
 
 
@@ -385,35 +385,42 @@ _REORDERINFO_FIXUPINFO_FIXUPTUPLE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='is_rela', full_name='ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple.is_rela', index=2,
+      name='dst_offset', full_name='ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple.dst_offset', index=2,
+      number=8, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='is_rela', full_name='ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple.is_rela', index=3,
       number=3, type=8, cpp_type=7, label=2,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='type', full_name='ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple.type', index=3,
+      name='type', full_name='ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple.type', index=4,
       number=4, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='section_name', full_name='ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple.section_name', index=4,
+      name='section_name', full_name='ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple.section_name', index=5,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='num_jt_entries', full_name='ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple.num_jt_entries', index=5,
+      name='num_jt_entries', full_name='ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple.num_jt_entries', index=6,
       number=6, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='jt_entry_sz', full_name='ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple.jt_entry_sz', index=6,
+      name='jt_entry_sz', full_name='ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple.jt_entry_sz', index=7,
       number=7, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -432,7 +439,7 @@ _REORDERINFO_FIXUPINFO_FIXUPTUPLE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=1419,
-  serialized_end=1563,
+  serialized_end=1583,
 )
 
 _REORDERINFO_FIXUPINFO = _descriptor.Descriptor(
@@ -491,7 +498,7 @@ _REORDERINFO_FIXUPINFO = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=1090,
-  serialized_end=1563,
+  serialized_end=1583,
 )
 
 _REORDERINFO_SOURCEINFO = _descriptor.Descriptor(
@@ -521,8 +528,8 @@ _REORDERINFO_SOURCEINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1565,
-  serialized_end=1595,
+  serialized_start=1585,
+  serialized_end=1615,
 )
 
 _REORDERINFO = _descriptor.Descriptor(
@@ -595,7 +602,7 @@ _REORDERINFO = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=35,
-  serialized_end=1595,
+  serialized_end=1615,
 )
 
 _REORDERINFO_BINARYINFO.containing_type = _REORDERINFO

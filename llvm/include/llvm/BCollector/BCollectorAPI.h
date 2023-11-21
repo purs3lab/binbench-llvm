@@ -190,6 +190,15 @@ public:
     JumpTableTargets[Key] = std::make_tuple(EntryKind, EntrySize, JTEntries);
   }
 
+  void incrementJTE(const std::string &Key) const {
+    for (auto& item : FixupsText) {
+        if (std::get<4>(item) == Key) {
+            std::get<7>(item)++; 
+            break; 
+        }
+    }
+  }
+
   const std::tuple<unsigned, unsigned, std::list<std::string>> &
   getJumpTableTargetEntry(const std::string &Key) const {
     return JumpTableTargets[Key];

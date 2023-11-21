@@ -70,6 +70,7 @@ message ReorderInfo {
     message FixupTuple {
       required uint32 offset = 1; // UPDATE AT LINKTIME WHEN COMBINING SECTIONS
       required uint32 deref_sz = 2;
+      optional int32 dst_offset = 8; // offset of the destination symbol
       required bool is_rela = 3;
       optional uint32 type = 4; // c2c, c2d, d2c, d2d = (0-3)
       optional string section_name =

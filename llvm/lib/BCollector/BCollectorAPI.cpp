@@ -329,6 +329,8 @@ void BCollector::setFixups(FIXUPTYPE &Fixups,
     else
       pFixupTuple->set_type(
           0); // c2c, c2d, d2c, d2d default=0; should be updated by linker
+              //
+    pFixupTuple->set_dst_offset(-1); // Should be updated at linking time
 
     // The following jump table information is fixups in .text for JT entry
     // update only (pic/pie)

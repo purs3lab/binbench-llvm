@@ -384,6 +384,7 @@ void MachineFunction::RecordMachineJumpTableInfo(MachineJumpTableInfo *MJTI) {
           std::to_string(MFID) + "_" + std::to_string(JTI);
       std::list<std::string> JTEntries;
       // Walk through all Jump Table Entries (MBBs) to get targets
+      DEBUG_WITH_TYPE("binbench", dbgs() << "MJTKey: " << MJTKey << "Size " << std::to_string(JTBBs.size()) << "\n");
       for (unsigned ii = 0, ee = JTBBs.size(); ii != ee; ++ii) {
         unsigned MBBID = JTBBs[ii]->getNumber();
         JTEntries.push_back(std::to_string(MFID) + "_" + std::to_string(MBBID));

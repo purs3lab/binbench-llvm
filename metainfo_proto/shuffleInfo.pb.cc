@@ -111,7 +111,8 @@ constexpr ReorderInfo_FixupInfo_FixupTuple::ReorderInfo_FixupInfo_FixupTuple(
   , is_rela_(false)
   , type_(0u)
   , num_jt_entries_(0u)
-  , jt_entry_sz_(0u){}
+  , jt_entry_sz_(0u)
+  , dst_offset_(0){}
 struct ReorderInfo_FixupInfo_FixupTupleDefaultTypeInternal {
   constexpr ReorderInfo_FixupInfo_FixupTupleDefaultTypeInternal()
     : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
@@ -267,6 +268,7 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_shuffleInfo_2eproto::offsets[]
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(::ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple, offset_),
   PROTOBUF_FIELD_OFFSET(::ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple, deref_sz_),
+  PROTOBUF_FIELD_OFFSET(::ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple, dst_offset_),
   PROTOBUF_FIELD_OFFSET(::ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple, is_rela_),
   PROTOBUF_FIELD_OFFSET(::ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple, type_),
   PROTOBUF_FIELD_OFFSET(::ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple, section_name_),
@@ -274,6 +276,7 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_shuffleInfo_2eproto::offsets[]
   PROTOBUF_FIELD_OFFSET(::ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple, jt_entry_sz_),
   1,
   2,
+  7,
   3,
   4,
   0,
@@ -321,10 +324,10 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 42, 57, sizeof(::ShuffleInfo::ReorderInfo_FunctionInfo)},
   { 67, 74, sizeof(::ShuffleInfo::ReorderInfo_ClassInfo)},
   { 76, 84, sizeof(::ShuffleInfo::ReorderInfo_CallGraphInfo)},
-  { 87, 99, sizeof(::ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple)},
-  { 106, -1, sizeof(::ShuffleInfo::ReorderInfo_FixupInfo)},
-  { 116, -1, sizeof(::ShuffleInfo::ReorderInfo_SourceInfo)},
-  { 122, 134, sizeof(::ShuffleInfo::ReorderInfo)},
+  { 87, 100, sizeof(::ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple)},
+  { 108, -1, sizeof(::ShuffleInfo::ReorderInfo_FixupInfo)},
+  { 118, -1, sizeof(::ShuffleInfo::ReorderInfo_SourceInfo)},
+  { 124, 136, sizeof(::ShuffleInfo::ReorderInfo)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -340,7 +343,7 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 };
 
 const char descriptor_table_protodef_shuffleInfo_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\021shuffleInfo.proto\022\013ShuffleInfo\"\230\014\n\013Reo"
+  "\n\021shuffleInfo.proto\022\013ShuffleInfo\"\254\014\n\013Reo"
   "rderInfo\0220\n\003bin\030\001 \001(\0132#.ShuffleInfo.Reor"
   "derInfo.BinaryInfo\0223\n\004func\030\005 \003(\0132%.Shuff"
   "leInfo.ReorderInfo.FunctionInfo\0223\n\006layou"
@@ -367,7 +370,7 @@ const char descriptor_table_protodef_shuffleInfo_2eproto[] PROTOBUF_SECTION_VARI
   "ar_sizes\030\t \003(\004\0320\n\tClassInfo\022\023\n\013vtable_na"
   "me\030\001 \001(\t\022\016\n\006ventry\030\002 \003(\t\032=\n\rCallGraphInf"
   "o\022\016\n\006f_name\030\001 \001(\t\022\r\n\005succs\030\002 \003(\t\022\r\n\005pred"
-  "s\030\003 \003(\t\032\331\003\n\tFixupInfo\022;\n\004text\030\001 \003(\0132-.Sh"
+  "s\030\003 \003(\t\032\355\003\n\tFixupInfo\022;\n\004text\030\001 \003(\0132-.Sh"
   "uffleInfo.ReorderInfo.FixupInfo.FixupTup"
   "le\022=\n\006rodata\030\002 \003(\0132-.ShuffleInfo.Reorder"
   "Info.FixupInfo.FixupTuple\022;\n\004data\030\003 \003(\0132"
@@ -375,15 +378,16 @@ const char descriptor_table_protodef_shuffleInfo_2eproto[] PROTOBUF_SECTION_VARI
   "pTuple\022>\n\007datarel\030\004 \003(\0132-.ShuffleInfo.Re"
   "orderInfo.FixupInfo.FixupTuple\022@\n\tinitar"
   "ray\030\005 \003(\0132-.ShuffleInfo.ReorderInfo.Fixu"
-  "pInfo.FixupTuple\032\220\001\n\nFixupTuple\022\016\n\006offse"
-  "t\030\001 \002(\r\022\020\n\010deref_sz\030\002 \002(\r\022\017\n\007is_rela\030\003 \002"
-  "(\010\022\014\n\004type\030\004 \001(\r\022\024\n\014section_name\030\005 \001(\t\022\026"
-  "\n\016num_jt_entries\030\006 \001(\r\022\023\n\013jt_entry_sz\030\007 "
-  "\001(\r\032\036\n\nSourceInfo\022\020\n\010src_type\030\001 \003(\r"
+  "pInfo.FixupTuple\032\244\001\n\nFixupTuple\022\016\n\006offse"
+  "t\030\001 \002(\r\022\020\n\010deref_sz\030\002 \002(\r\022\022\n\ndst_offset\030"
+  "\010 \001(\005\022\017\n\007is_rela\030\003 \002(\010\022\014\n\004type\030\004 \001(\r\022\024\n\014"
+  "section_name\030\005 \001(\t\022\026\n\016num_jt_entries\030\006 \001"
+  "(\r\022\023\n\013jt_entry_sz\030\007 \001(\r\032\036\n\nSourceInfo\022\020\n"
+  "\010src_type\030\001 \003(\r"
   ;
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_shuffleInfo_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_shuffleInfo_2eproto = {
-  false, false, 1595, descriptor_table_protodef_shuffleInfo_2eproto, "shuffleInfo.proto", 
+  false, false, 1615, descriptor_table_protodef_shuffleInfo_2eproto, "shuffleInfo.proto", 
   &descriptor_table_shuffleInfo_2eproto_once, nullptr, 0, 9,
   schemas, file_default_instances, TableStruct_shuffleInfo_2eproto::offsets,
   file_level_metadata_shuffleInfo_2eproto, file_level_enum_descriptors_shuffleInfo_2eproto, file_level_service_descriptors_shuffleInfo_2eproto,
@@ -2413,6 +2417,9 @@ class ReorderInfo_FixupInfo_FixupTuple::_Internal {
   static void set_has_deref_sz(HasBits* has_bits) {
     (*has_bits)[0] |= 4u;
   }
+  static void set_has_dst_offset(HasBits* has_bits) {
+    (*has_bits)[0] |= 128u;
+  }
   static void set_has_is_rela(HasBits* has_bits) {
     (*has_bits)[0] |= 8u;
   }
@@ -2449,8 +2456,8 @@ ReorderInfo_FixupInfo_FixupTuple::ReorderInfo_FixupInfo_FixupTuple(const Reorder
       GetArena());
   }
   ::memcpy(&offset_, &from.offset_,
-    static_cast<size_t>(reinterpret_cast<char*>(&jt_entry_sz_) -
-    reinterpret_cast<char*>(&offset_)) + sizeof(jt_entry_sz_));
+    static_cast<size_t>(reinterpret_cast<char*>(&dst_offset_) -
+    reinterpret_cast<char*>(&offset_)) + sizeof(dst_offset_));
   // @@protoc_insertion_point(copy_constructor:ShuffleInfo.ReorderInfo.FixupInfo.FixupTuple)
 }
 
@@ -2458,8 +2465,8 @@ void ReorderInfo_FixupInfo_FixupTuple::SharedCtor() {
 section_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&offset_) - reinterpret_cast<char*>(this)),
-    0, static_cast<size_t>(reinterpret_cast<char*>(&jt_entry_sz_) -
-    reinterpret_cast<char*>(&offset_)) + sizeof(jt_entry_sz_));
+    0, static_cast<size_t>(reinterpret_cast<char*>(&dst_offset_) -
+    reinterpret_cast<char*>(&offset_)) + sizeof(dst_offset_));
 }
 
 ReorderInfo_FixupInfo_FixupTuple::~ReorderInfo_FixupInfo_FixupTuple() {
@@ -2493,10 +2500,10 @@ void ReorderInfo_FixupInfo_FixupTuple::Clear() {
   if (cached_has_bits & 0x00000001u) {
     section_name_.ClearNonDefaultToEmpty();
   }
-  if (cached_has_bits & 0x0000007eu) {
+  if (cached_has_bits & 0x000000feu) {
     ::memset(&offset_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&jt_entry_sz_) -
-        reinterpret_cast<char*>(&offset_)) + sizeof(jt_entry_sz_));
+        reinterpret_cast<char*>(&dst_offset_) -
+        reinterpret_cast<char*>(&offset_)) + sizeof(dst_offset_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
@@ -2566,6 +2573,14 @@ const char* ReorderInfo_FixupInfo_FixupTuple::_InternalParse(const char* ptr, ::
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 56)) {
           _Internal::set_has_jt_entry_sz(&has_bits);
           jt_entry_sz_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional int32 dst_offset = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 64)) {
+          _Internal::set_has_dst_offset(&has_bits);
+          dst_offset_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -2645,6 +2660,12 @@ failure:
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt32ToArray(7, this->_internal_jt_entry_sz(), target);
   }
 
+  // optional int32 dst_offset = 8;
+  if (cached_has_bits & 0x00000080u) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(8, this->_internal_dst_offset(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -2711,7 +2732,7 @@ size_t ReorderInfo_FixupInfo_FixupTuple::ByteSizeLong() const {
         this->_internal_section_name());
   }
 
-  if (cached_has_bits & 0x00000070u) {
+  if (cached_has_bits & 0x000000f0u) {
     // optional uint32 type = 4;
     if (cached_has_bits & 0x00000010u) {
       total_size += 1 +
@@ -2731,6 +2752,13 @@ size_t ReorderInfo_FixupInfo_FixupTuple::ByteSizeLong() const {
       total_size += 1 +
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt32Size(
           this->_internal_jt_entry_sz());
+    }
+
+    // optional int32 dst_offset = 8;
+    if (cached_has_bits & 0x00000080u) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+          this->_internal_dst_offset());
     }
 
   }
@@ -2766,7 +2794,7 @@ void ReorderInfo_FixupInfo_FixupTuple::MergeFrom(const ReorderInfo_FixupInfo_Fix
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 0x0000007fu) {
+  if (cached_has_bits & 0x000000ffu) {
     if (cached_has_bits & 0x00000001u) {
       _internal_set_section_name(from._internal_section_name());
     }
@@ -2787,6 +2815,9 @@ void ReorderInfo_FixupInfo_FixupTuple::MergeFrom(const ReorderInfo_FixupInfo_Fix
     }
     if (cached_has_bits & 0x00000040u) {
       jt_entry_sz_ = from.jt_entry_sz_;
+    }
+    if (cached_has_bits & 0x00000080u) {
+      dst_offset_ = from.dst_offset_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -2817,8 +2848,8 @@ void ReorderInfo_FixupInfo_FixupTuple::InternalSwap(ReorderInfo_FixupInfo_FixupT
   swap(_has_bits_[0], other->_has_bits_[0]);
   section_name_.Swap(&other->section_name_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(ReorderInfo_FixupInfo_FixupTuple, jt_entry_sz_)
-      + sizeof(ReorderInfo_FixupInfo_FixupTuple::jt_entry_sz_)
+      PROTOBUF_FIELD_OFFSET(ReorderInfo_FixupInfo_FixupTuple, dst_offset_)
+      + sizeof(ReorderInfo_FixupInfo_FixupTuple::dst_offset_)
       - PROTOBUF_FIELD_OFFSET(ReorderInfo_FixupInfo_FixupTuple, offset_)>(
           reinterpret_cast<char*>(&offset_),
           reinterpret_cast<char*>(&other->offset_));
