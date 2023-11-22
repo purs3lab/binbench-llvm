@@ -1027,6 +1027,9 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
                         IsResolved, STI);
                 // Koo: Collect fixups here (ELF format only)
                 if (true) {
+                    const llvm::MCAssembler &Assembler = Layout.getAssembler();
+                    const llvm::MCContext &Ctx = Assembler.getContext();
+                    const auto arch = Ctx.getTargetTriple().getArch();
                     unsigned offset = fragOffset + Fixup.getOffset();
                     DEBUG_WITH_TYPE("binbench",
                             dbgs() << "MCAssembler::layout - Fixup offset "
@@ -1058,7 +1061,9 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
                             std::tie(jtEntryKind, jtEntrySize, JTEs) =
                                 MAI->getBC()->getJumpTableTargetEntry(
                                         Fixup.getSymbolRefFixupName());
-                            // numJTEntries = JTEs.size();
+                            if (arch != 38) {
+                                numJTEntries = JTEs.size();
+                            }
                             // DEBUG_WITH_TYPE("binbench",
                             //                 dbgs() << "MCAssembler::layout - JT entry "
                             //                        << jtEntryKind << " " << jtEntrySize
@@ -1095,10 +1100,10 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
                                 DEBUG_WITH_TYPE("binbench",
                                         dbgs() << "MCAssembler::layout - JTE update rodata"
                                         << offset << " fixup name " << SymName << "\n");
-                                if (SymName.find(JTPrefix) != std::string::npos && !Fixup.getIsJumpTableRef() && SymName.length() > 13) {
+                                if (SymName.find(JTPrefix) != std::string::npos && !Fixup.getIsJumpTableRef() && SymName.length() > 13 && arch == 38) {
                                     MAI->getBC()->incrementJTE(SymName.substr(JTPrefix.length() + 8, SymName.length() - JTPrefix.length() - 8));
                                     DEBUG_WITH_TYPE("binbench",
-                                            dbgs() << "incrementJTE with "
+                                            dbgs() << "arch " << arch << "incrementJTE with "
                                             << SymName.substr(JTPrefix.length() + 8, SymName.length() - JTPrefix.length() - 8) << "\n");
                                 }
                         }
@@ -1143,7 +1148,7 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
                                 DEBUG_WITH_TYPE("binbench",
                                         dbgs() << "MCAssembler::layout - JTE update data"
                                         << offset << " fixup name " << SymName << "\n");
-                                if (SymName.find(JTPrefix) != std::string::npos && !Fixup.getIsJumpTableRef() && SymName.length() > 13) {
+                                if (SymName.find(JTPrefix) != std::string::npos && !Fixup.getIsJumpTableRef() && SymName.length() > 13 && arch == 38) {
                                     MAI->getBC()->incrementJTE(SymName.substr(JTPrefix.length() + 8, SymName.length() - JTPrefix.length() - 8));
                                 }
                                 MAI->getBC()->FixupsData.push_back(std::make_tuple(
