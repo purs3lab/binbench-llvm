@@ -5,41 +5,44 @@ using namespace clang;
 
 bool ConditionStmtTypeCollector::VisitFunctionDecl(FunctionDecl *FD) {
     currentFD = FD;
-    // Continue traversal
-    return true;
+    return true;  // Continue traversal
 }
 
-
 bool ConditionStmtTypeCollector::VisitStmt(Stmt *s) {
-    if (currentFD == NULL)
+    if (currentFD == nullptr)
         return true;
 
     std::string funcName = currentFD->getNameInfo().getName().getAsString();
-
-    // Obtain filename (module name)
     auto &SM = currentFD->getASTContext().getSourceManager();
     std::string fileName = SM.getFilename(currentFD->getBeginLoc()).str();
-
     std::string conditionCollectorKey = "ConditionCollector@" + fileName + "@" + funcName;
-    Stmt* StatementOfInterest = NULL;
-    std::string stmtType;
-    if (isa<IfStmt>(s)) {
-        stmtType = "If";
-        StatementOfInterest = dyn_cast<IfStmt>(s)->getCond();
-    } else if (isa<SwitchStmt>(s)) {
-        stmtType = "Switch";
-        StatementOfInterest = dyn_cast<SwitchStmt>(s)->getCond();
-    } else if (isa<GotoStmt>(s)) {
-        stmtType = "Goto";
-        StatementOfInterest = dyn_cast<GotoStmt>(s);
-    } else if (isa<ConditionalOperator>(s)) {
-        stmtType = "?:";
-        StatementOfInterest = dyn_cast<ConditionalOperator>(s)->getCond();
-    }
 
-    if (!stmtType.empty()) {
+    Stmt* StatementOfInterest = nullptr;
+    std::string stmtType;
+
+    if (auto *ifStmt = dyn_cast<IfStmt>(s)) {
+        stmtType = "If";
+        StatementOfInterest = ifStmt->getCond();
+        Collector.addNodeInfo(conditionCollectorKey, StatementOfInterest, stmtType);
+        if (ifStmt->getElse()) {
+            // Handle the else part
+            stmtType = "Else";
+            StatementOfInterest = ifStmt->getElse();
+            Collector.addNodeInfo(conditionCollectorKey, StatementOfInterest, stmtType);
+        }
+    } else if (auto *switchStmt = dyn_cast<SwitchStmt>(s)) {
+        stmtType = "Switch";
+        StatementOfInterest = switchStmt->getCond();
+        Collector.addNodeInfo(conditionCollectorKey, StatementOfInterest, stmtType);
+    } else if (auto *gotoStmt = dyn_cast<GotoStmt>(s)) {
+        stmtType = "Goto";
+        StatementOfInterest = gotoStmt;
+        Collector.addNodeInfo(conditionCollectorKey, StatementOfInterest, stmtType);
+    } else if (auto *condOp = dyn_cast<ConditionalOperator>(s)) {
+        stmtType = "?:";
+        StatementOfInterest = condOp->getCond();
         Collector.addNodeInfo(conditionCollectorKey, StatementOfInterest, stmtType);
     }
 
-    return true;
+    return true; // Continue visiting other statements
 }

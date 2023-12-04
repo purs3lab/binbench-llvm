@@ -1355,6 +1355,7 @@ class MDTuple : public MDNode {
 
 public:
   std::map<std::string, std::map<Value*, std::string>> BingeIRSrcInfo;
+  std::string JsonFileName;  // Name of the associated JSON file
   std::vector<Value*> BingeInterestingInstructions;
   std::string FunctionName;
   std::string FileName;

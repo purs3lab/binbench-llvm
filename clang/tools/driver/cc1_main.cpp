@@ -45,7 +45,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetMachine.h"
 #include <cstdio>
-
+#include <clang/AST/LoopTypeCollector.h>
 #ifdef CLANG_HAVE_RLIMITS
 #include <sys/resource.h>
 #include <clang/AST/BingeCollectCXXInfo.h>
@@ -254,6 +254,8 @@ int cc1_main(ArrayRef<const char *> Argv, const char *Argv0, void *MainAddr) {
     llvm::TimeTraceScope TimeScope("ExecuteCompiler");
     auto ConditionStmtTypeFE_Action = std::make_unique<ConditionStmtTypeFEAction>();
     Success |= Clang->ExecuteAction(*ConditionStmtTypeFE_Action);
+    auto LoopTypeFE_Action = std::make_unique<LoopTypeFEAction>();
+    Success |= Clang->ExecuteAction(*LoopTypeFE_Action);
     auto ClassVTSizeFE_Action = std::make_unique<ClassVTSizeFEAction>();
     Success |= Clang->ExecuteAction(*ClassVTSizeFE_Action);
   }

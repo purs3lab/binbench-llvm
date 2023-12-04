@@ -1,23 +1,25 @@
 #include "clang/AST/LoopTypeCollector.h"
-#include "clang/Basic/SourceManager.h" // Include this line at the top
+#include "clang/Basic/SourceManager.h"
 
 using namespace clang;
 
-bool LoopTypeCollector::TraverseFunctionDecl(FunctionDecl *FD) {
+bool LoopTypeCollector::VisitFunctionDecl(FunctionDecl *FD) {
     currentFD = FD;
-    return RecursiveASTVisitor<LoopTypeCollector>::TraverseDecl(FD);
+    return true;  // Continue traversal
 }
 
 bool LoopTypeCollector::VisitStmt(Stmt *s) {
-    std::string funcName = currentFD->getNameInfo().getName().getAsString();
+    if (currentFD == nullptr)
+        return true;
 
-    // Obtain filename (module name)
+    std::string funcName = currentFD->getNameInfo().getName().getAsString();
     auto &SM = currentFD->getASTContext().getSourceManager();
     std::string fileName = SM.getFilename(currentFD->getBeginLoc()).str();
-
     std::string loopCollectorKey = "LoopCollector@" + fileName + "@" + funcName;
 
     std::string stmtType;
+    Stmt* StatementOfInterest = s;  // Directly use the statement
+
     if (isa<ForStmt>(s)) {
         stmtType = "For";
     } else if (isa<WhileStmt>(s)) {
@@ -27,8 +29,8 @@ bool LoopTypeCollector::VisitStmt(Stmt *s) {
     }
 
     if (!stmtType.empty()) {
-        addNodeInfo(loopCollectorKey, s, stmtType);
+        Collector.addNodeInfo(loopCollectorKey, StatementOfInterest, stmtType);
     }
 
-    return true;
+    return true; // Continue visiting other statements
 }

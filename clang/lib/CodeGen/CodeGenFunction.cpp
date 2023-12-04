@@ -413,16 +413,32 @@ void CodeGenFunction::FinishFunction(SourceLocation EndLoc) {
   std::string const fileName = SM.getFilename(CurFuncDecl->getBeginLoc()).str();
   std::map<llvm::Metadata*, llvm::Value*> metadataValueMap;
 
+  // Generate JSON file name based on the file name
+  std::string jsonFileName = "BingeIRSrcInfo_" + fileName + ".json";
+  if (!llvm::BingeIRMetadata::isJsonFileGenerated(llvm::BingeIRMetadata::getBingeIRSrcInfo())) {
+    // Generate the JSON file if it does not exist
+    llvm::BingeIRMetadata::generateJsonFile(jsonFileName);
+  }
+
   llvm::BingeMDNode *Node = llvm::BingeMDNode::get(CGM.getLLVMContext(),
                                                    llvm::BingeIRMetadata::getBingeIRSrcInfo(),
+                                                   jsonFileName,
                                                    clang::ClassVTSizeCollector::MangledClassNameToVirtualTableSizeInfo,
                                                    llvm::BingeIRMetadata::genBingeInterestingInstructions(),
                                                    CurFn->getName().str(), fileName, metadataValueMap);
+
+
   // Get metadata kind ID.
   unsigned const BingeMDKindID = CurFn->getContext().getMDKindID("BingeIRMetadata");
 
   // Set metadata for the function.
   CurFn->setMetadata(BingeMDKindID, Node);
+
+  // Attach JSON file name to function's metadata if it exists
+  llvm::MDString *jsonFileNameMD =
+          llvm::MDString::get(CurFn->getContext(), Node->JsonFileName);
+  CurFn->setMetadata(BingeMDKindID,
+                     llvm::MDNode::get(CurFn->getContext(), jsonFileNameMD));
 
   // If some of our locals escaped, insert a call to llvm.localescape in the
   // entry block.
@@ -1888,7 +1904,15 @@ void CodeGenFunction::EmitBranchOnBoolExpr(const Expr *Cond,
 
     if (PLoc.isValid()) {
       std::string fileName = PLoc.getFilename();
-      llvm::BingeIRMetadata::AddBingeIRSrcInfo("Branch", CurFn, fileName, CondV);
+      // Manually create debug information
+      llvm::LLVMContext &Ctx = Builder.getContext();
+      llvm::MDNode *DebugInfo = llvm::MDNode::get(Ctx, {
+              llvm::MDString::get(Ctx, fileName),
+              llvm::ConstantAsMetadata::get(llvm::ConstantInt::get(llvm::Type::getInt32Ty(Ctx), PLoc.getLine())),
+              llvm::ConstantAsMetadata::get(llvm::ConstantInt::get(llvm::Type::getInt32Ty(Ctx), PLoc.getColumn()))
+      }      );
+
+      llvm::BingeIRMetadata::AddBingeIRSrcInfo("Branch", CurFn, fileName, CondV, *DebugInfo);
     }
   }
   llvm::MDNode *Weights = nullptr;
