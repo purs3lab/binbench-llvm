@@ -6,6 +6,7 @@
 #include <set>
 #include <string>
 #include <unordered_map>
+#include "clang/AST/BingeCollectCXXInfo.h"
 
 namespace llvm {
 

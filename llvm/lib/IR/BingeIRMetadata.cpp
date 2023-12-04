@@ -1,5 +1,4 @@
 #include "llvm/IR/BingeIRMetadata.h"
-#include "clang/AST/BingeCollectCXXInfo.h"
 #include "llvm/IR/Function.h" // Add this at the top of the file
 #include <iostream>
 #include <sstream> // Add this at the top of the file
