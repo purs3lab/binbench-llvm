@@ -9,12 +9,12 @@
 
 #include "llvm/BCollector/BCollectorUtils.h"
 #include "llvm/CodeGen/MachineBasicBlock.h"
-#include "llvm/CodeGen/MachineInstr.h"
 #include "llvm/CodeGen/MachineFunction.h"
-#include "llvm/MC/MCObjectFileInfo.h"
+#include "llvm/CodeGen/MachineInstr.h"
 #include "llvm/MC/MCAsmLayout.h"
 #include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCInst.h"
+#include "llvm/MC/MCObjectFileInfo.h"
 #include "llvm/MC/MCSectionELF.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/ErrorHandling.h"
@@ -53,7 +53,7 @@ public:
   std::vector<unsigned> ArgSizesInBits;  ///< list of the sizes of the arguments in bits.
   std::map<std::string, std::tuple<std::string, int, unsigned>> LocalVars; ///< Map of local variables to their type, offset and sizes in bits.
 
-  std::map<std::string, std::list<unsigned>> vTables; ///< Map of vtables to their entries.
+  std::map<std::string, std::list<unsigned>> VTables; ///< Map of vtables to their entries.
 
   std::vector<std::string> ArgTypes;
 
@@ -71,7 +71,7 @@ class BClassInfo {
 
   std::string ClassName; ///< Name of the class.
 
-  std::map<std::string, std::list<unsigned>> vTables; ///< Map of vtables to their entries.
+  std::map<std::string, std::list<unsigned>> VTables; ///< Map of vtables to their entries.
 
 
 };

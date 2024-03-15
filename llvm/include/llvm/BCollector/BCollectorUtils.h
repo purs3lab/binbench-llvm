@@ -3,8 +3,8 @@
 
 #include "llvm/BCollector/BCollectorAPI.h"
 
-#include <string>
 #include <iomanip>
+#include <string>
 
 namespace llvm {
 
@@ -15,11 +15,11 @@ class BCollectorUtils {
 
     /// @brief Hexlify for dubugging 
     template<typename T> static
-    std::string hexlify(T i) {
-        std::stringbuf buf;
-        std::ostream os(&buf);
-        os << "0x" << std::setfill('0') << std::setw(sizeof(T) * 2) << std::hex << i;
-        return buf.str();
+    std::string hexlify(T I) {
+        std::stringbuf Buf;
+        std::ostream Os(&Buf);
+        Os << "0x" << std::setfill('0') << std::setw(sizeof(T) * 2) << std::hex << I;
+        return Buf.str();
     }
 
     BCollectorUtils() {};

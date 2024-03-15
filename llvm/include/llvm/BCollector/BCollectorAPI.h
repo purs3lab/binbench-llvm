@@ -3,6 +3,7 @@
 #define LLVM_BCOLLECTOR_H
 
 #include "llvm/BCollector/BCollectorUtils.h"
+#include "llvm/BCollector/BCollectorTypes.h"
 #include "llvm/CodeGen/MachineBasicBlock.h"
 #include "llvm/CodeGen/MachineFunction.h"
 #include "llvm/CodeGen/MachineInstr.h"
@@ -16,11 +17,9 @@
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/shuffleInfo.pb.h"
 
-#include "llvm/BCollector/BCollectorTypes.h"
-#include <iomanip>
-#include <string>
 #include <algorithm>  // required for std::find
-
+#include <string>
+#include <iomanip>
 
 namespace llvm {
 
@@ -29,7 +28,7 @@ namespace llvm {
  */
 class BCollector {
 public:
-  BCollectorUtils *utils; ///< Utility class for BCollector
+  BCollectorUtils *Utils; ///< Utility class for BCollector
 
   MBBCONTAINER
       MachineBasicBlocks; ///< Information about all machine basic blocks.
@@ -37,11 +36,11 @@ public:
   MFCONTAINER MachineFunctions; ///< Information about all machine functions.
 
   std::map<std::string, std::list<std::string>>
-      vTables; ///< Map of vtables to their entries.
+      VTables; ///< Map of vtables to their entries.
   mutable std::map<std::string, std::string>
       NametoMFID; ///< Map from function name to function ID.
   mutable std::map<std::string, bool>
-      canMBBFallThrough; ///< Map from MBB ID to whether it can fall through to
+      CanMbbFallThrough; ///< Map from MBB ID to whether it can fall through to
                          ///< the next MBB.
   mutable std::map<unsigned, unsigned>
       MachineFunctionSizes; ///< Map from Machine Function ID to its size.
@@ -55,12 +54,12 @@ public:
   mutable std::vector<unsigned>
       SeenFunctionIDs; ///< List of function IDs that have been seen.
 
-  const char *fixupLookupSections[5] = {
+  const char *FixupLookupSections[5] = {
       ".text", ".rodata", ".data", ".data.rel.ro", ".init_array",
   }; ///< List of sections that can have fixups.
 
   /// @brief Dump collected Fixup information. This is used for debugging.
-  void dumpFixups(FIXUPTYPE &Fixups, const std::string &kind, bool isDebug);
+  void dumpFixups(FIXUPTYPE &Fixups, const std::string &Kind, bool IsDebug);
 
   /// @brief Updates the ReorderInfo object with the collected metadata.
   /// @param Layout The MCAsmLayout object that contains required metadata.
@@ -75,36 +74,36 @@ public:
   //map of Jump table entries and their corresponding targets
   mutable std::map<std::string, std::tuple<unsigned, unsigned, std::list<std::string>>> JumpTableTargets;
   std::string FixupParentID;
-  bool isJumpTableRef = false;
+  bool IsJumpTableRef = false;
   std::string SymbolRefFixupName;
 
   const std::string &getFixupParentID() const { return FixupParentID; }
   void setFixupParentID(const std::string &Value) { FixupParentID = Value; }
-  bool getIsJumpTableRef() const { return isJumpTableRef; }
-  void setIsJumpTableRef(bool V) { isJumpTableRef = V; }
+  bool getIsJumpTableRef() const { return IsJumpTableRef; }
+  void setIsJumpTableRef(bool V) { IsJumpTableRef = V; }
   const std::string &getSymbolRefFixupName() const {
     return SymbolRefFixupName;
   }
   void setSymbolRefFixupName(const std::string &FN) { SymbolRefFixupName = FN; }
   /// @brief Set Fixup information for a given section. Users need not use this.
   void setFixups(FIXUPTYPE &Fixups,
-                 ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo,
-                 const std::string &secName);
+                 ShuffleInfo::ReorderInfo_FixupInfo *FixupInfo,
+                 const std::string &SecName);
 
   /// @brief get the section id for a given section name.
-  int getFixupSectionId(const std::string &secName) {
-    for (size_t i = 0;
-         i < sizeof(fixupLookupSections) / sizeof(*fixupLookupSections); ++i)
-      if (secName.compare(fixupLookupSections[i]) == 0)
-        return i;
+  int getFixupSectionId(const std::string &SecName) {
+    for (size_t I = 0;
+         I < sizeof(FixupLookupSections) / sizeof(*FixupLookupSections); ++I)
+      if (SecName.compare(FixupLookupSections[I]) == 0)
+        return I;
     return -1;
   }
 
   /// @brief Get the FixupTuple object for a given section.
   ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple *
   getFixupTuple(ShuffleInfo::ReorderInfo_FixupInfo *FI,
-                const std::string &secName) {
-    switch (getFixupSectionId(secName)) {
+                const std::string &SecName) {
+    switch (getFixupSectionId(SecName)) {
     case 0:
       return FI->add_text();
     case 1:
@@ -135,19 +134,19 @@ public:
   /// @brief Serialize the collected metadata into a protobuf object.
   /// @param ri The ReorderInfo object to be serialized.
   /// @param Layout Required to update the ReorderInfo object.
-  void serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
+  void serializeReorderInfo(ShuffleInfo::ReorderInfo *Ri,
                             const MCAsmLayout &Layout);
 
   /// @brief Add seen function ID to the list.
-  void updateSeenFuncs(unsigned funcID) const {
-    if (std::find(SeenFunctionIDs.begin(), SeenFunctionIDs.end(), funcID) ==
+  void updateSeenFuncs(unsigned FuncId) const {
+    if (std::find(SeenFunctionIDs.begin(), SeenFunctionIDs.end(), FuncId) ==
         SeenFunctionIDs.end())
-      SeenFunctionIDs.push_back(funcID);
+      SeenFunctionIDs.push_back(FuncId);
   }
 
   /// @brief Check if we have already seen this function ID.
-  bool isSeenFuncs(unsigned funcID) const {
-    if (std::find(SeenFunctionIDs.begin(), SeenFunctionIDs.end(), funcID) ==
+  bool isSeenFuncs(unsigned FuncId) const {
+    if (std::find(SeenFunctionIDs.begin(), SeenFunctionIDs.end(), FuncId) ==
         SeenFunctionIDs.end())
       return false;
     return true;
@@ -161,23 +160,23 @@ public:
       FixupsInitArray;
   ///@}
 
-  mutable std::string latestParentID;   ///< The latest parent ID.
-  mutable std::string latestFunctionID; ///< The latest function ID.
-  mutable unsigned nargs; ///< The number of arguments for the latest function.
+  mutable std::string LatestParentId;   ///< The latest parent ID.
+  mutable std::string LatestFunctionId; ///< The latest function ID.
+  mutable unsigned Nargs; ///< The number of arguments for the latest function.
 
-  mutable bool isAssemFile = false; ///< Is the current file assembly?
-  mutable bool hasInlineAssembly =
+  mutable bool IsAssemFile = false; ///< Is the current file assembly?
+  mutable bool HasInlineAssembly =
       false; ///< Does the current function have inline assembly?
   mutable std::string
-      prevOpcode; ///< The previous opcode encounted in collection.
-  mutable unsigned assemFuncNo =
+      PrevOpcode; ///< The previous opcode encounted in collection.
+  mutable unsigned AssemFuncNo =
       0xffffffff; ///< The function number for the current assembly function.
-  mutable unsigned assemBBLNo =
+  mutable unsigned AssemBblNo =
       0; ///< The basic block number for the current assembly basic block.
-  mutable unsigned specialCntPriorToFunc = 0; ///< Unused and deprecated?
+  mutable unsigned SpecialCntPriorToFunc = 0; ///< Unused and deprecated?
 
   /// Dump the collected jump table information.
-  void dumpJT(const JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI);
+  void dumpJT(const JTTYPEWITHID &JumpTables, const MCAsmInfo *MAI);
 
   /// Process a fragment and collect fixup information.
   void processFragment(MCSection &Sec, const MCAsmLayout &Layout,
@@ -191,9 +190,9 @@ public:
   }
 
   void incrementJTE(const std::string &Key) const {
-    for (auto& item : FixupsText) {
-        if (std::get<4>(item) == Key) {
-            std::get<7>(item)++; 
+    for (auto& Item : FixupsText) {
+        if (std::get<4>(Item) == Key) {
+            std::get<7>(Item)++; 
             break; 
         }
     }
@@ -210,10 +209,10 @@ public:
     return JumpTableTargets;
   }
   /// @brief Set the latest parent ID.
-  void setFunctionid(const std::string &id) { latestFunctionID = id; }
+  void setFunctionid(const std::string &Id) { LatestFunctionId = Id; }
 
   /// @brief Set the Fixup info from each section
-  void setFixupInfo(ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo,
+  void setFixupInfo(ShuffleInfo::ReorderInfo_FixupInfo *FixupInfo,
                     const MCAsmInfo *MAI);
   explicit BCollector();
   virtual ~BCollector() {}
@@ -235,34 +234,34 @@ public:
   /// @param numFixups The number of fixups that need to be updated.
   /// @param isAlign Is the update due to an alignment?
   /// @param isInline Is the update due to an inline assembly? unused.
-  void updateByteCounter(MBBIDTYPE &id, unsigned emittedBytes,
-                         unsigned numFixups, bool isAlign, bool isInline) {
+  void updateByteCounter(MBBIDTYPE &Id, unsigned EmittedBytes,
+                         unsigned NumFixups, bool IsAlign, bool IsInline) {
 
-    MachineBasicBlocks[id].TotalSizeInBytes +=
-        emittedBytes;                              // Acutal size in MBB
-    MachineBasicBlocks[id].NumArgs = nargs;        // Acutal size in MBB
-    MachineBasicBlocks[id].NumFixUps += numFixups; // Number of Fixups in MBB
+    MachineBasicBlocks[Id].TotalSizeInBytes +=
+        EmittedBytes;                              // Acutal size in MBB
+    MachineBasicBlocks[Id].NumArgs = Nargs;        // Acutal size in MBB
+    MachineBasicBlocks[Id].NumFixUps += NumFixups; // Number of Fixups in MBB
 
-    if (isAlign)
-      MachineBasicBlocks[id].Alignments += emittedBytes; // Count NOPs in MBB
+    if (IsAlign)
+      MachineBasicBlocks[Id].Alignments += EmittedBytes; // Count NOPs in MBB
 
     // If inlined, add the bytes in the next MBB instead of current one
-    if (isInline)
-      MachineBasicBlocks[id].TotalSizeInBytes -= emittedBytes;
+    if (IsInline)
+      MachineBasicBlocks[Id].TotalSizeInBytes -= EmittedBytes;
   }
 
   /// @brief  Sets the successors of a basic block.
   /// @param id The ID of the basic block to be updated.
   /// @param succs Successor IDs of the basic block.
-  void setSuccs(const std::string &id, const std::set<std::string> &succs) {
-    MachineBasicBlocks[id].Successors = succs;
+  void setSuccs(const std::string &Id, const std::set<std::string> &Succs) {
+    MachineBasicBlocks[Id].Successors = Succs;
   }
 
   /// @brief Sets the predecessors of a basic block.
   /// @param id  The ID of the basic block to be updated.
   /// @param preds  Predecessor IDs of the basic block.
-  void setPreds(const std::string &id, const std::set<std::string> &preds) {
-    MachineBasicBlocks[id].Predecessors = preds;
+  void setPreds(const std::string &Id, const std::set<std::string> &Preds) {
+    MachineBasicBlocks[Id].Predecessors = Preds;
   }
   BasicBlockCollector() {}
   virtual ~BasicBlockCollector() {}
@@ -271,9 +270,9 @@ public:
 // Adds a v table entry for the particular class name. 
 class ClassCollector : public BCollector {
 public:
-  void addVTable(const std::string &classname,
-                 const std::list<std::string> &vtable_entries) {
-    vTables[classname] = vtable_entries;
+  void addVTable(const std::string &Classname,
+                 const std::list<std::string> &VtableEntries) {
+    VTables[Classname] = VtableEntries;
   }
 };
 
@@ -284,15 +283,15 @@ class FunctionCollector : public BCollector {
 public:
   /// @brief  Collects the function information. Includes things like:
   /// ID, function name, arguments (if any)
-  void updateFuncDetails(const std::string &id, const std::string &funcname,
-                         unsigned size) {
-    MachineFunctions[id].TotalSizeInBytes = size;
-    MachineFunctions[id].FunctionName = funcname;
-    MachineFunctions[id].ID = id;
-    NametoMFID[funcname] = id;
+  void updateFuncDetails(const std::string &Id, const std::string &Funcname,
+                         unsigned Size) {
+    MachineFunctions[Id].TotalSizeInBytes = Size;
+    MachineFunctions[Id].FunctionName = Funcname;
+    MachineFunctions[Id].ID = Id;
+    NametoMFID[Funcname] = Id;
   }
 
-  const auto &getVT() { return vTables; }
+  const auto &getVT() { return VTables; }
 
   const std::string
   getDICompositeTypeKind(const DICompositeType *CompositeType) {
@@ -301,9 +300,9 @@ public:
       return "Invalid";
     }
 
-    unsigned tag = CompositeType->getTag();
+    unsigned Tag = CompositeType->getTag();
 
-    switch (tag) {
+    switch (Tag) {
     case dwarf::DW_TAG_array_type:
       return "Array";
     case dwarf::DW_TAG_structure_type:
@@ -320,79 +319,79 @@ public:
   }
 
   const std::string checkDIType(const DIType *TheDIType) {
-    std::string type_name = "";
+    std::string TypeName = "";
     if (const DIBasicType *BasicType = dyn_cast<DIBasicType>(TheDIType)) {
       // TheDIType is a DIBasicType, and BasicType is of type DIBasicType*
-      type_name = BasicType->getName().str();
+      TypeName = BasicType->getName().str();
     } else if (const DICompositeType *CompositeType =
                    dyn_cast<DICompositeType>(TheDIType)) {
       // TheDIType is a DICompositeType, and CompositeType is of type
       // DICompositeType*
-      type_name = getDICompositeTypeKind(CompositeType);
+      TypeName = getDICompositeTypeKind(CompositeType);
     } else {
-      type_name = "Pointer";
+      TypeName = "Pointer";
     }
-    return type_name;
+    return TypeName;
   }
   /// @brief Update the argument details of a function
   /// @param funcname Name of the function to be updated
   /// @param numArgs Number of arguments observed
-  void updateArgDetails(const std::string &funcname, int numArgs) {
+  void updateArgDetails(const std::string &Funcname, int NumArgs) {
 
     // check if name is in the map
-    if (NametoMFID.find(funcname) == NametoMFID.end()) {
+    if (NametoMFID.find(Funcname) == NametoMFID.end()) {
       DEBUG_WITH_TYPE("binbench",
-                      dbgs() << "Function not found: " << funcname << "\n");
+                      dbgs() << "Function not found: " << Funcname << "\n");
       return;
     }
     DEBUG_WITH_TYPE("binbench",
-                    dbgs() << "Function has numArgs: " << numArgs << "\n");
-    MachineFunctions[NametoMFID[funcname]].NumArgs = numArgs;
+                    dbgs() << "Function has numArgs: " << NumArgs << "\n");
+    MachineFunctions[NametoMFID[Funcname]].NumArgs = NumArgs;
   }
 
-  void updateArgTypes(const std::string &funcname, const std::string &argType) {
+  void updateArgTypes(const std::string &Funcname, const std::string &ArgType) {
 
     // check if name is in the map
-    if (NametoMFID.find(funcname) == NametoMFID.end()) {
+    if (NametoMFID.find(Funcname) == NametoMFID.end()) {
       DEBUG_WITH_TYPE("binbench",
-                      dbgs() << "Function not found: " << funcname << "\n");
+                      dbgs() << "Function not found: " << Funcname << "\n");
       return;
     }
 
-    MachineFunctions[NametoMFID[funcname]].ArgTypes.push_back(argType);
+    MachineFunctions[NametoMFID[Funcname]].ArgTypes.push_back(ArgType);
   }
 
-  void addLocalVariable(const std::string &funcname, const std::string &varname,
-                        const std::string &type, int Offset, unsigned size) {
-    MachineFunctions[NametoMFID[funcname]].LocalVars[varname] =
-        std::make_tuple(type, Offset, size);
+  void addLocalVariable(const std::string &Funcname, const std::string &Varname,
+                        const std::string &Type, int Offset, unsigned Size) {
+    MachineFunctions[NametoMFID[Funcname]].LocalVars[Varname] =
+        std::make_tuple(Type, Offset, Size);
   }
 
-  void addCGSuccessor(const std::string &caller, const std::string &callee) {
-    const auto &it = CallGraphInfo.find(caller);
-    if (it == CallGraphInfo.end()) {
-      std::list<std::string> newList{callee};
-      CallGraphInfo[caller] = newList;
+  void addCGSuccessor(const std::string &Caller, const std::string &Callee) {
+    const auto &It = CallGraphInfo.find(Caller);
+    if (It == CallGraphInfo.end()) {
+      std::list<std::string> NewList{Callee};
+      CallGraphInfo[Caller] = NewList;
     } else {
       // Check if callee already exists
-      auto &callerList = CallGraphInfo[caller];
-      if (std::find(callerList.begin(), callerList.end(), callee) ==
-          callerList.end()) {
+      auto &CallerList = CallGraphInfo[Caller];
+      if (std::find(CallerList.begin(), CallerList.end(), Callee) ==
+          CallerList.end()) {
         // If callee doesn't exist, push it back to the list.
-        callerList.push_back(callee);
+        CallerList.push_back(Callee);
       }
     }
   }
 
-  void addVTableEntry(const std::string &classname, const std::string &entry) {
-    const auto &it = vTables.find(classname);
-    if (it == vTables.end()) {
-        std::list<std::string> newList {entry};
-        vTables[classname] = newList;
+  void addVTableEntry(const std::string &Classname, const std::string &Entry) {
+    const auto &It = VTables.find(Classname);
+    if (It == VTables.end()) {
+        std::list<std::string> NewList {Entry};
+        VTables[Classname] = NewList;
     } else {
-        auto &entries_list = vTables[classname];
-        if (std::find(entries_list.begin(), entries_list.end(), entry) == entries_list.end()) {
-            entries_list.push_back(entry);
+        auto &EntriesList = VTables[Classname];
+        if (std::find(EntriesList.begin(), EntriesList.end(), Entry) == EntriesList.end()) {
+            EntriesList.push_back(Entry);
         }
     }
   }
@@ -404,19 +403,19 @@ public:
 
   /// @brief To set the number of arguments for a function internally and for
   /// debugging.
-  void setNumArgs(const std::string &funcname, unsigned numArgs) {
-    nargs = numArgs;
-    DEBUG_WITH_TYPE("binbench", dbgs() << "NumArgs: " << nargs << "\n");
-    DEBUG_WITH_TYPE("binbench", dbgs() << "funcname: " << funcname << "\n");
+  void setNumArgs(const std::string &Funcname, unsigned NumArgs) {
+    Nargs = NumArgs;
+    DEBUG_WITH_TYPE("binbench", dbgs() << "NumArgs: " << Nargs << "\n");
+    DEBUG_WITH_TYPE("binbench", dbgs() << "funcname: " << Funcname << "\n");
   }
 
   /// @brief Update the argument sizes of a function
   /// @param funcname Name of the function to be updated
   /// @param argsize The size of the argument in bits
-  void addArgSizes(const std::string &funcname, unsigned argsize) {
-    DEBUG_WITH_TYPE("binbench", dbgs() << "For Func " << funcname
-                                       << "ArgSize: " << argsize << "\n");
-    MachineFunctions[NametoMFID[funcname]].ArgSizesInBits.push_back(argsize);
+  void addArgSizes(const std::string &Funcname, unsigned Argsize) {
+    DEBUG_WITH_TYPE("binbench", dbgs() << "For Func " << Funcname
+                                       << "ArgSize: " << Argsize << "\n");
+    MachineFunctions[NametoMFID[Funcname]].ArgSizesInBits.push_back(Argsize);
   }
 
   FunctionCollector() {}
