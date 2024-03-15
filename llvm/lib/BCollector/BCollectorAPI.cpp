@@ -1,5 +1,4 @@
 #include "llvm/BCollector/BCollectorAPI.h"
-
 #include "llvm/ADT/StringRef.h"
 #include "llvm/BCollector/BCollectorTypes.h"
 #include "llvm/BCollector/BCollectorUtils.h"
@@ -45,18 +44,18 @@ void BasicBlockCollector::performCollection(const MachineInstr *MI,
 
   unsigned MBBID = MBBa->getNumber();
   unsigned MFID = MBBa->getParent()->getFunctionNumber();
-  unsigned funcsize = MBBa->getParent()->size();
+  unsigned FuncSize = MBBa->getParent()->size();
   const std::string &ID = std::to_string(MFID) + "_" + std::to_string(MBBID);
-  std::string funcname = MBBa->getParent()->getName().str();
+  std::string FuncName = MBBa->getParent()->getName().str();
 
   // funcname should be unique
-  if (funcname.length() == 0)
-    funcname = "func_" + std::to_string(MFID);
+  if (FuncName.length() == 0)
+    FuncName = "func_" + std::to_string(MFID);
 
   Inst->setParentID(ID);
   Inst->setFunctionID(std::to_string(MFID));
-  Inst->setFunctionName(funcname);
-  Inst->setFunctionSize(funcsize);
+  Inst->setFunctionName(FuncName);
+  Inst->setFunctionSize(FuncSize);
   Inst->setSuccs(ID, Succs);
   Inst->setPreds(ID, Preds);
 }
@@ -73,25 +72,25 @@ BCollector::BCollector() {
 // Koo: Dump all fixups if necessary
 //      In .text, .rodata, .data, .data.rel.ro, .eh_frame, and debugging
 //      sections
-void BCollector::dumpFixups(FIXUPTYPE &Fixups, const std::string &kind,
-                            bool isDebug) {
+void BCollector::dumpFixups(FIXUPTYPE &Fixups, const std::string &Kind,
+                            bool IsDebug) {
   if (Fixups.size() > 0) {
-    DEBUG_WITH_TYPE("binbench", dbgs() << " - Fixups Info (." << kind
+    DEBUG_WITH_TYPE("binbench", dbgs() << " - Fixups Info (." << Kind
                                        << "): " << Fixups.size() << "\n");
-    unsigned offset, size, numJTEntries, JTEntrySize;
-    bool isRel, isNewSection;
+    unsigned Offset, Size, NumJTEntries, JTEntrySize;
+    bool IsRel, IsNewSection;
     StringRef FixupParentID, SymbolRefFixupName;
 
-    for (FIXUPTYPE::const_iterator it = Fixups.begin(); it != Fixups.end();
-         ++it) {
-      std::tie(offset, size, isRel, FixupParentID, SymbolRefFixupName,
-               isNewSection, std::ignore, numJTEntries, JTEntrySize) = *it;
-      char isRelTF = isRel ? 'T' : 'F';
-      if (isDebug && SymbolRefFixupName.size() > 0) {
+    for (FIXUPTYPE::const_iterator Iter = Fixups.begin(); Iter != Fixups.end();
+         ++Iter) {
+      std::tie(Offset, Size, IsRel, FixupParentID, SymbolRefFixupName,
+               IsNewSection, std::ignore, NumJTEntries, JTEntrySize) = *Iter;
+      char IsRelTF = IsRel ? 'T' : 'F';
+      if (IsDebug && SymbolRefFixupName.size() > 0) {
 
         DEBUG_WITH_TYPE("binbench", dbgs() << "\t[" << FixupParentID << "]\t("
-                                           << offset << ", " << size << ", "
-                                           << isRelTF);
+                                           << Offset << ", " << Size << ", "
+                                           << IsRelTF);
         if (SymbolRefFixupName.size() > 0)
           DEBUG_WITH_TYPE("binbench",
                           dbgs() << ", JT#" << SymbolRefFixupName << ")\n");
@@ -105,13 +104,12 @@ void BCollector::updateReorderInfoValues(const MCAsmLayout &Layout) {
   const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
   const MCObjectFileInfo *MOFI =
       Layout.getAssembler().getContext().getObjectFileInfo();
-  const JTTYPEWITHID &jumpTables = this->getJumpTableTargets();
 
   // Deal with MFs and MBBs in a ELF code section (.text) only
   for (MCSection &Sec : Layout.getAssembler()) {
     MCSectionELF &ELFSec = reinterpret_cast<MCSectionELF &>(Sec);
-    const std::string &sectionName = ELFSec.getSectionName().str();
-    if (sectionName.find(".text") == 0) {
+    const std::string &SectionName = ELFSec.getSectionName().str();
+    if (SectionName.find(".text") == 0) {
 
       // Per each fragment in a .text section
       processFragment(Sec, Layout, MAI, MOFI, ELFSec);
@@ -129,24 +127,25 @@ void BCollector::processFragment(MCSection &Sec, const MCAsmLayout &Layout,
                                  MCSectionELF &ELFSec) {
   const llvm::MCAssembler &Assembler = Layout.getAssembler();
   const llvm::MCContext &Ctx = Assembler.getContext();
-  const auto arch = Ctx.getTargetTriple().getArch();
+  const auto Arch = Ctx.getTargetTriple().getArch();
   // DEBUG_WITH_TYPE("binbench", dbgs() << "Arch: " << arch << "\n");
-  unsigned totalOffset = 0, totalFixups = 0, totalAlignSize = 0, prevMBB = 0;
-  int MFID, MBBID, prevMFID = -1;
-  std::string prevID, canFallThrough;
-  unsigned MBBSize, numFixups, alignSize;
-  std::set<std::string> countedMBBs;
-  std::string tmpSN = "";
-  const std::string &sectionName = ELFSec.getSectionName().str();
+  unsigned TotalOffset = 0, TotalFixups = 0, TotalAlignSize = 0, PrevMBB = 0;
+  int MFID, MBBID, PrevMFID = -1;
+  std::string PrevID, CanFallThrough;
+  unsigned MBBSize, NumFixups, AlignSize;
+  std::set<std::string> CountedMBBs;
+  std::string TmpSN = "";
+  const std::string &SectionName = ELFSec.getSectionName().str();
   for (MCFragment &MCF : Sec) {
     // processFragment(MCF, Layout, MAI, MOFI, totalOffset, totalFixups)
     // Here MCDataFragment has combined with the following
     // MCRelaxableFragment or MCAlignFragment Corner case: MCDataFragment
     // with no instruction - just skip it
     if (isa<MCDataFragment>(MCF) && MCF.hasInstructions()) {
-      if (arch != 16) {
-        totalOffset = MCF.getOffset(); // MIPS ??
+      if (Arch != 16) {
+        TotalOffset = MCF.getOffset(); // XXX: hackish fix for MIPS
       }
+
       // The offset we get here in incorrect for MIPS so we rely on our
       // own arithmetic
 
@@ -157,15 +156,14 @@ void BCollector::processFragment(MCSection &Sec, const MCAsmLayout &Layout,
           ID = "999_999";
         }
 
-        if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
+        if (CountedMBBs.find(ID) == CountedMBBs.end() && ID.length() > 0) {
           std::tie(MFID, MBBID) = MAI->getBC()->separateID(ID);
 
           MBBSize = MAI->getBC()->MachineBasicBlocks[ID].TotalSizeInBytes;
-          numFixups = MAI->getBC()->MachineBasicBlocks[ID].NumFixUps;
-          alignSize = MAI->getBC()->MachineBasicBlocks[ID].Alignments;
-          // MBBType = MAI->getBC()->MachineBasicBlocks[ID].BBType;
+          NumFixups = MAI->getBC()->MachineBasicBlocks[ID].NumFixUps;
+          AlignSize = MAI->getBC()->MachineBasicBlocks[ID].Alignments;
 
-          if (tmpSN.length() > 0)
+          if (TmpSN.length() > 0)
             continue;
           MAI->getBC()->MBBLayoutOrder.push_back(ID);
 
@@ -179,32 +177,29 @@ void BCollector::processFragment(MCSection &Sec, const MCAsmLayout &Layout,
             MAI->getBC()->specialCntPriorToFunc = 0;
           }
           if (!MAI->isSeenFuncs(MFID)) {
-            prevMBB = 0;
+            PrevMBB = 0;
             MAI->getBC()->updateSeenFuncs(MFID);
           }
           // Update the MBB offset, MF Size and section name accordingly
 
-          MAI->getBC()->MachineBasicBlocks[ID].Offset = totalOffset;
-          prevMBB += MBBSize - alignSize;
-          totalOffset += MBBSize - alignSize;
-          totalFixups += numFixups;
-          totalAlignSize += alignSize;
-          // Akul: MIPSFIX: Debug HERE
-          // LLVM_DEBUG(dbgs() << "Debug alignSize: " << alignSize << " \n");
-          // DEBUG_WITH_TYPE("binbench", dbgs() << ID << " Offset " <<
-          // totalOffset << " MBBSize: " << MBBSize << "\n");
-          countedMBBs.insert(ID);
-          MAI->getBC()->MachineFunctionSizes[MFID] += MBBSize;
-          MAI->getBC()->MachineBasicBlocks[ID].SectionName = sectionName;
-          canFallThrough = MAI->getBC()->canMBBFallThrough[ID] ? "*" : "";
+          MAI->getBC()->MachineBasicBlocks[ID].Offset = TotalOffset;
+          PrevMBB += MBBSize - AlignSize;
+          TotalOffset += MBBSize - AlignSize;
+          TotalFixups += NumFixups;
+          TotalAlignSize += AlignSize;
 
-          if (MFID > prevMFID) {
-            MAI->getBC()->MachineBasicBlocks[prevID].BBType =
+          CountedMBBs.insert(ID);
+          MAI->getBC()->MachineFunctionSizes[MFID] += MBBSize;
+          MAI->getBC()->MachineBasicBlocks[ID].SectionName = SectionName;
+          CanFallThrough = MAI->getBC()->canMBBFallThrough[ID] ? "*" : "";
+
+          if (MFID > PrevMFID) {
+            MAI->getBC()->MachineBasicBlocks[PrevID].BBType =
                 MBBINFOTYPE::END; // Type = End of the function
           }
 
-          prevMFID = MFID;
-          prevID = ID;
+          PrevMFID = MFID;
+          PrevID = ID;
         }
       }
     }
@@ -221,71 +216,70 @@ void BCollector::processFragment(MCSection &Sec, const MCAsmLayout &Layout,
         ID = "999_999";
       // If yet the ID has not been showed up along with getAllMBBs(),
       // it would be an independent RF that does not belong to any DF
-      if (countedMBBs.find(ID) == countedMBBs.end() && ID.length() > 0) {
+      if (CountedMBBs.find(ID) == CountedMBBs.end() && ID.length() > 0) {
         std::tie(MFID, MBBID) = MAI->getBC()->separateID(ID);
 
         MBBSize = MAI->getBC()->MachineBasicBlocks[ID].TotalSizeInBytes;
-        numFixups = MAI->getBC()->MachineBasicBlocks[ID].NumFixUps;
-        alignSize = MAI->getBC()->MachineBasicBlocks[ID].Alignments;
-        tmpSN = MAI->getBC()->MachineBasicBlocks[ID].SectionName;
+        NumFixups = MAI->getBC()->MachineBasicBlocks[ID].NumFixUps;
+        AlignSize = MAI->getBC()->MachineBasicBlocks[ID].Alignments;
+        TmpSN = MAI->getBC()->MachineBasicBlocks[ID].SectionName;
 
-        if (tmpSN.length() > 0)
+        if (TmpSN.length() > 0)
           continue;
 
         MAI->getBC()->MBBLayoutOrder.push_back(ID);
 
         if (!MAI->getBC()->isSeenFuncs(MFID)) {
-          prevMBB = 0;
+          PrevMBB = 0;
           MAI->getBC()->updateSeenFuncs(MFID);
         }
         // Update the MBB offset, MF Size and section name accordingly
-        // std::get<1>(MAI->MachineBasicBlocks[ID]) += (fragOff + prevMBB);
-        MAI->getBC()->MachineBasicBlocks[ID].Offset = totalOffset;
-        prevMBB += MBBSize - alignSize;
-        totalOffset += MBBSize - alignSize;
-        totalFixups += numFixups;
-        totalAlignSize += alignSize;
-        countedMBBs.insert(ID);
+        MAI->getBC()->MachineBasicBlocks[ID].Offset = TotalOffset;
+        PrevMBB += MBBSize - AlignSize;
+        TotalOffset += MBBSize - AlignSize;
+        TotalFixups += NumFixups;
+        TotalAlignSize += AlignSize;
+        CountedMBBs.insert(ID);
         MAI->getBC()->MachineFunctionSizes[MFID] += MBBSize;
-        MAI->getBC()->MachineBasicBlocks[ID].SectionName = sectionName;
+        MAI->getBC()->MachineBasicBlocks[ID].SectionName = SectionName;
 
-        if (MFID > prevMFID) {
+        if (MFID > PrevMFID) {
           // Type = End of the function
           MAI->getBC()->MachineBasicBlocks[ID].BBType = MBBINFOTYPE::END;
         }
 
-        prevMFID = MFID;
-        prevID = ID;
+        PrevMFID = MFID;
+        PrevID = ID;
       }
     }
   }
   // The last ID Type is always the end of the object
-  MAI->getBC()->MachineBasicBlocks[prevID].BBType =
+  MAI->getBC()->MachineBasicBlocks[PrevID].BBType =
       MBBINFOTYPE::ENDOFOBJECT;
 }
 
-void BCollector::dumpJT(const JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI) {
-  if (jumpTables.size() > 0) {
+void BCollector::dumpJT(const JTTYPEWITHID &JumpTables, const MCAsmInfo *MAI) {
+  if (JumpTables.size() > 0) {
     DEBUG_WITH_TYPE("binbench", dbgs() << "\n<Jump Tables Summary>\n");
-    unsigned totalEntries = 0;
-    for (JTTYPEWITHID::const_iterator it = jumpTables.begin();
-         it != jumpTables.end(); ++it) {
+    unsigned TotalEntries = 0;
+    for (JTTYPEWITHID::const_iterator Iter = JumpTables.begin();
+         Iter != JumpTables.end(); ++Iter) {
       int JTI, MFID, MFID2, MBBID;
-      unsigned entryKind, entrySize;
+      unsigned EntryKind, EntrySize;
       std::list<std::string> JTEntries;
 
-      std::tie(MFID, JTI) = MAI->getBC()->BCollector::separateID(it->first);
-      std::tie(entryKind, entrySize, JTEntries) = it->second;
+      std::tie(MFID, JTI) = MAI->getBC()->BCollector::separateID(Iter->first);
+      std::tie(EntryKind, EntrySize, JTEntries) = Iter->second;
 
       DEBUG_WITH_TYPE("binbench", dbgs() << "[JT@Function#" << MFID << "_"
                                          << JTI << "] "
-                                         << "(Kind: " << entryKind << ", "
+                                         << "(Kind: " << EntryKind << ", "
                                          << JTEntries.size() << " Entries of "
-                                         << entrySize << "B each)\n");
+                                         << EntrySize << "B each)\n");
 
       for (const std::string &JTE : JTEntries) {
         std::tie(MFID2, MBBID) = BCollector::separateID(JTE);
-        totalEntries++;
+        TotalEntries++;
         if (MFID != MFID2)
           DEBUG_WITH_TYPE(
               "binbench",
@@ -301,53 +295,53 @@ void BCollector::dumpJT(const JTTYPEWITHID &jumpTables, const MCAsmInfo *MAI) {
     }
 
     DEBUG_WITH_TYPE("binbench", dbgs() << "#JTs\t#Entries\n"
-                                       << jumpTables.size() << "\t"
-                                       << totalEntries << "\n");
+                                       << JumpTables.size() << "\t"
+                                       << TotalEntries << "\n");
   }
 }
 
 // Akul FIXME: Move this to BCollector
 void BCollector::setFixups(FIXUPTYPE &Fixups,
-                           ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo,
-                           const std::string &secName) {
-  unsigned FixupOffset, FixupSize, FixupisRela, numJTEntries, JTEntrySize;
+                           ShuffleInfo::ReorderInfo_FixupInfo *FixupInfo,
+                           const std::string &SecName) {
+  unsigned FixupOffset, FixupSize, FixupisRela, NumJTEntries, JTEntrySize;
   StringRef SectionName;
-  bool isNewSection;
+  bool IsNewSection;
 
   for (FIXUPTYPE::const_iterator F = Fixups.begin(); F != Fixups.end(); ++F) {
-    ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple *pFixupTuple =
-        getFixupTuple(fixupInfo, secName);
+    ShuffleInfo::ReorderInfo_FixupInfo_FixupTuple *PFixupTuple =
+        getFixupTuple(FixupInfo, SecName);
     std::tie(FixupOffset, FixupSize, FixupisRela, std::ignore, std::ignore,
-             isNewSection, SectionName, numJTEntries, JTEntrySize) = *F;
-    pFixupTuple->set_offset(FixupOffset);
-    pFixupTuple->set_deref_sz(FixupSize);
-    pFixupTuple->set_is_rela(FixupisRela);
-    pFixupTuple->set_section_name(SectionName.data());
-    if (isNewSection)
-      pFixupTuple->set_type(
+             IsNewSection, SectionName, NumJTEntries, JTEntrySize) = *F;
+    PFixupTuple->set_offset(FixupOffset);
+    PFixupTuple->set_deref_sz(FixupSize);
+    PFixupTuple->set_is_rela(FixupisRela);
+    PFixupTuple->set_section_name(SectionName.data());
+    if (IsNewSection)
+      PFixupTuple->set_type(
           4); // let linker know if there are multiple .text sections
     else
-      pFixupTuple->set_type(
+      PFixupTuple->set_type(
           0); // c2c, c2d, d2c, d2d default=0; should be updated by linker
               //
-    pFixupTuple->set_dst_offset(-1); // Should be updated at linking time
+    PFixupTuple->set_dst_offset(-1); // Should be updated at linking time
 
     // The following jump table information is fixups in .text for JT entry
     // update only (pic/pie)
-    if (numJTEntries > 0) {
-      pFixupTuple->set_num_jt_entries(numJTEntries);
-      pFixupTuple->set_jt_entry_sz(JTEntrySize);
+    if (NumJTEntries > 0) {
+      PFixupTuple->set_num_jt_entries(NumJTEntries);
+      PFixupTuple->set_jt_entry_sz(JTEntrySize);
     }
   }
 }
 
-void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
+void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *RI,
                                       const MCAsmLayout &Layout) {
   // TODO Akul: We can add new info here for the functions
   // Set the binary information for reordering
-  ShuffleInfo::ReorderInfo_BinaryInfo *binaryInfo = ri->mutable_bin();
-  binaryInfo->set_rand_obj_offset(0x0);  // Should be updated at linking time
-  binaryInfo->set_main_addr_offset(0x0); // Should be updated at linking time
+  ShuffleInfo::ReorderInfo_BinaryInfo *BinaryInfo = RI->mutable_bin();
+  BinaryInfo->set_rand_obj_offset(0x0);  // Should be updated at linking time
+  BinaryInfo->set_main_addr_offset(0x0); // Should be updated at linking time
 
   const MCAsmInfo *MAI = Layout.getAssembler().getContext().getAsmInfo();
 
@@ -356,23 +350,23 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
   //    obj_type = 1: a source file that contains inline assembly
   //    obj_type = 2: standalone assembly file (i.e., *.s, *.S, ...)
   if (MAI->getBC()->isAssemFile)
-    binaryInfo->set_src_type(2);
+    BinaryInfo->set_src_type(2);
   else if (MAI->getBC()->hasInlineAssembly)
-    binaryInfo->set_src_type(1);
+    BinaryInfo->set_src_type(1);
   else
-    binaryInfo->set_src_type(0);
+    BinaryInfo->set_src_type(0);
 
   updateReorderInfoValues(Layout);
   // Set the layout of both Machine Functions and Machine Basic Blocks with
   // protobuf definition
-  unsigned MBBSize;
-  unsigned objSz = 0, numFuncs = 0, numBBs = 0;
-  int MFID, MBBID, prevMFID = 0;
+  unsigned MBBSize = 0, NumBBs = 0, NumFuncs = 0;
+  unsigned ObjSz = 0; 
+  int MFID, MBBID, PrevMFID = 0;
 
   for (std::list<std::string>::const_iterator MBBI =
            MAI->getBC()->MBBLayoutOrder.begin();
        MBBI != MAI->getBC()->MBBLayoutOrder.end(); ++MBBI) {
-    ShuffleInfo::ReorderInfo_LayoutInfo *layoutInfo = ri->add_layout();
+    ShuffleInfo::ReorderInfo_LayoutInfo *LayoutInfo = RI->add_layout();
     const std::string &ID = MBBI->c_str();
     std::tie(MFID, MBBID) = separateID(ID);
 
@@ -382,94 +376,94 @@ void BCollector::serializeReorderInfo(ShuffleInfo::ReorderInfo *ri,
 
     // Akul XXX: Add MBB succs, preds, and function calling convention stuff
     // here
-    layoutInfo->set_bb_size(MBBInfo.TotalSizeInBytes);
-    layoutInfo->set_type(MBBInfo.BBType);
-    layoutInfo->set_num_fixups(MBBInfo.NumFixUps);
-    layoutInfo->set_bb_fallthrough(MBBFallThrough);
-    layoutInfo->set_section_name(MBBInfo.SectionName);
-    layoutInfo->set_offset(MBBInfo.Offset);
-    layoutInfo->set_nargs(MBBInfo.NumArgs);
-    layoutInfo->set_bb_id(ID);
-    for (auto &pred : MBBInfo.Predecessors) {
-      layoutInfo->add_preds(pred);
+    LayoutInfo->set_bb_size(MBBInfo.TotalSizeInBytes);
+    LayoutInfo->set_type(MBBInfo.BBType);
+    LayoutInfo->set_num_fixups(MBBInfo.NumFixUps);
+    LayoutInfo->set_bb_fallthrough(MBBFallThrough);
+    LayoutInfo->set_section_name(MBBInfo.SectionName);
+    LayoutInfo->set_offset(MBBInfo.Offset);
+    LayoutInfo->set_nargs(MBBInfo.NumArgs);
+    LayoutInfo->set_bb_id(ID);
+    for (auto &Pred : MBBInfo.Predecessors) {
+      LayoutInfo->add_preds(Pred);
     }
-    for (auto &succ : MBBInfo.Successors) {
-      layoutInfo->add_succs(succ);
+    for (auto &Succ : MBBInfo.Successors) {
+      LayoutInfo->add_succs(Succ);
     }
-    layoutInfo->set_padding_size(MBBInfo.Alignments);
+    LayoutInfo->set_padding_size(MBBInfo.Alignments);
 
-    if (MFID > prevMFID) {
-      numFuncs++;
-      numBBs = 0;
+    if (MFID > PrevMFID) {
+      NumFuncs++;
+      NumBBs = 0;
     }
 
-    objSz += MBBSize;
-    numBBs++;
-    prevMFID = MFID;
+    ObjSz += MBBSize;
+    NumBBs++;
+    PrevMFID = MFID;
   }
 
-  binaryInfo->set_obj_sz(objSz);
+  BinaryInfo->set_obj_sz(ObjSz);
 
   // Set the fixup information (.text, .rodata, .data, .data.rel.ro and
   // .init_array)
   const MFCONTAINER &MFs = MAI->getFC()->getMFs();
-  for (auto const &x : MFs) {
-    ShuffleInfo::ReorderInfo_FunctionInfo *FunctionInfo = ri->add_func();
-    FunctionInfo->set_f_id(x.first);
-    FunctionInfo->set_bb_num(x.second.TotalSizeInBytes);
-    FunctionInfo->set_f_name(x.second.FunctionName);
-    FunctionInfo->set_nargs(x.second.NumArgs);
-    const auto &argSizes = x.second.ArgSizesInBits;
-    for (auto const &argSize : argSizes) {
-      FunctionInfo->add_argsizes(argSize);
+  for (auto const &F : MFs) {
+    ShuffleInfo::ReorderInfo_FunctionInfo *FunctionInfo = RI->add_func();
+    FunctionInfo->set_f_id(F.first);
+    FunctionInfo->set_bb_num(F.second.TotalSizeInBytes);
+    FunctionInfo->set_f_name(F.second.FunctionName);
+    FunctionInfo->set_nargs(F.second.NumArgs);
+    const auto &ArgSizes = F.second.ArgSizesInBits;
+    for (auto const &ArgSize : ArgSizes) {
+      FunctionInfo->add_argsizes(ArgSize);
     }
-    const auto &argTypes = x.second.ArgTypes;
-    for (auto const &argType : argTypes) {
-      DEBUG_WITH_TYPE("binbench", dbgs() << "Func Arg Type "<< argType << "\n");
-      FunctionInfo->add_arg_types(argType);
+    const auto &ArgTypes = F.second.ArgTypes;
+    for (auto const &ArgType : ArgTypes) {
+      DEBUG_WITH_TYPE("binbench", dbgs() << "Func Arg Type "<< ArgType << "\n");
+      FunctionInfo->add_arg_types(ArgType);
     }
-    const auto &localVars = x.second.LocalVars;
-    for (auto const &localVar : localVars) {
-      FunctionInfo->add_local_var_names(localVar.first);
-      FunctionInfo->add_local_var_types(std::get<0>(localVar.second));
-      FunctionInfo->add_local_var_offsets(std::get<1>(localVar.second));
-      FunctionInfo->add_local_var_sizes(std::get<2>(localVar.second));
+    const auto &LocalVars = F.second.LocalVars;
+    for (auto const &LocalVar : LocalVars) {
+      FunctionInfo->add_local_var_names(LocalVar.first);
+      FunctionInfo->add_local_var_types(std::get<0>(LocalVar.second));
+      FunctionInfo->add_local_var_offsets(std::get<1>(LocalVar.second));
+      FunctionInfo->add_local_var_sizes(std::get<2>(LocalVar.second));
     }
   }
 
   const auto &CallGraphInfo = MAI->getFC()->getCG();
 
   for (auto const &Cg : CallGraphInfo) {
-    ShuffleInfo::ReorderInfo_CallGraphInfo *CGInfo = ri->add_func_cg();
+    ShuffleInfo::ReorderInfo_CallGraphInfo *CGInfo = RI->add_func_cg();
     CGInfo->set_f_name(Cg.first);
     DEBUG_WITH_TYPE("binbench", dbgs()
                                     << "Func found in CG " << Cg.first << "\n");
-    for (auto const &successor : Cg.second) {
-      CGInfo->add_succs(successor);
-      DEBUG_WITH_TYPE("binbench", dbgs() << "Succs " << successor << "\n");
+    for (auto const &Successor : Cg.second) {
+      CGInfo->add_succs(Successor);
+      DEBUG_WITH_TYPE("binbench", dbgs() << "Succs " << Successor << "\n");
     }
   }
 
-  const auto &vTables = MAI->getFC()->getVT();
+  const auto &VTables = MAI->getFC()->getVT();
 
-  for (auto const &x: vTables) {
-    ShuffleInfo::ReorderInfo_ClassInfo *ClassInfo = ri->add_class_proto();
+  for (auto const &V: VTables) {
+    ShuffleInfo::ReorderInfo_ClassInfo *ClassInfo = RI->add_class_proto();
 
-    ClassInfo->set_vtable_name(x.first);
-    for (auto const &entry : x.second) {
-      ClassInfo->add_ventry(entry);
+    ClassInfo->set_vtable_name(V.first);
+    for (auto const &Entry : V.second) {
+      ClassInfo->add_ventry(Entry);
     }
 
   }
 
-  ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo = ri->add_fixup();
-  setFixupInfo(fixupInfo, MAI);
+  ShuffleInfo::ReorderInfo_FixupInfo *FixupInfo = RI->add_fixup();
+  setFixupInfo(FixupInfo, MAI);
 }
 
-void BCollector::setFixupInfo(ShuffleInfo::ReorderInfo_FixupInfo *fixupInfo, const MCAsmInfo *MAI) {
-  setFixups(MAI->getBC()->FixupsText, fixupInfo, ".text");
-  setFixups(MAI->getBC()->FixupsRodata, fixupInfo, ".rodata");
-  setFixups(MAI->getBC()->FixupsData, fixupInfo, ".data");
-  setFixups(MAI->getBC()->FixupsDataRel, fixupInfo, ".data.rel.ro");
-  setFixups(MAI->getBC()->FixupsInitArray, fixupInfo, ".init_array");
+void BCollector::setFixupInfo(ShuffleInfo::ReorderInfo_FixupInfo *FixupInfo, const MCAsmInfo *MAI) {
+  setFixups(MAI->getBC()->FixupsText, FixupInfo, ".text");
+  setFixups(MAI->getBC()->FixupsRodata, FixupInfo, ".rodata");
+  setFixups(MAI->getBC()->FixupsData, FixupInfo, ".data");
+  setFixups(MAI->getBC()->FixupsDataRel, FixupInfo, ".data.rel.ro");
+  setFixups(MAI->getBC()->FixupsInitArray, FixupInfo, ".init_array");
 }
