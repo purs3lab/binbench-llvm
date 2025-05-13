@@ -804,7 +804,7 @@ void DwarfUnit::constructTypeDIE(DIE &Buffer, const DIDerivedType *DTy) {
 }
 
 void DwarfUnit::constructSubprogramArguments(DIE &Buffer, DITypeRefArray Args) {
-  // Akul 
+  // Akul  - XXX: This is just how indexing works, verified with gdb
   for (unsigned i = 1, N = Args.size(); i < N; ++i) {
     const DIType *Ty = Args[i];
     // TM.getMCSubtargetInfo()->addArgSize(Ty->getSizeInBits());
@@ -1305,7 +1305,8 @@ void DwarfUnit::applySubprogramAttributes(const DISubprogram *SP, DIE &SPDie,
   // MAI->getFC()->setNumArgs(funcName, nargs);
   MAI->getFC()->updateArgDetails(FuncName, nargs);
 
-  for (int i = 0; i < nargs; i++) {
+  // Akul : XXX Stay consistant with how you iterate Args.size()
+  for (int i = 1; i < nargs; ++i) {
     auto arg = Args[i];
     if (arg == nullptr)
       continue;
