@@ -29,6 +29,12 @@ struct IndirectBranch : public FunctionPass {
     this->Options = nullptr;
   }
 
+  IndirectBranch() : FunctionPass(ID) {
+    this->pointerSize = 8;
+    this->flag = false;
+    this->Options = nullptr;
+  }
+
   IndirectBranch(unsigned pointerSize, bool flag, ObfuscationOptions *Options) : FunctionPass(ID) {
     this->pointerSize = pointerSize;
     this->flag = flag;

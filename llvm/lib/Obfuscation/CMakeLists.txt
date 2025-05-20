@@ -1,8 +1,6 @@
 add_llvm_pass_plugin(Obfuscation
-  CryptoUtils.cpp
   Substitution.cpp
   BogusControlFlow.cpp
-  Utils.cpp
   SplitBasicBlock.cpp
   Flattening.cpp
   Plugin.cpp

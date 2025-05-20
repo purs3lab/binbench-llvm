@@ -26,6 +26,12 @@ struct IndirectGlobalVariable : public FunctionPass {
     this->Options = nullptr;
   }
 
+  IndirectGlobalVariable() : FunctionPass(ID) {
+    this->pointerSize = 8;
+    this->flag = false;
+    this->Options = nullptr;
+  }
+
   IndirectGlobalVariable(unsigned pointerSize, bool flag, ObfuscationOptions *Options) : FunctionPass(ID) {
     this->pointerSize = pointerSize;
     this->flag = flag;

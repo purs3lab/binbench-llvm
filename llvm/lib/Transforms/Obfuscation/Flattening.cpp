@@ -41,6 +41,12 @@ struct Flattening : public FunctionPass {
     this->Options = nullptr;
   }
 
+  Flattening() : FunctionPass(ID) {
+    this->pointerSize = 8;
+    this->flag = false;
+    this->Options = nullptr;
+  }
+
   Flattening(unsigned pointerSize, bool flag, ObfuscationOptions *Options) : FunctionPass(ID) {
     this->pointerSize = pointerSize;
     this->flag = flag;

@@ -91,6 +91,14 @@ void Instruction::insertAfter(Instruction *InsertPos) {
                                                     this);
 }
 
+BasicBlock::iterator Instruction::insertInto(BasicBlock *ParentBB,
+                                             BasicBlock::iterator It) {
+  assert(getParent() == nullptr && "Expected detached instruction");
+  assert((It == ParentBB->end() || It->getParent() == ParentBB) &&
+         "It not in ParentBB");
+  return ParentBB->getInstList().insert(It, this);
+}
+
 /// Unlink this instruction from its current basic block and insert it into the
 /// basic block that MovePos lives in, right before MovePos.
 void Instruction::moveBefore(Instruction *MovePos) {

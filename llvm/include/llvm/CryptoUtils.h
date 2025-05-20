@@ -1,5 +1,4 @@
-//===- CryptoUtils.h - Cryptographically Secure Pseudo-Random
-// Generator------------------===//
+//===- CryptoUtils.h - Cryptographically Secure Pseudo-Random Generator ---===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -15,8 +14,8 @@
 // Author(s): jrinaldini, pjunod
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CRYPTOUTILS_H
-#define LLVM_CRYPTOUTILS_H
+#ifndef LLVM_CryptoUtils_H
+#define LLVM_CryptoUtils_H
 
 #include "llvm/Support/ManagedStatic.h"
 
@@ -81,8 +80,7 @@ extern ManagedStatic<CryptoUtils> cryptoutils;
 #endif
 
 #if !defined(ENDIAN_BIG) && !defined(ENDIAN_LITTLE)
-#error                                                                         \
-    "Unknown endianness of the compilation platform, check this header aes_encrypt.h"
+#define ENDIAN_LITTLE
 #endif
 
 #ifdef ENDIAN_LITTLE
@@ -190,11 +188,11 @@ extern ManagedStatic<CryptoUtils> cryptoutils;
 #define Ch(x, y, z) (z ^ (x &(y ^ z)))
 #define Maj(x, y, z) (((x | y) & z) | (x &y))
 #define S(x, n) RORc((x), (n))
-#define R1(x, n) (((x) & 0xFFFFFFFFUL) >> (n))
+#define R(x, n) (((x) & 0xFFFFFFFFUL) >> (n))
 #define Sigma0(x) (S(x, 2) ^ S(x, 13) ^ S(x, 22))
 #define Sigma1(x) (S(x, 6) ^ S(x, 11) ^ S(x, 25))
-#define Gamma0(x) (S(x, 7) ^ S(x, 18) ^ R1(x, 3))
-#define Gamma1(x) (S(x, 17) ^ S(x, 19) ^ R1(x, 10))
+#define Gamma0(x) (S(x, 7) ^ S(x, 18) ^ R(x, 3))
+#define Gamma1(x) (S(x, 17) ^ S(x, 19) ^ R(x, 10))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
 #define RND(a, b, c, d, e, f, g, h, i, ki)                                     \
@@ -216,7 +214,7 @@ public:
   char *get_seed();
   void get_bytes(char *buffer, const int len);
   char get_char();
-  bool prng_seed(const std::string seed);
+  void prng_seed(const std::string seed);
 
   // Returns a uniformly distributed 8-bit value
   uint8_t get_uint8_t();
@@ -229,6 +227,7 @@ public:
 
   // Scramble a 32-bit value depending on a 128-bit value
   unsigned scramble32(const unsigned in, const char key[16]);
+  unsigned long long scramble64(const unsigned in, const char key[16]);
 
   int sha256(const char *msg, unsigned char *hash);
 
@@ -249,7 +248,7 @@ private:
 
   void aes_compute_ks(uint32_t *ks, const char *k);
   void aes_encrypt(char *out, const char *in, const uint32_t *ks);
-  bool prng_seed();
+  void prng_seed();
   void inc_ctr();
   void populate_pool();
   int sha256_done(sha256_state *md, unsigned char *out);

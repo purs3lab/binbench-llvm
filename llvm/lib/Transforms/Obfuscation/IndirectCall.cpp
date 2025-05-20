@@ -29,6 +29,12 @@ struct IndirectCall : public FunctionPass {
     this->Options = nullptr;
   }
 
+  IndirectCall() : FunctionPass(ID) {
+    this->pointerSize = 8;
+    this->flag = false;
+    this->Options = nullptr;
+  }
+
   IndirectCall(unsigned pointerSize, bool flag, ObfuscationOptions *Options) : FunctionPass(ID) {
     this->pointerSize = pointerSize;
     this->flag = flag;

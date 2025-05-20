@@ -12,8 +12,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "SplitBasicBlock.h"
-#include "CryptoUtils.h"
-#include "Utils.h"
+#include "llvm/CryptoUtils.h"
+#include "llvm/Transforms/Obfuscation/Utils.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Instructions.h"
