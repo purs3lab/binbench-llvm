@@ -44,7 +44,6 @@ endif()
 add_subdirectory(WindowsDriver)
 add_subdirectory(WindowsManifest)
 add_subdirectory(BCollector)
-# add_subdirectory(Obfuscation)
 
 set(LLVMCONFIGLIBRARYDEPENDENCIESINC "${LLVM_BINARY_DIR}/tools/llvm-config/LibraryDependencies.inc")
 
